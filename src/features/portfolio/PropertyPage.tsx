@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { demoPortfolio as data } from "./data/demo-data";
 import type { Property } from "./data/types";
+import { getContact } from "@/features/contacts/selectors";
 import { incidentsFor, roomsOf, summarizeOccupancy } from "./selectors";
 import { StatusBadge } from "./components/StatusBadge";
 import { OccupancySummary } from "./components/OccupancySummary";
@@ -27,6 +28,11 @@ export function PropertyPage({ property }: { property: Property }) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="space-y-4">
           <Panel title="Ocupación"><OccupancySummary s={summarizeOccupancy(rooms)} /></Panel>
+          <Panel title="Propietario">
+            <Link to="/contactos/$contactId" params={{ contactId: property.ownerId }} className="rounded-sm text-sm font-medium text-primary hover:underline">
+              {getContact(data, property.ownerId)?.name}
+            </Link>
+          </Panel>
           {incidents.length > 0 && (
             <Panel title="Incidencias de ejemplo">
               <ul className="space-y-3 text-sm">

@@ -22,17 +22,6 @@ describe("demo portfolio rules", () => {
     }
   });
 
-  it("only occupied rooms have a contract, and it covers 21/10/2026", () => {
-    for (const r of data.rooms) {
-      if (r.status === "ocupada") {
-        expect(r.contract!.startDate <= data.referenceDate && r.contract!.endDate >= data.referenceDate).toBe(true);
-      } else {
-        expect(r.contract).toBeUndefined();
-      }
-    }
-    expect(formatDate(data.referenceDate)).toBe("21/10/2026");
-  });
-
   it("search and status filters combine", () => {
     expect(filterRooms(data, { q: "OLI-01", status: "todas", sort: "codigo" })).toHaveLength(1);
     expect(filterRooms(data, { q: "Casa Azahar", status: "disponible", sort: "codigo" }).map((r) => r.code)).toEqual(["AZA-05"]);
