@@ -13,3 +13,5 @@
 - Feature code lives in `src/features/<feature>/` (components, logic); routes in `src/routes/` stay thin. Why: keeps the future SaaS modules isolated and maintainable.
 - Product-wide constants (name, copy) live in `src/config/site.ts`. Why: single source for branding.
 - No backend is connected; any future backend must be the owner's independent Supabase, never Lovable Cloud. Why: explicit owner constraint.
+- Demo data lives in typed local modules under `src/features/<feature>/data/`; UI reads only through `selectors.ts` (derived totals, never hardcoded). Why: lets a real data source replace the demo without UI changes.
+- Shared app shell (sidebar + mobile menu + demo notice) lives in `src/features/layout/` and wraps `<Outlet />` in `__root.tsx`. Why: one layout for all screens.
