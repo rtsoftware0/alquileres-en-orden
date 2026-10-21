@@ -9,7 +9,7 @@ import { formatDate, formatEUR } from "@/lib/format";
 
 const linkClass = "rounded-sm font-medium text-primary hover:underline";
 
-function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: string }) {
+function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: string | undefined }) {
   const property = getProperty(data, propertyId)!;
   const room = roomId ? getRoom(data, roomId) : undefined;
   return (

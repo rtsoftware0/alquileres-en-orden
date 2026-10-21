@@ -2,10 +2,10 @@ import type { RoomStatus } from "./data/types";
 import { ROOM_STATUSES, type PropertySort, type RoomSort } from "./selectors";
 
 export interface CarteraSearch {
-  vista?: "inmuebles" | "habitaciones";
-  q?: string;
-  estado?: RoomStatus;
-  orden?: string;
+  vista?: "inmuebles" | "habitaciones" | undefined;
+  q?: string | undefined;
+  estado?: RoomStatus | undefined;
+  orden?: string | undefined;
 }
 
 const pick = <T extends string>(v: unknown, allowed: readonly T[]): T | undefined =>
