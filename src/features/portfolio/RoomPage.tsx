@@ -103,6 +103,19 @@ export function RoomPage({ room }: { room: Room }) {
             ))}
           </Panel>
         )}
+        {others.some((c) => c.status === "finalizado" || c.status === "cancelado") && (
+          <Panel title="Otros contratos de esta habitación" className="lg:col-span-2">
+            <ul className="space-y-2 text-sm">
+              {others.filter((c) => c.status === "finalizado" || c.status === "cancelado").map((c) => (
+                <li key={c.id} className="flex flex-wrap items-center gap-2">
+                  <Link to="/contratos/$contractId" params={{ contractId: c.id }} className="rounded-sm font-medium text-primary hover:underline">{c.reference}</Link>
+                  <ContractStatusBadge status={c.status} />
+                  <span className="tabular text-muted-foreground">{formatDate(c.startDate)} – salida {formatDate(c.endDate)}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        )}
       </div>
     </>
   );
