@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
+import { Route as ContactosIndexRouteImport } from './routes/contactos.index'
+import { Route as ContactosContactIdRouteImport } from './routes/contactos.$contactId'
+import { Route as ContratosIndexRouteImport } from './routes/contratos.index'
+import { Route as ContratosContractIdRouteImport } from './routes/contratos.$contractId'
+import { Route as ContratosBorradorRouteImport } from './routes/contratos.borrador'
 import { Route as CarteraHabitacionesRoomIdRouteImport } from './routes/cartera.habitaciones.$roomId'
 import { Route as CarteraInmueblesPropertyIdRouteImport } from './routes/cartera.inmuebles.$propertyId'
 
@@ -22,6 +27,31 @@ const IndexRoute = IndexRouteImport.update({
 const CarteraIndexRoute = CarteraIndexRouteImport.update({
   id: '/cartera/',
   path: '/cartera/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactosIndexRoute = ContactosIndexRouteImport.update({
+  id: '/contactos/',
+  path: '/contactos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactosContactIdRoute = ContactosContactIdRouteImport.update({
+  id: '/contactos/$contactId',
+  path: '/contactos/$contactId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContratosIndexRoute = ContratosIndexRouteImport.update({
+  id: '/contratos/',
+  path: '/contratos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContratosContractIdRoute = ContratosContractIdRouteImport.update({
+  id: '/contratos/$contractId',
+  path: '/contratos/$contractId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContratosBorradorRoute = ContratosBorradorRouteImport.update({
+  id: '/contratos/borrador',
+  path: '/contratos/borrador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarteraHabitacionesRoomIdRoute =
@@ -39,20 +69,35 @@ const CarteraInmueblesPropertyIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contactos/$contactId': typeof ContactosContactIdRoute
+  '/contratos/$contractId': typeof ContratosContractIdRoute
+  '/contratos/borrador': typeof ContratosBorradorRoute
   '/cartera/': typeof CarteraIndexRoute
+  '/contactos/': typeof ContactosIndexRoute
+  '/contratos/': typeof ContratosIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contactos/$contactId': typeof ContactosContactIdRoute
+  '/contratos/$contractId': typeof ContratosContractIdRoute
+  '/contratos/borrador': typeof ContratosBorradorRoute
   '/cartera': typeof CarteraIndexRoute
+  '/contactos': typeof ContactosIndexRoute
+  '/contratos': typeof ContratosIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contactos/$contactId': typeof ContactosContactIdRoute
+  '/contratos/$contractId': typeof ContratosContractIdRoute
+  '/contratos/borrador': typeof ContratosBorradorRoute
   '/cartera/': typeof CarteraIndexRoute
+  '/contactos/': typeof ContactosIndexRoute
+  '/contratos/': typeof ContratosIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
@@ -60,26 +105,46 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/contactos/$contactId'
+    | '/contratos/$contractId'
+    | '/contratos/borrador'
     | '/cartera/'
+    | '/contactos/'
+    | '/contratos/'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/contactos/$contactId'
+    | '/contratos/$contractId'
+    | '/contratos/borrador'
     | '/cartera'
+    | '/contactos'
+    | '/contratos'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
   id:
     | '__root__'
     | '/'
+    | '/contactos/$contactId'
+    | '/contratos/$contractId'
+    | '/contratos/borrador'
     | '/cartera/'
+    | '/contactos/'
+    | '/contratos/'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactosContactIdRoute: typeof ContactosContactIdRoute
+  ContratosContractIdRoute: typeof ContratosContractIdRoute
+  ContratosBorradorRoute: typeof ContratosBorradorRoute
   CarteraIndexRoute: typeof CarteraIndexRoute
+  ContactosIndexRoute: typeof ContactosIndexRoute
+  ContratosIndexRoute: typeof ContratosIndexRoute
   CarteraHabitacionesRoomIdRoute: typeof CarteraHabitacionesRoomIdRoute
   CarteraInmueblesPropertyIdRoute: typeof CarteraInmueblesPropertyIdRoute
 }
@@ -98,6 +163,41 @@ declare module '@tanstack/react-router' {
       path: '/cartera'
       fullPath: '/cartera/'
       preLoaderRoute: typeof CarteraIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contactos/': {
+      id: '/contactos/'
+      path: '/contactos'
+      fullPath: '/contactos/'
+      preLoaderRoute: typeof ContactosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contactos/$contactId': {
+      id: '/contactos/$contactId'
+      path: '/contactos/$contactId'
+      fullPath: '/contactos/$contactId'
+      preLoaderRoute: typeof ContactosContactIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contratos/': {
+      id: '/contratos/'
+      path: '/contratos'
+      fullPath: '/contratos/'
+      preLoaderRoute: typeof ContratosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contratos/$contractId': {
+      id: '/contratos/$contractId'
+      path: '/contratos/$contractId'
+      fullPath: '/contratos/$contractId'
+      preLoaderRoute: typeof ContratosContractIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contratos/borrador': {
+      id: '/contratos/borrador'
+      path: '/contratos/borrador'
+      fullPath: '/contratos/borrador'
+      preLoaderRoute: typeof ContratosBorradorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartera/habitaciones/$roomId': {
@@ -119,7 +219,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactosContactIdRoute: ContactosContactIdRoute,
+  ContratosContractIdRoute: ContratosContractIdRoute,
+  ContratosBorradorRoute: ContratosBorradorRoute,
   CarteraIndexRoute: CarteraIndexRoute,
+  ContactosIndexRoute: ContactosIndexRoute,
+  ContratosIndexRoute: ContratosIndexRoute,
   CarteraHabitacionesRoomIdRoute: CarteraHabitacionesRoomIdRoute,
   CarteraInmueblesPropertyIdRoute: CarteraInmueblesPropertyIdRoute,
 }
