@@ -11,7 +11,8 @@ export interface CarteraSearch {
 const pick = <T extends string>(v: unknown, allowed: readonly T[]): T | undefined =>
   typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : undefined;
 
-export function validateCarteraSearch(raw: Record<string, unknown>): CarteraSearch {
+export function validateCarteraSearch(input: Record<string, unknown>): CarteraSearch {
+  const raw = input as { vista?: unknown; q?: unknown; estado?: unknown; orden?: unknown };
   return {
     vista: pick(raw.vista, ["inmuebles", "habitaciones"] as const),
     q: typeof raw.q === "string" && raw.q ? raw.q.slice(0, 80) : undefined,

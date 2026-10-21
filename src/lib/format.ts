@@ -3,7 +3,7 @@ const eur = new Intl.NumberFormat("es-ES", {
   currency: "EUR",
   maximumFractionDigits: 0,
   useGrouping: "always",
-} as Intl.NumberFormatOptions);
+} as unknown as Intl.NumberFormatOptions);
 
 export const formatEUR = (n: number) => eur.format(n);
 
