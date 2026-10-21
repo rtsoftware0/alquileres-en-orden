@@ -6,7 +6,9 @@ import { getProperty, incidentsFor, pendingForRoom } from "./selectors";
 import { StatusBadge } from "./components/StatusBadge";
 import { Breadcrumbs, CarteraCrumb, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
-import { formatDate, formatEUR } from "@/lib/format";
+import { addDays, formatCents, formatDate, formatEUR } from "@/lib/format";
+import { activeContractForRoom, contractsForRoom, tenantNames } from "@/features/contracts/selectors";
+import { ContractStatusBadge } from "@/features/contracts/components/ContractStatusBadge";
 
 const statusContextTitle = {
   disponible: "Disponible",
@@ -18,6 +20,8 @@ export function RoomPage({ room }: { room: Room }) {
   const property = getProperty(data, room.propertyId)!;
   const pending = pendingForRoom(data, room.id);
   const incidents = incidentsFor(data, property.id, room.id);
+  const active = activeContractForRoom(data, room.id);
+  const others = contractsForRoom(data, room.id).filter((c) => c.id !== active?.id);
   const propertyLink = (
     <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: property.id }} className={crumbLinkClass}>
       {property.name}
@@ -53,13 +57,16 @@ export function RoomPage({ room }: { room: Room }) {
           </ul>
         </Panel>
 
-        {room.status === "ocupada" && room.contract ? (
-          <Panel title={<span className="inline-flex items-center gap-2"><FileText className="h-4 w-4" aria-hidden="true" />Contrato de ejemplo</span>}>
+        {room.status === "ocupada" && active ? (
+          <Panel title={<span className="inline-flex items-center gap-2"><FileText className="h-4 w-4" aria-hidden="true" />Contrato vigente de ejemplo</span>}>
             <dl className="tabular grid grid-cols-2 gap-y-3 text-sm">
-              <dt className="text-muted-foreground">Referencia</dt><dd className="font-medium">{room.contract.reference}</dd>
-              <dt className="text-muted-foreground">Inicio</dt><dd>{formatDate(room.contract.startDate)}</dd>
-              <dt className="text-muted-foreground">Fin</dt><dd>{formatDate(room.contract.endDate)}</dd>
-              <dt className="text-muted-foreground">Renta</dt><dd>{formatEUR(room.monthlyRent)}/mes</dd>
+              <dt className="text-muted-foreground">Referencia</dt>
+              <dd><Link to="/contratos/$contractId" params={{ contractId: active.id }} className="rounded-sm font-medium text-primary hover:underline">{active.reference}</Link></dd>
+              <dt className="text-muted-foreground">Inquilino</dt>
+              <dd>{active.tenantIds.map((id) => <Link key={id} to="/contactos/$contactId" params={{ contactId: id }} className="rounded-sm font-medium text-primary hover:underline">{tenantNames(data, { ...active, tenantIds: [id] })}</Link>)}</dd>
+              <dt className="text-muted-foreground">Entrada</dt><dd>{formatDate(active.startDate)}</dd>
+              <dt className="text-muted-foreground">Último día ocupado</dt><dd>{formatDate(addDays(active.endDate, -1))}</dd>
+              <dt className="text-muted-foreground">Renta</dt><dd>{formatCents(active.rentCents)}/mes</dd>
             </dl>
             {pending.length > 0 && (
               <div className="mt-4 rounded-md bg-muted p-3 text-sm">
@@ -74,6 +81,13 @@ export function RoomPage({ room }: { room: Room }) {
             <Panel title={statusContextTitle[room.status]}>
               <p className="text-sm text-muted-foreground">{room.statusNote}</p>
               <p className="mt-2 text-sm text-muted-foreground">Sin contrato vigente a {formatDate(data.referenceDate)}.</p>
+              {others.filter((c) => c.status === "pendiente" || c.status === "borrador").map((c) => (
+                <p key={c.id} className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                  <Link to="/contratos/$contractId" params={{ contractId: c.id }} className="rounded-sm font-medium text-primary hover:underline">{c.reference}</Link>
+                  <ContractStatusBadge status={c.status} />
+                  <span className="text-muted-foreground">no genera ocupación</span>
+                </p>
+              ))}
               {incidents.map((i) => (
                 <p key={i.id} className="mt-3 rounded-md bg-muted p-3 text-sm">
                   Incidencia de ejemplo: <strong>{i.title}</strong> · desde {formatDate(i.openedOn)}
