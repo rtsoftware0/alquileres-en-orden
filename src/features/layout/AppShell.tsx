@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Building2, Home, Info, Menu } from "lucide-react";
+import { Building2, FileText, Home, Info, Menu, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/config/site";
 import { demoPortfolio } from "@/features/portfolio/data/demo-data";
@@ -8,6 +8,8 @@ import { demoPortfolio } from "@/features/portfolio/data/demo-data";
 const nav = [
   { to: "/", label: "Inicio", icon: Home, exact: true },
   { to: "/cartera", label: "Cartera", icon: Building2, exact: false },
+  { to: "/contactos", label: "Contactos", icon: Users, exact: false },
+  { to: "/contratos", label: "Contratos", icon: FileText, exact: false },
 ] as const;
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
