@@ -10,33 +10,78 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
+import { Route as CarteraHabitacionesRoomIdRouteImport } from './routes/cartera.habitaciones.$roomId'
+import { Route as CarteraInmueblesPropertyIdRouteImport } from './routes/cartera.inmuebles.$propertyId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CarteraIndexRoute = CarteraIndexRouteImport.update({
+  id: '/cartera/',
+  path: '/cartera/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarteraHabitacionesRoomIdRoute =
+  CarteraHabitacionesRoomIdRouteImport.update({
+    id: '/cartera/habitaciones/$roomId',
+    path: '/cartera/habitaciones/$roomId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CarteraInmueblesPropertyIdRoute =
+  CarteraInmueblesPropertyIdRouteImport.update({
+    id: '/cartera/inmuebles/$propertyId',
+    path: '/cartera/inmuebles/$propertyId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cartera/': typeof CarteraIndexRoute
+  '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
+  '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cartera': typeof CarteraIndexRoute
+  '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
+  '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cartera/': typeof CarteraIndexRoute
+  '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
+  '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/cartera/'
+    | '/cartera/habitaciones/$roomId'
+    | '/cartera/inmuebles/$propertyId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cartera'
+    | '/cartera/habitaciones/$roomId'
+    | '/cartera/inmuebles/$propertyId'
+  id:
+    | '__root__'
+    | '/'
+    | '/cartera/'
+    | '/cartera/habitaciones/$roomId'
+    | '/cartera/inmuebles/$propertyId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CarteraIndexRoute: typeof CarteraIndexRoute
+  CarteraHabitacionesRoomIdRoute: typeof CarteraHabitacionesRoomIdRoute
+  CarteraInmueblesPropertyIdRoute: typeof CarteraInmueblesPropertyIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +93,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cartera/': {
+      id: '/cartera/'
+      path: '/cartera'
+      fullPath: '/cartera/'
+      preLoaderRoute: typeof CarteraIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartera/habitaciones/$roomId': {
+      id: '/cartera/habitaciones/$roomId'
+      path: '/cartera/habitaciones/$roomId'
+      fullPath: '/cartera/habitaciones/$roomId'
+      preLoaderRoute: typeof CarteraHabitacionesRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartera/inmuebles/$propertyId': {
+      id: '/cartera/inmuebles/$propertyId'
+      path: '/cartera/inmuebles/$propertyId'
+      fullPath: '/cartera/inmuebles/$propertyId'
+      preLoaderRoute: typeof CarteraInmueblesPropertyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CarteraIndexRoute: CarteraIndexRoute,
+  CarteraHabitacionesRoomIdRoute: CarteraHabitacionesRoomIdRoute,
+  CarteraInmueblesPropertyIdRoute: CarteraInmueblesPropertyIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

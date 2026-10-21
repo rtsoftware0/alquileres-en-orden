@@ -2,5 +2,8 @@ export const site = {
   name: "REAL ESTATE SOFTWARE",
   tagline: "Tu gestión de alquileres, en un solo lugar",
   description:
-    "Un espacio pensado para organizar tus inmuebles, contratos y el seguimiento de cada alquiler de forma clara y ordenada.",
+    "Demostración para organizar inmuebles, contratos y el seguimiento de alquileres con datos ficticios.",
+  demoLabel: "Demostración · Datos ficticios",
+  demoHelp: "Explora un ejemplo. No se guardan cambios.",
+  demoUser: "Administrador de demostración",
 } as const;
