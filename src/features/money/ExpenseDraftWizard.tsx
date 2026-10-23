@@ -155,10 +155,14 @@ export function ExpenseDraftWizard() {
 
         {step === 1 && (
           <div className="space-y-5">
-            <fieldset>
+            <fieldset
+              id="bearer" tabIndex={-1} className="rounded-md focus:outline-2 focus:outline-ring"
+              aria-invalid={errors.bearer ? true : undefined}
+              aria-describedby={["bearer-hint", errors.bearer ? "bearer-error" : ""].filter(Boolean).join(" ")}
+            >
               <legend className="mb-1 text-sm font-medium">¿Quién soporta el coste?</legend>
               <p id="bearer-hint" className="mb-2 text-xs text-muted-foreground">Elección explícita: la demostración no decide automáticamente si se puede cobrar a inquilinos.</p>
-              <div className="flex flex-col gap-2 text-sm" role="radiogroup" aria-describedby="bearer-hint">
+              <div className="flex flex-col gap-2 text-sm" role="radiogroup">
                 {(["operador", "propietario", "inquilino"] as const).map((b) => (
                   <label key={b} className="flex items-center gap-2">
                     <input type="radio" name="bearer" value={b} checked={values.bearer === b} onChange={() => set({ bearer: b })} className="h-4 w-4 accent-primary" />
@@ -169,7 +173,11 @@ export function ExpenseDraftWizard() {
               {errors.bearer && <p id="bearer-error" className="mt-1 text-xs font-medium text-destructive">{errors.bearer}</p>}
             </fieldset>
 
-            <fieldset>
+            <fieldset
+              id="split" tabIndex={-1} className="rounded-md focus:outline-2 focus:outline-ring"
+              aria-invalid={errors.split ? true : undefined}
+              aria-describedby={errors.split ? "split-error" : undefined}
+            >
               <legend className="mb-1 text-sm font-medium">Reparto entre unidades</legend>
               <div className="flex flex-col gap-2 text-sm">
                 <label className="flex items-center gap-2">

@@ -94,10 +94,20 @@ describe("expense draft validation", () => {
 
   it("split needs units of the chosen property; manual must sum the amount", () => {
     expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: [] }, data).split).toBeDefined();
-    expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["oli-01"] }, data).split).toBeDefined();
     expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["aza-01", "aza-02", "aza-03"] }, data)).toEqual({});
     expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "manual", roomIds: ["aza-01", "aza-02", "aza-03"], manualAmounts: { "aza-01": "34", "aza-02": "33", "aza-03": "32" } }, data).split).toBeDefined();
     expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "manual", roomIds: ["aza-01", "aza-02", "aza-03"], manualAmounts: { "aza-01": "34", "aza-02": "33", "aza-03": "33" } }, data)).toEqual({});
+  });
+
+  it("rejects foreign, unknown and duplicate units instead of silently dropping them", () => {
+    // only foreign
+    expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["oli-01"] }, data).split).toBeDefined();
+    // mixed valid + foreign must fail, not pass after filtering
+    expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["aza-01", "oli-01"] }, data).split).toBeDefined();
+    // unknown id
+    expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["aza-01", "zzz-99"] }, data).split).toBeDefined();
+    // duplicates
+    expect(validateExpenseSplit({ ...base, bearer: "inquilino", splitMode: "igualitario", roomIds: ["aza-01", "aza-01"] }, data).split).toBeDefined();
   });
 });
 
