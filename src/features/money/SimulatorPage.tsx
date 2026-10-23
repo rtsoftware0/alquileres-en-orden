@@ -113,20 +113,20 @@ export function SimulatorPage() {
             {getContact(data, form.payerId)?.name} · {selected?.reference} · {selected?.concept}. Ningún listado ni saldo ha cambiado.
           </p>
           <div className="overflow-x-auto">
-            <table className="tabular w-full min-w-[20rem] text-sm">
+            <table className="tabular w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th scope="col" className="py-2 font-medium">Concepto</th>
                   <th scope="col" className="py-2 text-right font-medium">Antes</th>
-                  <th scope="col" className="py-2 text-right font-medium">Tras la simulación</th>
+                  <th scope="col" className="py-2 text-right font-medium">Después</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                <tr><th scope="row" className="py-2 text-left font-normal">Pendiente del vencimiento</th><td className="py-2 text-right">{formatMoney(result.outstandingBeforeCents)}</td><td className="py-2 text-right font-semibold">{formatMoney(result.outstandingAfterCents)}</td></tr>
-                <tr><th scope="row" className="py-2 text-left font-normal">Importe recibido simulado</th><td className="py-2 text-right">—</td><td className="py-2 text-right">{formatMoney(result.receivedCents)}</td></tr>
-                <tr><th scope="row" className="py-2 text-left font-normal">Asignado al vencimiento</th><td className="py-2 text-right">—</td><td className="py-2 text-right">{formatMoney(result.allocatedCents)}</td></tr>
-                <tr><th scope="row" className="py-2 text-left font-normal">Sin asignar</th><td className="py-2 text-right">—</td><td className="py-2 text-right">{formatMoney(result.unallocatedCents)}</td></tr>
-                <tr><th scope="row" className="py-2 text-left font-normal">Pendiente de la cartera</th><td className="py-2 text-right">{formatMoney(result.portfolioPendingCents)}</td><td className="py-2 text-right">{formatMoney(result.portfolioPendingIfRealCents)} <span className="block text-xs text-muted-foreground">solo si fuera real</span></td></tr>
+                <tr><th scope="row" className="py-2 text-left font-normal">Pendiente del vencimiento</th><td className="py-2 pl-2 text-right">{formatMoney(result.outstandingBeforeCents)}</td><td className="py-2 pl-2 text-right font-semibold">{formatMoney(result.outstandingAfterCents)}</td></tr>
+                <tr><th scope="row" className="py-2 text-left font-normal">Importe recibido simulado</th><td className="py-2 pl-2 text-right">—</td><td className="py-2 pl-2 text-right">{formatMoney(result.receivedCents)}</td></tr>
+                <tr><th scope="row" className="py-2 text-left font-normal">Asignado al vencimiento</th><td className="py-2 pl-2 text-right">—</td><td className="py-2 pl-2 text-right">{formatMoney(result.allocatedCents)}</td></tr>
+                <tr><th scope="row" className="py-2 text-left font-normal">Sin asignar</th><td className="py-2 pl-2 text-right">—</td><td className="py-2 pl-2 text-right">{formatMoney(result.unallocatedCents)}</td></tr>
+                <tr><th scope="row" className="py-2 text-left font-normal">Pendiente de la cartera</th><td className="py-2 pl-2 text-right">{formatMoney(result.portfolioPendingCents)}</td><td className="py-2 pl-2 text-right">{formatMoney(result.portfolioPendingIfRealCents)} <span className="block text-xs text-muted-foreground">solo si fuera real</span></td></tr>
               </tbody>
             </table>
           </div>
