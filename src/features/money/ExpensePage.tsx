@@ -16,6 +16,7 @@ export function ExpensePage({ expense }: { expense: Expense }) {
   const property = data.properties.find((p) => p.id === expense.propertyId)!;
   const payments = paymentsOfExpense(data, expense.id);
   const shares = sharesOfExpense(data, expense.id);
+  const linkedIncident = data.incidents.find((i) => i.linkedExpenseId === expense.id);
 
   return (
     <>
@@ -50,6 +51,7 @@ export function ExpensePage({ expense }: { expense: Expense }) {
             <dd><Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: property.id }} className={linkClass}>{property.name}</Link></dd>
             <dt className="text-muted-foreground">Periodo</dt><dd>{expense.period} (mes del gasto)</dd>
             <dt className="text-muted-foreground">Quién soporta el coste</dt><dd>{bearerLabel[expense.bearer]}</dd>
+            {linkedIncident && (<><dt className="text-muted-foreground">Incidencia relacionada</dt><dd><Link to="/incidencias/$incidentId" params={{ incidentId: linkedIncident.id }} className={linkClass}>{linkedIncident.title}</Link><span className="block text-xs text-muted-foreground">Vínculo de ejemplo ya existente; no lo creó ninguna simulación.</span></dd></>)}
             {expense.note && (<><dt className="text-muted-foreground">Nota</dt><dd className="text-muted-foreground">{expense.note}</dd></>)}
           </dl>
           {expense.bearer === "inquilino" && (
