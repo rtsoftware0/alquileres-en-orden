@@ -46,7 +46,7 @@ export function docLinkLabel(d: PortfolioDataset, doc: DemoDocument): string {
   }
 }
 
-const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim(); // combining marks
 
 export interface DocQuery {
   q: string;
