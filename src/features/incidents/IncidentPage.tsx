@@ -9,6 +9,7 @@ import { incidentStatusLabel, isOverdue, tasksOfIncident } from "./selectors";
 import { applySimAction, availableActions, initialSim, type SimState } from "./simulator";
 import { parseSimulatedAmount } from "@/features/money/simulator";
 import { IncidentPriorityBadge, IncidentStatusBadge, OverdueIncidentTag, TaskStatusBadge } from "./components/IncidentUi";
+import { RelatedDocsLinks } from "@/features/docs/components/RelatedDocs";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -166,6 +167,9 @@ export function IncidentPage({ incident }: { incident: Incident }) {
             <dt className="text-muted-foreground">Proveedor</dt>
             <dd>{provider ? <Link to="/contactos/$contactId" params={{ contactId: provider.id }} className={linkClass}>{provider.name}</Link> : "Sin proveedor asignado"}</dd>
           </dl>
+          <div className="mt-4 border-t border-border pt-3">
+            <RelatedDocsLinks kind="incidencia" id={incident.id} />
+          </div>
         </Panel>
 
         <Panel title="Presupuesto y resolución">

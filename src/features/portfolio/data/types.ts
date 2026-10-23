@@ -134,6 +134,9 @@ export interface PortfolioDataset {
   expenses: Expense[];
   expenseShares: ExpenseShare[];
   expensePayments: ExpensePayment[];
+  documents: DemoDocument[];
+  threads: MessageThread[];
+  notices: DemoNotice[];
 }
 
 // --- Money (demo). Balances are never stored: they derive from charges,
@@ -219,4 +222,65 @@ export interface ExpensePayment {
   date: string; // ISO, cash out date
   amountCents: number;
   note: string;
+}
+
+// --- Documents, messages and notices (demo). Embedded fictitious content
+// only: no uploads, no downloads, no sending, no real access grants.
+
+export type DocVisibility = "interna" | "compartida";
+
+/** One version of a document. History is never overwritten. */
+export interface DocVersion {
+  version: number;
+  date: string; // ISO
+  author: string; // fictitious
+  note: string;
+  content: string; // short synthetic text, never a legal document
+}
+
+export type DocLinkKind = "contrato" | "incidencia" | "gasto" | "inmueble";
+
+export interface DemoDocument {
+  id: string; // e.g. "doc-1"
+  title: string;
+  category: string;
+  author: string; // fictitious
+  createdOn: string; // ISO
+  link: { kind: DocLinkKind; id: string };
+  propertyId: string; // derived from the linked record
+  visibility: DocVisibility; // example visibility; grants no access
+  recipientIds: string[]; // example recipients, only when "compartida"
+  versions: DocVersion[]; // current = last
+}
+
+export interface ThreadMessage {
+  id: string;
+  date: string; // ISO
+  author: string; // fictitious
+  visibility: DocVisibility; // internal notes never appear in the shared view
+  text: string;
+}
+
+export interface MessageThread {
+  id: string; // e.g. "thr-inc-2"
+  title: string;
+  context: { kind: "contrato" | "incidencia"; id: string };
+  messages: ThreadMessage[]; // fictitious history; drafts never enter it
+}
+
+export type NoticeType = "vencimiento" | "deuda" | "incidencia" | "tarea" | "fianza";
+
+export type NoticeLink =
+  | { kind: "cargo"; id: string }
+  | { kind: "incidencia"; id: string }
+  | { kind: "tareas" }
+  | { kind: "fianza"; id: string };
+
+export interface DemoNotice {
+  id: string; // e.g. "av-1"
+  type: NoticeType;
+  text: string;
+  date: string; // ISO
+  read: boolean; // base state; simulated reads never change it
+  link: NoticeLink;
 }

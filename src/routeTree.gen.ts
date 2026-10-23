@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
 import { Route as ContactosIndexRouteImport } from './routes/contactos.index'
 import { Route as ContactosContactIdRouteImport } from './routes/contactos.$contactId'
@@ -18,9 +19,14 @@ import { Route as ContratosContractIdRouteImport } from './routes/contratos.$con
 import { Route as ContratosBorradorRouteImport } from './routes/contratos.borrador'
 import { Route as DineroIndexRouteImport } from './routes/dinero.index'
 import { Route as DineroSimularRouteImport } from './routes/dinero.simular'
+import { Route as DocumentosIndexRouteImport } from './routes/documentos.index'
+import { Route as DocumentosDocumentIdRouteImport } from './routes/documentos.$documentId'
+import { Route as DocumentosPrepararRouteImport } from './routes/documentos.preparar'
 import { Route as IncidenciasIndexRouteImport } from './routes/incidencias.index'
 import { Route as IncidenciasIncidentIdRouteImport } from './routes/incidencias.$incidentId'
 import { Route as IncidenciasPrepararRouteImport } from './routes/incidencias.preparar'
+import { Route as MensajesIndexRouteImport } from './routes/mensajes.index'
+import { Route as MensajesThreadIdRouteImport } from './routes/mensajes.$threadId'
 import { Route as TareasIndexRouteImport } from './routes/tareas.index'
 import { Route as CarteraHabitacionesRoomIdRouteImport } from './routes/cartera.habitaciones.$roomId'
 import { Route as CarteraInmueblesPropertyIdRouteImport } from './routes/cartera.inmuebles.$propertyId'
@@ -40,6 +46,11 @@ import { Route as DineroVencimientosChargeIdRouteImport } from './routes/dinero.
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvisosIndexRoute = AvisosIndexRouteImport.update({
+  id: '/avisos/',
+  path: '/avisos/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarteraIndexRoute = CarteraIndexRouteImport.update({
@@ -82,6 +93,21 @@ const DineroSimularRoute = DineroSimularRouteImport.update({
   path: '/dinero/simular',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentosIndexRoute = DocumentosIndexRouteImport.update({
+  id: '/documentos/',
+  path: '/documentos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentosDocumentIdRoute = DocumentosDocumentIdRouteImport.update({
+  id: '/documentos/$documentId',
+  path: '/documentos/$documentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentosPrepararRoute = DocumentosPrepararRouteImport.update({
+  id: '/documentos/preparar',
+  path: '/documentos/preparar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IncidenciasIndexRoute = IncidenciasIndexRouteImport.update({
   id: '/incidencias/',
   path: '/incidencias/',
@@ -95,6 +121,16 @@ const IncidenciasIncidentIdRoute = IncidenciasIncidentIdRouteImport.update({
 const IncidenciasPrepararRoute = IncidenciasPrepararRouteImport.update({
   id: '/incidencias/preparar',
   path: '/incidencias/preparar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensajesIndexRoute = MensajesIndexRouteImport.update({
+  id: '/mensajes/',
+  path: '/mensajes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensajesThreadIdRoute = MensajesThreadIdRouteImport.update({
+  id: '/mensajes/$threadId',
+  path: '/mensajes/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TareasIndexRoute = TareasIndexRouteImport.update({
@@ -184,13 +220,19 @@ export interface FileRoutesByFullPath {
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
   '/dinero/simular': typeof DineroSimularRoute
+  '/documentos/$documentId': typeof DocumentosDocumentIdRoute
+  '/documentos/preparar': typeof DocumentosPrepararRoute
   '/incidencias/$incidentId': typeof IncidenciasIncidentIdRoute
   '/incidencias/preparar': typeof IncidenciasPrepararRoute
+  '/mensajes/$threadId': typeof MensajesThreadIdRoute
+  '/avisos/': typeof AvisosIndexRoute
   '/cartera/': typeof CarteraIndexRoute
   '/contactos/': typeof ContactosIndexRoute
   '/contratos/': typeof ContratosIndexRoute
   '/dinero/': typeof DineroIndexRoute
+  '/documentos/': typeof DocumentosIndexRoute
   '/incidencias/': typeof IncidenciasIndexRoute
+  '/mensajes/': typeof MensajesIndexRoute
   '/tareas/': typeof TareasIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
@@ -213,13 +255,19 @@ export interface FileRoutesByTo {
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
   '/dinero/simular': typeof DineroSimularRoute
+  '/documentos/$documentId': typeof DocumentosDocumentIdRoute
+  '/documentos/preparar': typeof DocumentosPrepararRoute
   '/incidencias/$incidentId': typeof IncidenciasIncidentIdRoute
   '/incidencias/preparar': typeof IncidenciasPrepararRoute
+  '/mensajes/$threadId': typeof MensajesThreadIdRoute
+  '/avisos': typeof AvisosIndexRoute
   '/cartera': typeof CarteraIndexRoute
   '/contactos': typeof ContactosIndexRoute
   '/contratos': typeof ContratosIndexRoute
   '/dinero': typeof DineroIndexRoute
+  '/documentos': typeof DocumentosIndexRoute
   '/incidencias': typeof IncidenciasIndexRoute
+  '/mensajes': typeof MensajesIndexRoute
   '/tareas': typeof TareasIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
@@ -243,13 +291,19 @@ export interface FileRoutesById {
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
   '/dinero/simular': typeof DineroSimularRoute
+  '/documentos/$documentId': typeof DocumentosDocumentIdRoute
+  '/documentos/preparar': typeof DocumentosPrepararRoute
   '/incidencias/$incidentId': typeof IncidenciasIncidentIdRoute
   '/incidencias/preparar': typeof IncidenciasPrepararRoute
+  '/mensajes/$threadId': typeof MensajesThreadIdRoute
+  '/avisos/': typeof AvisosIndexRoute
   '/cartera/': typeof CarteraIndexRoute
   '/contactos/': typeof ContactosIndexRoute
   '/contratos/': typeof ContratosIndexRoute
   '/dinero/': typeof DineroIndexRoute
+  '/documentos/': typeof DocumentosIndexRoute
   '/incidencias/': typeof IncidenciasIndexRoute
+  '/mensajes/': typeof MensajesIndexRoute
   '/tareas/': typeof TareasIndexRoute
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
@@ -274,13 +328,19 @@ export interface FileRouteTypes {
     | '/contratos/$contractId'
     | '/contratos/borrador'
     | '/dinero/simular'
+    | '/documentos/$documentId'
+    | '/documentos/preparar'
     | '/incidencias/$incidentId'
     | '/incidencias/preparar'
+    | '/mensajes/$threadId'
+    | '/avisos/'
     | '/cartera/'
     | '/contactos/'
     | '/contratos/'
     | '/dinero/'
+    | '/documentos/'
     | '/incidencias/'
+    | '/mensajes/'
     | '/tareas/'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
@@ -303,13 +363,19 @@ export interface FileRouteTypes {
     | '/contratos/$contractId'
     | '/contratos/borrador'
     | '/dinero/simular'
+    | '/documentos/$documentId'
+    | '/documentos/preparar'
     | '/incidencias/$incidentId'
     | '/incidencias/preparar'
+    | '/mensajes/$threadId'
+    | '/avisos'
     | '/cartera'
     | '/contactos'
     | '/contratos'
     | '/dinero'
+    | '/documentos'
     | '/incidencias'
+    | '/mensajes'
     | '/tareas'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
@@ -332,13 +398,19 @@ export interface FileRouteTypes {
     | '/contratos/$contractId'
     | '/contratos/borrador'
     | '/dinero/simular'
+    | '/documentos/$documentId'
+    | '/documentos/preparar'
     | '/incidencias/$incidentId'
     | '/incidencias/preparar'
+    | '/mensajes/$threadId'
+    | '/avisos/'
     | '/cartera/'
     | '/contactos/'
     | '/contratos/'
     | '/dinero/'
+    | '/documentos/'
     | '/incidencias/'
+    | '/mensajes/'
     | '/tareas/'
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
@@ -362,13 +434,19 @@ export interface RootRouteChildren {
   ContratosContractIdRoute: typeof ContratosContractIdRoute
   ContratosBorradorRoute: typeof ContratosBorradorRoute
   DineroSimularRoute: typeof DineroSimularRoute
+  DocumentosDocumentIdRoute: typeof DocumentosDocumentIdRoute
+  DocumentosPrepararRoute: typeof DocumentosPrepararRoute
   IncidenciasIncidentIdRoute: typeof IncidenciasIncidentIdRoute
   IncidenciasPrepararRoute: typeof IncidenciasPrepararRoute
+  MensajesThreadIdRoute: typeof MensajesThreadIdRoute
+  AvisosIndexRoute: typeof AvisosIndexRoute
   CarteraIndexRoute: typeof CarteraIndexRoute
   ContactosIndexRoute: typeof ContactosIndexRoute
   ContratosIndexRoute: typeof ContratosIndexRoute
   DineroIndexRoute: typeof DineroIndexRoute
+  DocumentosIndexRoute: typeof DocumentosIndexRoute
   IncidenciasIndexRoute: typeof IncidenciasIndexRoute
+  MensajesIndexRoute: typeof MensajesIndexRoute
   TareasIndexRoute: typeof TareasIndexRoute
   CarteraHabitacionesRoomIdRoute: typeof CarteraHabitacionesRoomIdRoute
   CarteraInmueblesPropertyIdRoute: typeof CarteraInmueblesPropertyIdRoute
@@ -393,6 +471,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avisos/': {
+      id: '/avisos/'
+      path: '/avisos'
+      fullPath: '/avisos/'
+      preLoaderRoute: typeof AvisosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartera/': {
@@ -451,6 +536,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DineroSimularRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documentos/': {
+      id: '/documentos/'
+      path: '/documentos'
+      fullPath: '/documentos/'
+      preLoaderRoute: typeof DocumentosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentos/$documentId': {
+      id: '/documentos/$documentId'
+      path: '/documentos/$documentId'
+      fullPath: '/documentos/$documentId'
+      preLoaderRoute: typeof DocumentosDocumentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentos/preparar': {
+      id: '/documentos/preparar'
+      path: '/documentos/preparar'
+      fullPath: '/documentos/preparar'
+      preLoaderRoute: typeof DocumentosPrepararRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/incidencias/': {
       id: '/incidencias/'
       path: '/incidencias'
@@ -470,6 +576,20 @@ declare module '@tanstack/react-router' {
       path: '/incidencias/preparar'
       fullPath: '/incidencias/preparar'
       preLoaderRoute: typeof IncidenciasPrepararRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensajes/': {
+      id: '/mensajes/'
+      path: '/mensajes'
+      fullPath: '/mensajes/'
+      preLoaderRoute: typeof MensajesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensajes/$threadId': {
+      id: '/mensajes/$threadId'
+      path: '/mensajes/$threadId'
+      fullPath: '/mensajes/$threadId'
+      preLoaderRoute: typeof MensajesThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tareas/': {
@@ -586,13 +706,19 @@ const rootRouteChildren: RootRouteChildren = {
   ContratosContractIdRoute: ContratosContractIdRoute,
   ContratosBorradorRoute: ContratosBorradorRoute,
   DineroSimularRoute: DineroSimularRoute,
+  DocumentosDocumentIdRoute: DocumentosDocumentIdRoute,
+  DocumentosPrepararRoute: DocumentosPrepararRoute,
   IncidenciasIncidentIdRoute: IncidenciasIncidentIdRoute,
   IncidenciasPrepararRoute: IncidenciasPrepararRoute,
+  MensajesThreadIdRoute: MensajesThreadIdRoute,
+  AvisosIndexRoute: AvisosIndexRoute,
   CarteraIndexRoute: CarteraIndexRoute,
   ContactosIndexRoute: ContactosIndexRoute,
   ContratosIndexRoute: ContratosIndexRoute,
   DineroIndexRoute: DineroIndexRoute,
+  DocumentosIndexRoute: DocumentosIndexRoute,
   IncidenciasIndexRoute: IncidenciasIndexRoute,
+  MensajesIndexRoute: MensajesIndexRoute,
   TareasIndexRoute: TareasIndexRoute,
   CarteraHabitacionesRoomIdRoute: CarteraHabitacionesRoomIdRoute,
   CarteraInmueblesPropertyIdRoute: CarteraInmueblesPropertyIdRoute,

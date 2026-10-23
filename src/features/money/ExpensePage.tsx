@@ -5,6 +5,7 @@ import type { Expense } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { bearerLabel, expenseBalance, paymentsOfExpense, sharesOfExpense } from "./expenses";
 import { Amounts, ExpenseStatusBadge, MoneyNav, OverdueTag } from "./components/MoneyUi";
+import { RelatedDocsLinks } from "@/features/docs/components/RelatedDocs";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
@@ -60,6 +61,9 @@ export function ExpensePage({ expense }: { expense: Expense }) {
               Reparto de ejemplo: esta demostración no genera ninguna deuda a inquilinos ni afirma que el gasto sea repercutible legalmente.
             </p>
           )}
+          <div className="mt-4 border-t border-border pt-3">
+            <RelatedDocsLinks kind="gasto" id={expense.id} />
+          </div>
         </Panel>
 
         <Panel title={`Pagos ficticios (${payments.length})`}>
