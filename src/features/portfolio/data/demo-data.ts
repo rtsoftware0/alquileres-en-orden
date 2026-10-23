@@ -3,6 +3,7 @@ import { demoContacts } from "@/features/contacts/data/demo-contacts";
 import { demoContracts } from "@/features/contracts/data/demo-contracts";
 import { demoAllocations, demoCharges, demoDepositMovements, demoPayments } from "@/features/money/data/demo-money";
 import { demoExpensePayments, demoExpenseShares, demoExpenses } from "@/features/money/data/demo-expenses";
+import { demoIncidents, demoTasks } from "@/features/incidents/data/demo-incidents";
 
 // Fictitious demonstration data. No real people, addresses or payments.
 
@@ -73,23 +74,8 @@ export const demoPortfolio: PortfolioDataset = {
     { id: "casa-azahar", code: "AZA", name: "Casa Azahar", address: "Avenida Imaginaria 48, Ciudad Ficticia (dirección de ejemplo)", ownerId: "con-010" },
   ],
   rooms,
-  incidents: [
-    {
-      id: "inc-1", propertyId: "casa-azahar", roomId: "aza-06", providerId: "con-012", openedOn: "2026-10-14",
-      title: "Humedad en pared",
-      description: "Mantenimiento en curso. La habitación AZA-06 queda bloqueada hasta la reparación.",
-    },
-    {
-      id: "inc-2", propertyId: "casa-olivo", roomId: "oli-01", openedOn: "2026-10-18",
-      title: "Persiana atascada",
-      description: "Pendiente de revisión por el servicio técnico.",
-    },
-    {
-      id: "inc-3", propertyId: "casa-olivo", openedOn: "2026-10-20",
-      title: "Revisión de caldera",
-      description: "Revisión anual programada para las zonas comunes.",
-    },
-  ],
+  incidents: demoIncidents,
+  tasks: demoTasks,
   contacts: demoContacts,
   contracts: demoContracts,
   charges: demoCharges,
