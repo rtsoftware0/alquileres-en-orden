@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { demoPortfolio as data } from "./data/demo-data";
+import { pendingByRoom } from "@/features/money/selectors";
 import { filterRooms, roomsOf, summarizeOccupancy, totalPending } from "./selectors";
-import { formatDate, formatEUR, formatPercent } from "@/lib/format";
+import { formatCents, formatPercent } from "@/lib/format";
 
 describe("demo portfolio rules", () => {
   it("occupancy is 8 of 11 rentable rooms (blocked excluded), 12 managed", () => {
@@ -16,8 +17,8 @@ describe("demo portfolio rules", () => {
   });
 
   it("pending balances total 1.400 € and belong to occupied rooms", () => {
-    expect(formatEUR(totalPending(data)).replace(/\u00a0/g, " ")).toBe("1.400 €");
-    for (const b of data.pendingBalances) {
+    expect(formatCents(totalPending(data)).replace(/\u00a0/g, " ")).toBe("1.400 €");
+    for (const b of pendingByRoom(data)) {
       expect(data.rooms.find((r) => r.id === b.roomId)?.status).toBe("ocupada");
     }
   });
