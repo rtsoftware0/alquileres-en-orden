@@ -45,7 +45,10 @@ export function PropertyPage({ property }: { property: Property }) {
               <ul className="space-y-3 text-sm">
                 {incidents.map((i) => (
                   <li key={i.id}>
-                    <p className="font-medium">{i.title} <span className="font-normal text-muted-foreground">· desde {formatDate(i.openedOn)}</span></p>
+                    <p className="font-medium">
+                      <Link to="/incidencias/$incidentId" params={{ incidentId: i.id }} className="rounded-sm text-primary hover:underline">{i.title}</Link>{" "}
+                      <span className="font-normal text-muted-foreground">· desde {formatDate(i.openedOn)}</span>
+                    </p>
                     <p className="text-muted-foreground">{i.description}</p>
                   </li>
                 ))}

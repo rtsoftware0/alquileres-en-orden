@@ -90,7 +90,7 @@ export function RoomPage({ room }: { room: Room }) {
               ))}
               {incidents.map((i) => (
                 <p key={i.id} className="mt-3 rounded-md bg-muted p-3 text-sm">
-                  Incidencia de ejemplo: <strong>{i.title}</strong> · desde {formatDate(i.openedOn)}
+                  Incidencia de ejemplo: <Link to="/incidencias/$incidentId" params={{ incidentId: i.id }} className="rounded-sm font-medium text-primary hover:underline">{i.title}</Link> · desde {formatDate(i.openedOn)}
                 </p>
               ))}
             </Panel>
@@ -99,7 +99,7 @@ export function RoomPage({ room }: { room: Room }) {
         {room.status === "ocupada" && incidents.length > 0 && (
           <Panel title="Incidencias de ejemplo" className="lg:col-span-2">
             {incidents.map((i) => (
-              <p key={i.id} className="text-sm"><strong>{i.title}</strong> · desde {formatDate(i.openedOn)} — <span className="text-muted-foreground">{i.description}</span></p>
+              <p key={i.id} className="text-sm"><Link to="/incidencias/$incidentId" params={{ incidentId: i.id }} className="rounded-sm font-medium text-primary hover:underline">{i.title}</Link> · desde {formatDate(i.openedOn)} — <span className="text-muted-foreground">{i.description}</span></p>
             ))}
           </Panel>
         )}
