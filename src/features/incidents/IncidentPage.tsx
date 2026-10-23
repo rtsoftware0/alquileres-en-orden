@@ -9,6 +9,7 @@ import { incidentStatusLabel, isOverdue, tasksOfIncident } from "./selectors";
 import { applySimAction, availableActions, initialSim, type SimState } from "./simulator";
 import { parseSimulatedAmount } from "@/features/money/simulator";
 import { IncidentPriorityBadge, IncidentStatusBadge, OverdueIncidentTag, TaskStatusBadge } from "./components/IncidentUi";
+import { RelatedDocsLinks } from "@/features/docs/components/RelatedDocs";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { Button, buttonVariants } from "@/components/ui/button";

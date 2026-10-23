@@ -5,6 +5,7 @@ import type { Expense } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { bearerLabel, expenseBalance, paymentsOfExpense, sharesOfExpense } from "./expenses";
 import { Amounts, ExpenseStatusBadge, MoneyNav, OverdueTag } from "./components/MoneyUi";
+import { RelatedDocsLinks } from "@/features/docs/components/RelatedDocs";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";

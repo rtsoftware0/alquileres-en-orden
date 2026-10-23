@@ -5,6 +5,7 @@ import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import type { Contract } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { ContractStatusBadge } from "./components/ContractStatusBadge";
+import { RelatedDocsLinks } from "@/features/docs/components/RelatedDocs";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
