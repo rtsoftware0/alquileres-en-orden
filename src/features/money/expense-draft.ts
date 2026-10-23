@@ -60,7 +60,10 @@ export function validateExpenseSplit(v: ExpenseDraftValues, d: PortfolioDataset)
   }
   if (v.splitMode !== "igualitario" && v.splitMode !== "manual") { e.split = "Elige un tipo de reparto."; return e; }
   const rooms = d.rooms.filter((r) => r.propertyId === v.propertyId);
-  const chosen = v.roomIds.filter((id) => rooms.some((r) => r.id === id));
+  if (new Set(v.roomIds).size !== v.roomIds.length) { e.split = "Hay unidades repetidas en el reparto."; return e; }
+  if (v.roomIds.some((id) => !rooms.some((r) => r.id === id)))
+    { e.split = "El reparto solo puede incluir unidades del inmueble elegido."; return e; }
+  const chosen = v.roomIds;
   if (chosen.length === 0) { e.split = "Elige al menos una unidad del inmueble para repartir."; return e; }
   if (amount === null || amount <= 0) { e.split = "Corrige primero el importe del gasto en el paso anterior."; return e; }
   if (v.splitMode === "manual") {
