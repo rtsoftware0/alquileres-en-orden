@@ -8,7 +8,8 @@ import { ContractStatusBadge } from "./components/ContractStatusBadge";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { addDays, formatCents, formatDate } from "@/lib/format";
+import { addDays, formatCents, formatDate, formatMoney } from "@/lib/format";
+import { depositContracts, depositOf, tenantAccount } from "@/features/money/selectors";
 
 function ContactLink({ id }: { id: string }) {
   const c = getContact(data, id);
@@ -61,11 +62,31 @@ export function ContractPage({ contract: c }: { contract: Contract }) {
             <Row label="Salida">{formatDate(c.endDate)} <span className="text-xs text-muted-foreground">(no incluida)</span></Row>
             <Row label="Último día ocupado">{formatDate(addDays(c.endDate, -1))}</Row>
             <Row label="Renta mensual"><strong>{formatCents(c.rentCents)}</strong></Row>
-            <Row label="Fianza">{formatCents(c.depositCents)} <span className="text-xs text-muted-foreground">(aparte de la renta)</span></Row>
+            <Row label="Fianza prevista">{formatCents(c.depositCents)} <span className="text-xs text-muted-foreground">(aparte de la renta; no prueba recepción)</span></Row>
             <Row label="Vencimiento">Día {c.dueDay} de cada mes</Row>
             <Row label="Modalidad">{c.modality}</Row>
             <Row label="Firma">{c.signature}</Row>
           </dl>
+        </Panel>
+        <Panel title="Dinero de este contrato (ejemplo)" className="lg:col-span-2">
+          <ul className="space-y-2 text-sm">
+            {c.tenantIds.map((id) => (
+              <li key={id}>
+                Pendiente de <ContactLink id={id} />: <strong className="tabular">{formatMoney(tenantAccount(data, id, c.id).pendingCents)}</strong>
+                {" · "}
+                <Link to="/dinero/inquilinos/$contactId" params={{ contactId: id }} search={{ contrato: c.id }} className={linkClass}>Ver cuenta del inquilino</Link>
+              </li>
+            ))}
+            {depositContracts(data).some((x) => x.id === c.id) ? (
+              <li>
+                Fianza recibida: <strong className="tabular">{formatMoney(depositOf(data, c).receivedCents)}</strong> de {formatMoney(c.depositCents)} previstos
+                {" · "}
+                <Link to="/dinero/fianzas/$contractId" params={{ contractId: c.id }} className={linkClass}>Ver fianza</Link>
+              </li>
+            ) : (
+              <li className="text-muted-foreground">Sin fianza en curso: contrato {c.status === "borrador" ? "en borrador" : "cancelado"}.</li>
+            )}
+          </ul>
         </Panel>
         <Panel title="Historial de ejemplo" className="lg:col-span-2">
           <ol className="space-y-2 text-sm">

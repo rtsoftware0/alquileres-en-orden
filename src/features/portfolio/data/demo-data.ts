@@ -1,6 +1,7 @@
 import type { PortfolioDataset, Room } from "./types";
 import { demoContacts } from "@/features/contacts/data/demo-contacts";
 import { demoContracts } from "@/features/contracts/data/demo-contracts";
+import { demoAllocations, demoCharges, demoDepositMovements, demoPayments } from "@/features/money/data/demo-money";
 
 // Fictitious demonstration data. No real people, addresses or payments.
 
@@ -71,11 +72,6 @@ export const demoPortfolio: PortfolioDataset = {
     { id: "casa-azahar", code: "AZA", name: "Casa Azahar", address: "Avenida Imaginaria 48, Ciudad Ficticia (dirección de ejemplo)", ownerId: "con-010" },
   ],
   rooms,
-  pendingBalances: [
-    { id: "sp-1", roomId: "oli-02", amount: 350, concept: "Renta de octubre 2026" },
-    { id: "sp-2", roomId: "oli-03", amount: 600, concept: "Resto de septiembre (150 €) y renta de octubre 2026 (450 €)" },
-    { id: "sp-3", roomId: "aza-03", amount: 450, concept: "Renta de octubre 2026" },
-  ],
   incidents: [
     {
       id: "inc-1", propertyId: "casa-azahar", roomId: "aza-06", providerId: "con-012", openedOn: "2026-10-14",
@@ -95,4 +91,8 @@ export const demoPortfolio: PortfolioDataset = {
   ],
   contacts: demoContacts,
   contracts: demoContracts,
+  charges: demoCharges,
+  payments: demoPayments,
+  allocations: demoAllocations,
+  depositMovements: demoDepositMovements,
 };

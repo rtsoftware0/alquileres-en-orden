@@ -33,3 +33,6 @@ export function addDays(iso: string, days: number) {
   const t = new Date(Date.UTC(y!, m! - 1, d! + days));
   return t.toISOString().slice(0, 10);
 }
+
+/** Integer cents -> EUR always with two decimals (money screens). */
+export const formatMoney = (cents: number) => eur2.format(cents / 100);
