@@ -94,6 +94,9 @@ export function ContractPage({ contract: c }: { contract: Contract }) {
               <li key={i} className="flex gap-3"><span className="tabular w-24 shrink-0 text-muted-foreground">{formatDate(h.date)}</span><span>{h.text}</span></li>
             ))}
           </ol>
+          <div className="mt-4 border-t border-border pt-3">
+            <RelatedDocsLinks kind="contrato" id={c.id} />
+          </div>
         </Panel>
       </div>
     </>

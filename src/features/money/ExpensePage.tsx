@@ -60,6 +60,9 @@ export function ExpensePage({ expense }: { expense: Expense }) {
               Reparto de ejemplo: esta demostración no genera ninguna deuda a inquilinos ni afirma que el gasto sea repercutible legalmente.
             </p>
           )}
+          <div className="mt-4 border-t border-border pt-3">
+            <RelatedDocsLinks kind="gasto" id={expense.id} />
+          </div>
         </Panel>
 
         <Panel title={`Pagos ficticios (${payments.length})`}>
