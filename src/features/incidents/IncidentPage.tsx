@@ -8,13 +8,12 @@ import { getExpense } from "@/features/money/expenses";
 import { incidentStatusLabel, isOverdue, tasksOfIncident } from "./selectors";
 import { applySimAction, availableActions, initialSim, type SimState } from "./simulator";
 import { parseSimulatedAmount } from "@/features/money/simulator";
-import { IncidentPriorityBadge, IncidentStatusBadge, OverdueIncidentTag, TaskStatusBadge, incidentStatusMeta } from "./components/IncidentUi";
+import { IncidentPriorityBadge, IncidentStatusBadge, OverdueIncidentTag, TaskStatusBadge } from "./components/IncidentUi";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
 import { isTaskOverdue } from "./selectors";
-import { cn } from "@/lib/utils";
 
 const budgetStatusLabel = { propuesto: "Propuesto", aprobado: "Aprobado", rechazado: "Rechazado" } as const;
 
