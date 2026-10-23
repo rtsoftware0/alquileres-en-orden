@@ -95,7 +95,7 @@ export function SimulationNotice() {
 }
 
 export function PeriodPropertyFilters({
-  period, propertyId, onChange, onReset, children, periodHelp = true,
+  period, propertyId, onChange, onReset, children, periodHelp = true, hasOther = false,
 }: {
   period: string | undefined;
   propertyId: string | undefined;
@@ -103,8 +103,9 @@ export function PeriodPropertyFilters({
   onReset: () => void;
   children?: ReactNode;
   periodHelp?: boolean;
+  hasOther?: boolean;
 }) {
-  const active = Boolean(period || propertyId);
+  const active = Boolean(period || propertyId) || hasOther;
   return (
     <div className="mb-4 rounded-lg border border-border bg-card p-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">

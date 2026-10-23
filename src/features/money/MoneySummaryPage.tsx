@@ -25,9 +25,9 @@ export function MoneyHeader({ title, subtitle }: { title: string; subtitle?: str
     <PageHeader
       title={title}
       subtitle={
-        <span className="inline-flex flex-wrap items-center gap-1.5">
-          <CalendarDays className="h-4 w-4" aria-hidden="true" />
-          Fecha de referencia {formatDate(data.referenceDate)}{subtitle ? ` · ${subtitle}` : " · Importes de ejemplo"}
+        <span className="inline-flex items-start gap-1.5">
+          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>Fecha de referencia {formatDate(data.referenceDate)}{subtitle ? ` · ${subtitle}` : " · Importes de ejemplo"}</span>
         </span>
       }
     />

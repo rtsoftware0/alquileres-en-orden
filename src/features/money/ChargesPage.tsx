@@ -44,7 +44,7 @@ export function ChargesPage({ search }: { search: ChargesSearch }) {
       <MoneyHeader title="Vencimientos" subtitle="Cargos de renta de ejemplo" />
       <MoneyNav />
       <PeriodPropertyFilters
-        period={search.periodo} propertyId={search.inmueble} periodHelp={false}
+        period={search.periodo} propertyId={search.inmueble} periodHelp={false} hasOther={hasExtra}
         onChange={update} onReset={() => navigate({ search: {}, replace: true })}
       >
         <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
