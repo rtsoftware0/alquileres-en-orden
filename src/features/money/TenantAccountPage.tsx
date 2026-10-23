@@ -13,7 +13,7 @@ import { formatDate, formatMoney } from "@/lib/format";
 export interface AccountSearch { contrato?: string | undefined }
 
 export const validateAccountSearch = (input: Record<string, unknown>): AccountSearch => ({
-  contrato: data.contracts.some((c) => c.id === input.contrato) ? (input.contrato as string) : undefined,
+  contrato: data.contracts.some((c) => c.id === input["contrato"]) ? (input["contrato"] as string) : undefined,
 });
 
 export function TenantAccountPage({ contact, search }: { contact: Contact; search: AccountSearch }) {

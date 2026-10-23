@@ -21,10 +21,10 @@ export interface ChargesSearch {
 export function validateChargesSearch(input: Record<string, unknown>): ChargesSearch {
   return {
     ...validateMoneySearch(input),
-    q: typeof input.q === "string" && input.q ? input.q.slice(0, 80) : undefined,
-    estado: CHARGE_STATUSES.includes(input.estado as ChargeStatus) ? (input.estado as ChargeStatus) : undefined,
-    abiertos: input.abiertos === "si" ? "si" : undefined,
-    vencido: input.vencido === "si" ? "si" : undefined,
+    q: typeof input["q"] === "string" && input["q"] ? input["q"].slice(0, 80) : undefined,
+    estado: CHARGE_STATUSES.includes(input["estado"] as ChargeStatus) ? (input["estado"] as ChargeStatus) : undefined,
+    abiertos: input["abiertos"] === "si" ? "si" : undefined,
+    vencido: input["vencido"] === "si" ? "si" : undefined,
   };
 }
 

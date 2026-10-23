@@ -15,8 +15,8 @@ export interface MoneySearch {
 
 export function validateMoneySearch(input: Record<string, unknown>): MoneySearch {
   return {
-    periodo: periodsOf(data).includes(input.periodo as string) ? (input.periodo as string) : undefined,
-    inmueble: data.properties.some((p) => p.id === input.inmueble) ? (input.inmueble as string) : undefined,
+    periodo: periodsOf(data).includes(input["periodo"] as string) ? (input["periodo"] as string) : undefined,
+    inmueble: data.properties.some((p) => p.id === input["inmueble"]) ? (input["inmueble"] as string) : undefined,
   };
 }
 
