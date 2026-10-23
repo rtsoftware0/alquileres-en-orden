@@ -23,13 +23,6 @@ export interface Room {
   statusNote?: string; // context for reservada / bloqueada / disponible
 }
 
-export interface PendingBalance {
-  id: string;
-  roomId: string;
-  amount: number; // EUR
-  concept: string;
-}
-
 export interface Incident {
   id: string;
   propertyId: string;
@@ -85,8 +78,56 @@ export interface PortfolioDataset {
   referencePeriod: string; // human label
   properties: Property[];
   rooms: Room[];
-  pendingBalances: PendingBalance[];
   incidents: Incident[];
   contacts: Contact[];
   contracts: Contract[];
+  charges: Charge[];
+  payments: Payment[];
+  allocations: Allocation[];
+  depositMovements: DepositMovement[];
+}
+
+// --- Money (demo). Balances are never stored: they derive from charges,
+// payments and allocations. Deposits are a separate ledger, never rent.
+
+/** A rent charge owed by one payer (tenant) under one contract. */
+export interface Charge {
+  id: string; // e.g. "vc-0102-10"
+  reference: string; // e.g. "VC-0102-10"
+  contractId: string;
+  payerId: string; // contact id of the tenant who owes it
+  concept: string;
+  period: string; // accrual month, yyyy-mm
+  dueDate: string; // ISO
+  amountCents: number; // original amount
+  voidReason?: string; // set => charge is "anulado"
+}
+
+/** Fictitious money received from a payer. Not an invoice. */
+export interface Payment {
+  id: string;
+  reference: string;
+  payerId: string;
+  contractId?: string; // contract the payer indicated, used for property scope
+  receivedOn: string; // ISO, cash date
+  amountCents: number;
+  note: string;
+}
+
+/** Part of a payment applied to a charge. Not a second cash inflow. */
+export interface Allocation {
+  id: string;
+  paymentId: string;
+  chargeId: string;
+  amountCents: number;
+}
+
+export interface DepositMovement {
+  id: string;
+  contractId: string;
+  partyId: string; // contact who contributes / receives back
+  kind: "recepcion" | "devolucion";
+  date: string; // ISO
+  amountCents: number;
+  note: string;
 }

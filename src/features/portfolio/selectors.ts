@@ -1,3 +1,4 @@
+import { pendingByRoom, pendingCents } from "@/features/money/selectors";
 import type { PortfolioDataset, Property, Room, RoomStatus } from "./data/types";
 
 export const ROOM_STATUSES: RoomStatus[] = ["ocupada", "disponible", "reservada", "bloqueada"];
@@ -28,9 +29,8 @@ export function summarizeOccupancy(rooms: Room[]): OccupancySummary {
   };
 }
 
-export function totalPending(data: PortfolioDataset): number {
-  return data.pendingBalances.reduce((sum, b) => sum + b.amount, 0);
-}
+/** Outstanding cents across all non-void charges (same source as Dinero). */
+export const totalPending = (data: PortfolioDataset): number => pendingCents(data);
 
 export const getProperty = (data: PortfolioDataset, id: string) =>
   data.properties.find((p) => p.id === id);
@@ -42,7 +42,7 @@ export const roomsOf = (data: PortfolioDataset, propertyId: string) =>
   data.rooms.filter((r) => r.propertyId === propertyId);
 
 export const pendingForRoom = (data: PortfolioDataset, roomId: string) =>
-  data.pendingBalances.filter((b) => b.roomId === roomId);
+  pendingByRoom(data).filter((b) => b.roomId === roomId);
 
 export const incidentsFor = (data: PortfolioDataset, propertyId: string, roomId?: string) =>
   data.incidents.filter(
