@@ -82,7 +82,8 @@ export function DashboardPage() {
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-status-reserved" aria-hidden="true" />
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">
-                  {i.title} <span className="font-normal text-muted-foreground">· desde {formatDate(i.openedOn)}</span>
+                  <Link to="/incidencias/$incidentId" params={{ incidentId: i.id }} className={linkClass}>{i.title}</Link>{" "}
+                  <span className="font-normal text-muted-foreground">· desde {formatDate(i.openedOn)}</span>
                 </p>
                 <p className="text-sm text-muted-foreground">{i.description}</p>
                 <PlaceLinks propertyId={i.propertyId} roomId={i.roomId} />
