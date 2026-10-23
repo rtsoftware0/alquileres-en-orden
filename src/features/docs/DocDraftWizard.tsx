@@ -146,9 +146,14 @@ export function DocDraftWizard() {
 
         {step === 1 && (
           <div className="grid gap-4">
-            <fieldset className="text-sm" aria-describedby={errors.visibility ? "visibility-error" : undefined}>
+            <fieldset
+              id="visibility" tabIndex={-1}
+              className="rounded-md text-sm focus:outline-2 focus:outline-ring"
+              aria-invalid={errors.visibility ? true : undefined}
+              aria-describedby={errors.visibility ? "visibility-error" : undefined}
+            >
               <legend className="mb-1 font-medium">Visibilidad de ejemplo</legend>
-              <div className="flex flex-col gap-2" id="visibility">
+              <div className="flex flex-col gap-2">
                 {(["interna", "compartida"] as DocVisibility[]).map((v) => (
                   <label key={v} className="flex items-start gap-2 rounded-md border border-border bg-card p-3">
                     <input
@@ -169,12 +174,17 @@ export function DocDraftWizard() {
             </fieldset>
 
             {values.visibility === "compartida" && (
-              <fieldset className="text-sm" aria-describedby={errors.recipients ? "recipients-error" : undefined}>
+              <fieldset
+                id="recipients" tabIndex={-1}
+                className="rounded-md text-sm focus:outline-2 focus:outline-ring"
+                aria-invalid={errors.recipients ? true : undefined}
+                aria-describedby={errors.recipients ? "recipients-error" : undefined}
+              >
                 <legend className="mb-1 font-medium">Destinatarios de ejemplo</legend>
                 {recipients.length === 0 ? (
                   <p className="text-xs text-muted-foreground">Este registro no tiene contactos relacionados disponibles como destinatarios.</p>
                 ) : (
-                  <div className="flex flex-col gap-2" id="recipients">
+                  <div className="flex flex-col gap-2">
                     {recipients.map((c) => (
                       <label key={c.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-3">
                         <input
