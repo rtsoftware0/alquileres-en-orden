@@ -13,7 +13,7 @@ export const bearerLabel: Record<Expense["bearer"], string> = {
 };
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
-const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 
 export const getExpense = (d: PortfolioDataset, id: string) => d.expenses.find((e) => e.id === id.toLowerCase());
