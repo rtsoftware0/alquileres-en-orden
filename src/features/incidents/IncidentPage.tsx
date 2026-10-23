@@ -114,7 +114,8 @@ function SimulationPanel({ incident }: { incident: Incident }) {
           <span className="block text-xs text-muted-foreground">Un presupuesto propuesto o aprobado no es un coste, un gasto ni un pago.</span>
         </p>
       )}
-      {sim.resolution && <p className="mt-2 text-sm">Resultado simulado: {sim.resolution}</p>}
+      {sim.resolution && <p className="mt-2 text-sm">Resultado de resolución simulado: {sim.resolution}</p>}
+      {sim.closure && <p className="mt-2 text-sm">Resultado de cierre simulado: {sim.closure}</p>}
 
       {sim.log.length > 0 && (
         <ul className="mt-4 divide-y divide-border text-sm" aria-label="Historial temporal simulado">
