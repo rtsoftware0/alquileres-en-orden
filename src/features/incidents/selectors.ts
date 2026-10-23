@@ -28,7 +28,7 @@ export const isOverdue = (d: PortfolioDataset, i: Incident) => !isFinalStatus(i.
 export const tasksOfIncident = (d: PortfolioDataset, incidentId: string) =>
   d.tasks.filter((t) => t.incidentId === incidentId).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
-const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 export interface IncidentQuery {
   q: string;
