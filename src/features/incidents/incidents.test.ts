@@ -120,6 +120,44 @@ describe("incident follow-up simulator", () => {
     expect(r.state.providerId).toBe("con-015");
   });
 
+  it("rejection blocks iniciar until a new budget version is approved", () => {
+    const r = applySimAction(data, initialSim(inc2), { type: "rechazar" });
+    if (!r.ok) throw new Error("expected ok");
+    // rejected budget: iniciar is not offered and is rejected by the engine
+    expect(availableActions(r.state)).toEqual(["presentar_presupuesto"]);
+    expect(applySimAction(data, r.state, { type: "iniciar" }).ok).toBe(false);
+    // new version + approval makes iniciar unnecessary: approval moves to en_curso
+    const p = applySimAction(data, r.state, { type: "presentar_presupuesto", amountCents: 12000 });
+    if (!p.ok) throw new Error("expected ok");
+    const a = applySimAction(data, p.state, { type: "aprobar" });
+    if (!a.ok) throw new Error("expected ok");
+    expect(a.state.status).toBe("en_curso");
+  });
+
+  it("iniciar without any budget is valid; resolving then closing keeps both results", () => {
+    let s = initialSim(inc3); // nueva, no budget ever
+    let r = applySimAction(data, s, { type: "asignar_proveedor", providerId: "con-012" });
+    if (!r.ok) throw new Error("expected ok");
+    s = r.state;
+    expect(availableActions(s)).toEqual(["presentar_presupuesto", "iniciar"]);
+    r = applySimAction(data, s, { type: "iniciar" });
+    if (!r.ok) throw new Error("expected ok");
+    s = r.state;
+    r = applySimAction(data, s, { type: "resolver", result: "Resultado A: caldera revisada." });
+    if (!r.ok) throw new Error("expected ok");
+    s = r.state;
+    r = applySimAction(data, s, { type: "cerrar", result: "Resultado B: cierre verificado." });
+    if (!r.ok) throw new Error("expected ok");
+    s = r.state;
+    // close result B is preserved separately; resolution A is not overwritten
+    expect(s.closure).toBe("Resultado B: cierre verificado.");
+    expect(s.resolution).toBe("Resultado A: caldera revisada.");
+    // reopening clears both results coherently
+    const re = applySimAction(data, s, { type: "reabrir", motive: "Vuelve el fallo (ejemplo)." });
+    if (!re.ok) throw new Error("expected ok");
+    expect([re.state.resolution, re.state.closure]).toEqual([undefined, undefined]);
+  });
+
   it("never mutates the dataset, money, occupancy or room status", () => {
     const before = JSON.stringify(data);
     let s = initialSim(inc2);
