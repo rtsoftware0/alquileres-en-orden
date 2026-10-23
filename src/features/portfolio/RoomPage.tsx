@@ -71,7 +71,7 @@ export function RoomPage({ room }: { room: Room }) {
             {pending.length > 0 && (
               <div className="mt-4 rounded-md bg-muted p-3 text-sm">
                 {pending.map((b) => (
-                  <p key={b.id}>Saldo pendiente de ejemplo: <strong className="tabular">{formatEUR(b.amount)}</strong> · {b.concept}</p>
+                  <p key={b.contractId}>Saldo pendiente de ejemplo: <strong className="tabular">{formatCents(b.cents)}</strong> · {b.concept}{" · "}<Link to="/dinero/inquilinos/$contactId" params={{ contactId: b.payerId }} search={{ contrato: b.contractId }} className="rounded-sm font-medium text-primary hover:underline">Ver cuenta del inquilino</Link></p>
                 ))}
               </div>
             )}

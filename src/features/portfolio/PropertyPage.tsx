@@ -8,7 +8,8 @@ import { StatusBadge } from "./components/StatusBadge";
 import { OccupancySummary } from "./components/OccupancySummary";
 import { Breadcrumbs, CarteraCrumb, PageHeader, Panel } from "@/features/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
-import { formatDate, formatEUR } from "@/lib/format";
+import { formatDate, formatEUR, formatMoney } from "@/lib/format";
+import { pendingCents } from "@/features/money/selectors";
 
 export function PropertyPage({ property }: { property: Property }) {
   const rooms = roomsOf(data, property.id);
@@ -32,6 +33,12 @@ export function PropertyPage({ property }: { property: Property }) {
             <Link to="/contactos/$contactId" params={{ contactId: property.ownerId }} className="rounded-sm text-sm font-medium text-primary hover:underline">
               {getContact(data, property.ownerId)?.name}
             </Link>
+          </Panel>
+          <Panel title="Dinero">
+            <p className="text-sm">
+              Pendiente de cobro de ejemplo: <strong className="tabular">{formatMoney(pendingCents(data, { propertyId: property.id }))}</strong>
+            </p>
+            <Link to="/dinero" search={{ inmueble: property.id }} className="mt-2 inline-block rounded-sm text-sm font-medium text-primary hover:underline">Ver dinero de {property.name}</Link>
           </Panel>
           {incidents.length > 0 && (
             <Panel title="Incidencias de ejemplo">

@@ -8,7 +8,8 @@ import { ContractStatusBadge } from "@/features/contracts/components/ContractSta
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatMoney } from "@/lib/format";
+import { hasTenantAccount, tenantAccount } from "@/features/money/selectors";
 
 export function ContactPage({ contact }: { contact: Contact }) {
   const contracts = contractsOfContact(data, contact.id);
@@ -54,6 +55,15 @@ export function ContactPage({ contact }: { contact: Contact }) {
               </ul>
             )}
           </Panel>
+          {hasTenantAccount(data, contact.id) && (
+            <Panel title="Dinero como inquilino">
+              <p className="text-sm">Pendiente de cobro de ejemplo: <strong className="tabular">{formatMoney(tenantAccount(data, contact.id).pendingCents)}</strong></p>
+              {contracts.some((x) => x.parts.includes("Avalista")) && (
+                <p className="mt-1 text-xs text-muted-foreground">Solo cuenta su deuda como inquilino; ser avalista no le atribuye la de otros contratos.</p>
+              )}
+              <Link to="/dinero/inquilinos/$contactId" params={{ contactId: contact.id }} className="mt-2 inline-block rounded-sm text-sm font-medium text-primary hover:underline">Ver cuenta del inquilino</Link>
+            </Panel>
+          )}
           {owned.length > 0 && (
             <Panel title="Inmuebles en propiedad">
               <ul className="space-y-1 text-sm">
