@@ -2,16 +2,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Search, SearchX } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
-import { EXPENSE_STATUSES, type ExpenseStatus, expenseBalance, expenseCategoriesOf, expenseStatusMeta as _x, expenseTotals, filterExpenses, providerAccountContacts } from "./expenses";
-import { expenseStatusMeta } from "./components/MoneyUi";
-import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag, PeriodPropertyFilters } from "./components/MoneyUi";
+import { EXPENSE_STATUSES, type ExpenseStatus, expenseBalance, expenseCategoriesOf, expenseTotals, filterExpenses, providerAccountContacts } from "./expenses";
+import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag, PeriodPropertyFilters, expenseStatusMeta } from "./components/MoneyUi";
 import { MoneyHeader, validateMoneySearch } from "./MoneySummaryPage";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-void _x;
 
 export interface ExpensesSearch {
   q?: string | undefined;
