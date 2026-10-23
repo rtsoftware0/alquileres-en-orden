@@ -6,7 +6,6 @@ const title = `Cuentas de inquilinos · ${site.name}`;
 const description = "Cuentas ficticias por inquilino con cargos, cobros y saldo.";
 
 export const Route = createFileRoute("/dinero/inquilinos/")({
-  
   head: () => ({
     meta: [
       { title }, { name: "description", content: description },
@@ -18,5 +17,5 @@ export const Route = createFileRoute("/dinero/inquilinos/")({
 });
 
 function R() {
-  return ;
+  return <TenantAccountsPage />;
 }

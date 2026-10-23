@@ -6,7 +6,6 @@ const title = `Simular un cobro · ${site.name}`;
 const description = "Simulación de un cobro hipotético. No se registra ningún cobro.";
 
 export const Route = createFileRoute("/dinero/simular")({
-  
   head: () => ({
     meta: [
       { title }, { name: "description", content: description },
@@ -18,5 +17,5 @@ export const Route = createFileRoute("/dinero/simular")({
 });
 
 function R() {
-  return ;
+  return <SimulatorPage />;
 }

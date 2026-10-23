@@ -6,7 +6,7 @@ const title = `Dinero · ${site.name}`;
 const description = "Resumen ficticio de pendiente de cobro, cobros de ejemplo y dinero sin asignar.";
 
 export const Route = createFileRoute("/dinero/")({
-  
+  validateSearch: validateMoneySearch,
   head: () => ({
     meta: [
       { title }, { name: "description", content: description },
@@ -18,5 +18,5 @@ export const Route = createFileRoute("/dinero/")({
 });
 
 function R() {
-  return validateSearch: validateMoneySearch,;
+  return <MoneySummaryPage search={Route.useSearch()} />;
 }

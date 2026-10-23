@@ -6,7 +6,7 @@ const title = `Vencimientos · ${site.name}`;
 const description = "Cargos de renta ficticios con importe original, asignado y pendiente.";
 
 export const Route = createFileRoute("/dinero/vencimientos/")({
-  
+  validateSearch: validateChargesSearch,
   head: () => ({
     meta: [
       { title }, { name: "description", content: description },
@@ -18,5 +18,5 @@ export const Route = createFileRoute("/dinero/vencimientos/")({
 });
 
 function R() {
-  return validateSearch: validateChargesSearch,;
+  return <ChargesPage search={Route.useSearch()} />;
 }

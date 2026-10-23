@@ -6,7 +6,7 @@ const title = `Fianzas · ${site.name}`;
 const description = "Fianzas ficticias previstas, recibidas y devueltas, separadas de la renta.";
 
 export const Route = createFileRoute("/dinero/fianzas/")({
-  
+  validateSearch: validateDepositsSearch,
   head: () => ({
     meta: [
       { title }, { name: "description", content: description },
@@ -18,5 +18,5 @@ export const Route = createFileRoute("/dinero/fianzas/")({
 });
 
 function R() {
-  return validateSearch: validateDepositsSearch,;
+  return <DepositsPage search={Route.useSearch()} />;
 }
