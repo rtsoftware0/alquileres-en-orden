@@ -79,21 +79,21 @@ export const demoDocuments: DemoDocument[] = [
   },
   {
     id: "doc-4",
-    title: "Factura de ejemplo GS-EJ-001",
-    category: "Factura",
+    title: "Resumen del gasto GS-EJ-001 (ejemplo)",
+    category: "Informe",
     author: "Reparaciones Ejemplo S.L.",
-    createdOn: "2026-10-12",
+    createdOn: "2026-10-19",
     link: { kind: "gasto", id: "gs-ej-001" },
     propertyId: "casa-olivo",
     visibility: "interna",
     recipientIds: [],
     versions: [
       {
-        version: 1, date: "2026-10-12", author: "Reparaciones Ejemplo S.L.",
-        note: "Factura ficticia asociada al gasto de ejemplo.",
+        version: 1, date: "2026-10-19", author: "Reparaciones Ejemplo S.L.",
+        note: "Resumen ficticio del gasto de ejemplo ya existente.",
         content:
-          "Contenido de ejemplo. Factura ficticia por la reparación de la persiana en OLI-01 por 120,00 €, pendiente de pago. " +
-          "No es una factura real ni un justificante descargable.",
+          "Contenido de ejemplo. Resumen ficticio del gasto preexistente GS-EJ-001 por 120,00 €, pendiente de pago. " +
+          "No afirma que la reparación se haya ejecutado ni que el presupuesto esté aprobado; no es una factura ni un justificante descargable.",
       },
     ],
   },
