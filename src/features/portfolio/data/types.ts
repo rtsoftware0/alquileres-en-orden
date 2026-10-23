@@ -23,14 +23,59 @@ export interface Room {
   statusNote?: string; // context for reservada / bloqueada / disponible
 }
 
+export type IncidentStatus = "nueva" | "en_revision" | "asignada" | "pendiente_aprobacion" | "en_curso" | "resuelta" | "cerrada";
+export type IncidentPriority = "baja" | "media" | "alta";
+
+/** Example budget: proposed/approved/rejected is never a cost, expense or payment. */
+export interface IncidentBudget {
+  amountCents: number;
+  status: "propuesto" | "aprobado" | "rechazado";
+  version: number;
+  note?: string;
+}
+
+export interface IncidentResolution {
+  text: string;
+  date: string; // ISO
+  costCents?: number; // final cost, separate from the budget
+}
+
+export interface IncidentNote {
+  date: string; // ISO
+  text: string;
+}
+
 export interface Incident {
   id: string;
   propertyId: string;
   roomId?: string;
-  providerId?: string; // contact id
+  providerId?: string; // contact id with role "proveedor"; never an access account
   title: string;
   description: string;
   openedOn: string; // ISO
+  category: string;
+  priority: IncidentPriority;
+  status: IncidentStatus;
+  assigneeName: string; // internal responsible; the demo has a single fictitious admin
+  targetDate: string; // ISO goal; overdue derives from it vs the reference date
+  history: IncidentNote[];
+  internalNotes: IncidentNote[]; // read-only, never sent anywhere
+  budget?: IncidentBudget;
+  resolution?: IncidentResolution;
+  linkedExpenseId?: string; // pre-existing fictitious expense, never created by simulation
+}
+
+export type TaskStatus = "pendiente" | "completada";
+
+export interface Task {
+  id: string;
+  title: string;
+  dueDate: string; // ISO
+  status: TaskStatus;
+  assigneeName: string;
+  origin: string; // e.g. "Incidencia INC-…" or "Tarea independiente"
+  incidentId?: string;
+  result?: string; // completion note (fictitious)
 }
 
 export type ContactType = "persona" | "empresa";
@@ -79,6 +124,7 @@ export interface PortfolioDataset {
   properties: Property[];
   rooms: Room[];
   incidents: Incident[];
+  tasks: Task[];
   contacts: Contact[];
   contracts: Contract[];
   charges: Charge[];
