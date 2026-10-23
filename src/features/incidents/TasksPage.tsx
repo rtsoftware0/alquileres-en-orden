@@ -40,7 +40,11 @@ export function TasksPage({ search }: { search: TasksSearch }) {
 
   const complete = (id: string) => {
     const r = (draft[id] ?? "").trim();
-    if (!r) { setErr((e) => ({ ...e, [id]: "Indica el resultado para completar la tarea." })); return; }
+    if (!r) {
+      setErr((e) => ({ ...e, [id]: "Indica el resultado para completar la tarea." }));
+      document.getElementById(`res-${id}`)?.focus();
+      return;
+    }
     setErr((e) => { const n = { ...e }; delete n[id]; return n; });
     setDone((d) => ({ ...d, [id]: r }));
   };

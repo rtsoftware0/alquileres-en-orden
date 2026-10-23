@@ -1,4 +1,4 @@
-import type { Incident, IncidentPriority, IncidentStatus, PortfolioDataset, Task } from "@/features/portfolio/data/types";
+import type { Incident, IncidentPriority, IncidentStatus, PortfolioDataset, Task, TaskStatus } from "@/features/portfolio/data/types";
 
 // Incident and task selectors. "Retrasada" derives from the fixed reference
 // date and a non-final status; it is a condition, never stored.
