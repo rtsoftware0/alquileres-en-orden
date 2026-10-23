@@ -85,6 +85,9 @@ export interface PortfolioDataset {
   payments: Payment[];
   allocations: Allocation[];
   depositMovements: DepositMovement[];
+  expenses: Expense[];
+  expenseShares: ExpenseShare[];
+  expensePayments: ExpensePayment[];
 }
 
 // --- Money (demo). Balances are never stored: they derive from charges,
@@ -128,6 +131,46 @@ export interface DepositMovement {
   partyId: string; // contact who contributes / receives back
   kind: "recepcion" | "devolucion";
   date: string; // ISO
+  amountCents: number;
+  note: string;
+}
+
+// --- Expenses (demo). Separate synthetic ledger: never netted against
+// tenant debt, never rent, never a deposit. Payments are separate records
+// with their own date; balances always derive.
+
+/** Who bears the cost. "inquilino" shares are only simulated assignments. */
+export type ExpenseBearer = "operador" | "propietario" | "inquilino";
+
+export interface Expense {
+  id: string; // e.g. "gs-ej-001"
+  reference: string; // e.g. "GS-EJ-001"
+  concept: string;
+  providerId: string; // contact with role "proveedor"
+  propertyId: string;
+  category: string;
+  period: string; // expense month, yyyy-mm
+  date: string; // ISO, expense date
+  dueDate: string; // ISO, payment due date
+  amountCents: number;
+  bearer: ExpenseBearer;
+  note?: string;
+}
+
+/** Simulated cost assignment to rooms. Never creates tenant charges. */
+export interface ExpenseShare {
+  id: string;
+  expenseId: string;
+  roomId: string;
+  amountCents: number;
+}
+
+/** Fictitious money paid to a provider. Separate record, own date. */
+export interface ExpensePayment {
+  id: string;
+  reference: string; // e.g. "PG-EJ-001"
+  expenseId: string;
+  date: string; // ISO, cash out date
   amountCents: number;
   note: string;
 }
