@@ -235,7 +235,3 @@ export function IncidentPage({ incident }: { incident: Incident }) {
     </>
   );
 }
-
-// re-export for tests
-export { incidentStatusMeta };
-export const _cn = cn;
