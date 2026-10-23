@@ -125,6 +125,7 @@ export function MoneySummaryPage({ search }: { search: MoneySearch }) {
       <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <Link to="/dinero/simular" className={linkClass}>Simular un cobro <ArrowRight className="inline h-3.5 w-3.5" aria-hidden="true" /></Link>
         <Link to="/dinero/inquilinos" className={linkClass}>Cuentas de inquilinos <ArrowRight className="inline h-3.5 w-3.5" aria-hidden="true" /></Link>
+        <Link to="/dinero/gastos" className={linkClass}>Gastos y proveedores <ArrowRight className="inline h-3.5 w-3.5" aria-hidden="true" /></Link>
       </div>
     </>
   );

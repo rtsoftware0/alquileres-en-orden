@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { AlertCircle, Ban, CheckCircle2, CircleDashed, CircleDot, FlaskConical, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import type { ChargeStatus, DepositStatus } from "../selectors";
+import type { ExpenseStatus } from "../expenses";
 import { capitalize, periodLabel, periodsOf } from "../selectors";
 import { fieldClass } from "@/features/layout/ui";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ const tabs = [
   { to: "/dinero/inquilinos", label: "Cuentas de inquilinos", exact: false },
   { to: "/dinero/simular", label: "Simular un cobro", exact: false },
   { to: "/dinero/fianzas", label: "Fianzas", exact: false },
+  { to: "/dinero/gastos", label: "Gastos", exact: false },
 ] as const;
 
 export function MoneyNav() {
@@ -71,6 +73,18 @@ export const depositStatusMeta: Record<DepositStatus, { label: string; className
 export function DepositStatusBadge({ status }: { status: DepositStatus }) {
   const m = depositStatusMeta[status];
   return <span className={cn(badge, m.className)}>{m.label}</span>;
+}
+
+export const expenseStatusMeta: Record<ExpenseStatus, { label: string; className: string; icon: typeof CircleDot }> = {
+  pendiente: { label: "Pendiente", icon: CircleDashed, className: "text-status-reserved bg-status-reserved/10 border-status-reserved/25" },
+  parcial: { label: "Parcial", icon: CircleDot, className: "text-status-available bg-status-available/10 border-status-available/25" },
+  pagado: { label: "Pagado", icon: CheckCircle2, className: "text-status-occupied bg-status-occupied/10 border-status-occupied/25" },
+};
+
+export function ExpenseStatusBadge({ status }: { status: ExpenseStatus }) {
+  const m = expenseStatusMeta[status];
+  const Icon = m.icon;
+  return <span className={cn(badge, m.className)}><Icon className="h-3.5 w-3.5" aria-hidden="true" />{m.label}</span>;
 }
 
 /** A figure that always says what it measures. */

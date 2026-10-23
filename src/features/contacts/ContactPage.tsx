@@ -10,6 +10,7 @@ import { linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
 import { hasTenantAccount, tenantAccount } from "@/features/money/selectors";
+import { hasProviderAccount, providerAccount } from "@/features/money/expenses";
 
 export function ContactPage({ contact }: { contact: Contact }) {
   const contracts = contractsOfContact(data, contact.id);
@@ -62,6 +63,12 @@ export function ContactPage({ contact }: { contact: Contact }) {
                 <p className="mt-1 text-xs text-muted-foreground">Solo cuenta su deuda como inquilino; ser avalista no le atribuye la de otros contratos.</p>
               )}
               <Link to="/dinero/inquilinos/$contactId" params={{ contactId: contact.id }} className="mt-2 inline-block rounded-sm text-sm font-medium text-primary hover:underline">Ver cuenta del inquilino</Link>
+            </Panel>
+          )}
+          {hasProviderAccount(data, contact.id) && (
+            <Panel title="Dinero como proveedor">
+              <p className="text-sm">Pendiente a este proveedor (ejemplo): <strong className="tabular">{formatMoney(providerAccount(data, contact.id).pendingCents)}</strong></p>
+              <Link to="/dinero/proveedores/$contactId" params={{ contactId: contact.id }} className="mt-2 inline-block rounded-sm text-sm font-medium text-primary hover:underline">Ver cuenta de proveedor</Link>
             </Panel>
           )}
           {owned.length > 0 && (

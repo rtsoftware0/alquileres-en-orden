@@ -2,6 +2,7 @@ import type { PortfolioDataset, Room } from "./types";
 import { demoContacts } from "@/features/contacts/data/demo-contacts";
 import { demoContracts } from "@/features/contracts/data/demo-contracts";
 import { demoAllocations, demoCharges, demoDepositMovements, demoPayments } from "@/features/money/data/demo-money";
+import { demoExpensePayments, demoExpenseShares, demoExpenses } from "@/features/money/data/demo-expenses";
 
 // Fictitious demonstration data. No real people, addresses or payments.
 
@@ -95,4 +96,7 @@ export const demoPortfolio: PortfolioDataset = {
   payments: demoPayments,
   allocations: demoAllocations,
   depositMovements: demoDepositMovements,
+  expenses: demoExpenses,
+  expenseShares: demoExpenseShares,
+  expensePayments: demoExpensePayments,
 };

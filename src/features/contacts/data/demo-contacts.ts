@@ -34,4 +34,8 @@ export const demoContacts: Contact[] = [
     note: "Candidato con reserva de ejemplo en OLI-06.",
   },
   { id: "con-014", code: "CON-014", name: "Ana Borrador Ejemplo", type: "persona", roles: ["candidato"], email: mail("ana.borrador") },
+  {
+    id: "con-015", code: "CON-015", name: "Limpieza Modelo S.L.", type: "empresa", roles: ["proveedor"], email: mail("limpieza.modelo"),
+    note: "Proveedora de limpieza de ejemplo en Casa Azahar.",
+  },
 ];
