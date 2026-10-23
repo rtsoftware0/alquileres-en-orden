@@ -8,6 +8,7 @@ export interface SimState {
   providerId?: string | undefined;
   budget?: { amountCents: number; status: "propuesto" | "aprobado" | "rechazado"; version: number } | undefined;
   resolution?: string | undefined;
+  closure?: string | undefined; // close result, kept separate from the resolution result
   log: string[]; // temporary history entries, clearly marked as simulated
 }
 
@@ -59,6 +60,9 @@ export function applySimAction(d: PortfolioDataset, s: SimState, a: SimAction): 
     }
     case "iniciar": {
       if (s.status !== "asignada") return fail("Solo se puede pasar a en curso desde asignada.");
+      // Starting without a budget is only allowed when none was ever presented.
+      // A rejected or proposed budget requires a new version and its approval.
+      if (s.budget) return fail("El presupuesto fue rechazado: presenta una nueva versión y apruébala antes de iniciar.");
       return { ok: true, state: { ...s, status: "en_curso" }, entry: "Trabajos iniciados (simulado)." };
     }
     case "resolver": {
@@ -69,12 +73,13 @@ export function applySimAction(d: PortfolioDataset, s: SimState, a: SimAction): 
     case "cerrar": {
       if (s.status !== "resuelta") return fail("Solo se puede cerrar una incidencia resuelta.");
       if (!a.result.trim()) return fail("Indica el resultado para cerrar.");
-      return { ok: true, state: { ...s, status: "cerrada", resolution: s.resolution ?? a.result.trim() }, entry: "Incidencia cerrada (simulado). No cambia el estado de ninguna habitación." };
+      // The close result is kept separately: it never overwrites the resolution result.
+      return { ok: true, state: { ...s, status: "cerrada", closure: a.result.trim() }, entry: `Incidencia cerrada (simulado). Resultado de cierre: ${a.result.trim()}. No cambia el estado de ninguna habitación.` };
     }
     case "reabrir": {
       if (s.status !== "resuelta" && s.status !== "cerrada") return fail("Solo se puede reabrir una incidencia resuelta o cerrada.");
       if (!a.motive.trim()) return fail("Indica el motivo de la reapertura.");
-      return { ok: true, state: { ...s, status: "en_revision", resolution: undefined }, entry: `Reabierta (simulado). Motivo: ${a.motive.trim()}` };
+      return { ok: true, state: { ...s, status: "en_revision", resolution: undefined, closure: undefined }, entry: `Reabierta (simulado). Motivo: ${a.motive.trim()}` };
     }
   }
 }
@@ -84,7 +89,7 @@ export function availableActions(s: SimState): SimAction["type"][] {
   switch (s.status) {
     case "nueva":
     case "en_revision": return ["asignar_proveedor"];
-    case "asignada": return ["presentar_presupuesto", "iniciar"];
+    case "asignada": return s.budget ? ["presentar_presupuesto"] : ["presentar_presupuesto", "iniciar"];
     case "pendiente_aprobacion": return ["aprobar", "rechazar"];
     case "en_curso": return ["resolver"];
     case "resuelta": return ["cerrar", "reabrir"];
