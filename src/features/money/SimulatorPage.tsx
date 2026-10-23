@@ -113,7 +113,8 @@ export function SimulatorPage() {
             {getContact(data, form.payerId)?.name} · {selected?.reference} · {selected?.concept}. Ningún listado ni saldo ha cambiado.
           </p>
           <div className="overflow-x-auto">
-            <table className="tabular w-full text-sm">
+            <table className="tabular w-full table-fixed text-sm">
+              <colgroup><col className="w-[44%]" /><col className="w-[28%]" /><col className="w-[28%]" /></colgroup>
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th scope="col" className="py-2 font-medium">Concepto</th>
