@@ -17,3 +17,4 @@
 - Money is stored as integer cents and dates as ISO calendar strings with check-out excluded; date math uses UTC helpers in `src/lib/format.ts`. Why: avoids rounding and timezone day shifts.
 - Demo forms keep state only in React memory (no URL, storage or network). Why: demo must never persist or simulate saving.
 - Shared app shell (sidebar + mobile menu + demo notice) lives in `src/features/layout/` and wraps `<Outlet />` in `__root.tsx`. Why: one layout for all screens.
+- Money (`src/features/money/`): balances are never stored; they derive in `money/selectors.ts` from charges, payments and allocations, and Inicio/Cartera read pending through the same selectors. The simulator (`money/simulator.ts`) is pure and never mutates data. Deposits are a separate ledger. Why: one source of truth, ready to swap for a real data source.
