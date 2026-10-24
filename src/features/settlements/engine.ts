@@ -1,5 +1,6 @@
 import type { Calculation, CloseReview, Context, OwnerPayment, Rules, Settlement, Source, State, Version } from './types';
 import { contexts } from './data/examples';
+import {validCivilDate} from './adapters';
 export const initialSettlements=():State=>({settlements:[],payments:[],closings:{},history:[],operations:{},nextId:1});
 export function defaultRules(c:Context):Rules{return {model:c.model,feeKind:'porcentaje',feeValue:1000,fixedCents:c.fixedCents,priorCents:0,adjustmentCents:0,adjustmentReason:'',participants:c.participants.map(p=>({...p}))};}
 const cents=(n:number)=>Number.isSafeInteger(n);
@@ -7,7 +8,7 @@ export function rulesErrors(source:Source,r:Rules):Record<string,string> {
  const e:Record<string,string>={};
  if(source.invalid.length)e['rules']=source.invalid.join(' · ');
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(source.month))e['month']='Elige un mes válido.';
- for(const l of source.lines)if(!cents(l.cents)||l.cents<0)e['rules']='Hay importes inválidos en las fuentes.';
+ for(const l of source.lines)if(!cents(l.cents)||l.cents<0||!validCivilDate(l.date))e['rules']='Hay importes o fechas inválidos en las fuentes.';
  if(!['propio','agencia','renta_fija'].includes(r.model))e['model']='Elige un modelo.';
  if(r.model==='agencia'&&(!cents(r.feeValue)||r.feeValue<0||r.feeKind==='porcentaje'&&r.feeValue>10000))e['feeValue']='Honorario no negativo; porcentaje entre 0 y 100.';
  if(r.model==='renta_fija'&&(!cents(r.fixedCents)||r.fixedCents<=0))e['fixedCents']='Indica la obligación fija de ejemplo, positiva; no hay acuerdo base inferido.';

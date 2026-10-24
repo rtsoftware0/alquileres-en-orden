@@ -5,10 +5,22 @@ import { chargeBalance, moneySummary } from '@/features/money/selectors';
 import { contexts, exampleLines } from './data/examples';
 import type { CloseReview, Source, SourceLine, State } from './types';
 const sum=(xs:number[])=>xs.reduce((a,b)=>a+b,0);
+export function validCivilDate(date:string){const parsed=new Date(`${date}T00:00:00Z`);return /^\d{4}-\d{2}-\d{2}$/.test(date)&&!Number.isNaN(parsed.getTime())&&parsed.toISOString().slice(0,10)===date;}
+export function validatePortfolio(d:PortfolioDataset):string[]{
+ const errors:string[]=[];
+ for(const rows of [d.properties,d.contracts,d.charges,d.payments,d.allocations,d.expenses,d.expensePayments,d.depositMovements])if(new Set(rows.map(x=>x.id)).size!==rows.length)errors.push('Identificadores de fuente duplicados');
+ for(const p of d.payments){if(!validCivilDate(p.receivedOn)||!Number.isSafeInteger(p.amountCents)||p.amountCents<=0)errors.push(`Cobro inválido ${p.id}`);if(p.contractId&&!d.contracts.some(c=>c.id===p.contractId))errors.push(`Contrato de cobro inválido ${p.id}`);const assigned=sum(d.allocations.filter(a=>a.paymentId===p.id).map(a=>a.amountCents));if(assigned>p.amountCents)errors.push(`Cobro sobreasignado ${p.id}`);}
+ for(const ch of d.charges)if(!validCivilDate(ch.dueDate)||!/^\d{4}-(0[1-9]|1[0-2])$/.test(ch.period)||!Number.isSafeInteger(ch.amountCents)||ch.amountCents<=0||!d.contracts.some(c=>c.id===ch.contractId))errors.push(`Cargo inválido ${ch.id}`);
+ for(const a of d.allocations){const p=d.payments.find(p=>p.id===a.paymentId);const ch=d.charges.find(c=>c.id===a.chargeId);if(!p||!ch||!Number.isSafeInteger(a.amountCents)||a.amountCents<=0||p.payerId!==ch.payerId||p.contractId&&p.contractId!==ch.contractId)errors.push(`Asignación incompatible ${a.id}`);}
+ for(const e of d.expenses)if(!validCivilDate(e.date)||!validCivilDate(e.dueDate)||!/^\d{4}-(0[1-9]|1[0-2])$/.test(e.period)||!Number.isSafeInteger(e.amountCents)||e.amountCents<=0||!d.properties.some(p=>p.id===e.propertyId))errors.push(`Gasto inválido ${e.id}`);
+ for(const p of d.expensePayments){const e=d.expenses.find(e=>e.id===p.expenseId);if(!e||!validCivilDate(p.date)||!Number.isSafeInteger(p.amountCents)||p.amountCents<=0||sum(d.expensePayments.filter(x=>x.expenseId===p.expenseId).map(x=>x.amountCents))>(e?.amountCents??0))errors.push(`Pago proveedor inválido ${p.id}`);}
+ for(const p of d.depositMovements)if(!validCivilDate(p.date)||!Number.isSafeInteger(p.amountCents)||p.amountCents<=0||!d.contracts.some(c=>c.id===p.contractId))errors.push(`Fianza inválida ${p.id}`);
+ return [...new Set(errors)];
+}
 export function sourceFor(d:PortfolioDataset,contextId:string,month:string):Source {
  const context=contexts.find(c=>c.id===contextId);if(!context)throw new Error('Elige un activo de ejemplo.');
  if(context.scope==='didactico') {const lines=exampleLines(contextId,month);return {contextId,month,lines,accrualCents:contextId==='a16'?sum(lines.filter(l=>l.kind==='renta').map(l=>l.cents)):0,cashCents:sum(lines.filter(l=>l.kind==='renta'||l.kind==='libre').map(l=>l.cents)),costCents:sum(lines.filter(l=>l.kind==='gasto').map(l=>l.cents)),paidCostCents:0,invalid:[]};}
- const lines:SourceLine[]=[];const invalid:string[]=[];
+ const lines:SourceLine[]=[];const invalid:string[]=validatePortfolio(d);
  for(const a of d.allocations){const p=d.payments.find(x=>x.id===a.paymentId);const ch=d.charges.find(x=>x.id===a.chargeId);const ct=d.contracts.find(x=>x.id===ch?.contractId);
  if(!p||!ch||!ct){invalid.push(`Asignación ${a.id} con relación inválida`);continue;}
  if(ct.propertyId===context.propertyId&&!ch.voidReason&&p.receivedOn.slice(0,7)===month)lines.push({id:a.id,label:`${p.reference} → ${ch.reference} · recibido ${p.receivedOn}`,cents:a.amountCents,period:ch.period,date:p.receivedOn,kind:'renta',assigned:true,link:{kind:'cargo',id:ch.id}});
@@ -36,8 +48,10 @@ export function closeReview(d:PortfolioDataset,bank:BankState,s:State,month:stri
  if(current.some(x=>x.versions.at(-1)?.status!=='aprobado'))issues.push('Hay liquidaciones temporales sin aprobar');
  if(!current.length)issues.push('No hay liquidaciones preparadas para este mes');
  const invalid=[...new Set(sources.flatMap(x=>x.invalid))];
+ for(const m of rows){if(!validCivilDate(m.date)||!Number.isSafeInteger(m.cents)||m.currency!=='EUR'||movementRemaining(bank,m)<0)invalid.push(`Movimiento bancario inválido ${m.id}`);}
+ for(const l of bank.links.filter(l=>l.active&&rows.some(m=>m.id===l.movementId))){const m=rows.find(m=>m.id===l.movementId);const r=bank.records.find(r=>r.id===l.recordId);if(!m||!r||!Number.isSafeInteger(l.cents)||l.cents<=0||m.accountId!==r.accountId||m.scope!==r.scope||m.kind!==r.kind||Math.sign(m.cents)!==Math.sign(r.cents)||bank.links.filter(x=>x.active&&x.recordId===r.id).reduce((n,x)=>n+x.cents,0)>Math.abs(r.cents))invalid.push(`Vínculo bancario inválido ${l.id}`);}
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))invalid.push('Mes inválido');
- for(const source of sources)for(const l of source.lines)if(!Number.isSafeInteger(l.cents)||l.cents<0||!/^\d{4}-\d{2}-\d{2}$/.test(l.date))invalid.push(`Línea inválida ${l.id}`);
+ for(const source of sources)for(const l of source.lines)if(!Number.isSafeInteger(l.cents)||l.cents<0||!validCivilDate(l.date))invalid.push(`Línea inválida ${l.id}`);
  const scopedLinks=bank.links.filter(l=>rows.some(m=>m.id===l.movementId));
  const adjustmentsCents=sum(current.map(x=>x.versions.at(-1)?.rules.adjustmentCents??0));
  if(adjustmentsCents)issues.push('Ajustes manuales de liquidaciones a reconocer');
