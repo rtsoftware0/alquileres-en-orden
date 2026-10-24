@@ -1,3 +1,8 @@
+# Bloque visual 09
+- [ ] Proyecciones económicas, cálculos, versiones, pagos y cierre temporal con pruebas
+- [ ] Liquidaciones, preparación, detalle/versiones, informes y cierre mensual
+- [ ] Integración, navegador escritorio/móvil, capturas y regresión
+
 # Bloque visual 08
 - [x] Revisión acotada: CSV cruzado, cuenta conservada, HIP únicas y mensajes por tipo; pruebas y navegador afectados
 - [x] Motor de CSV, identidad de lotes y conciliación temporal con pruebas
