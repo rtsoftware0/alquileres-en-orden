@@ -1,0 +1,9 @@
+# Bloque visual 09 — comprobación del prototipo
+
+- Rutas: `/dinero/liquidaciones`, `/dinero/liquidaciones/preparar`, `/dinero/liquidaciones/$settlementId`, `/dinero/informes`, `/dinero/cierre`.
+- Código separado en este directorio; datos didácticos en `data/examples.ts`, adaptadores de lectura en `adapters.ts`, cálculo y transiciones puras en `engine.ts`, importes exactos en `amount.ts`, estado temporal en `SettlementContext.tsx`.
+- Regresión final: `bunx vitest run`, 12 archivos y 152 pruebas aprobadas. Compilación y comprobación automática: último registro `build OK` del 24/10/2026 a las 13:23:59 UTC.
+- Navegador: recorridos completos y adicionales aprobados en escritorio 1440×900 y móvil 390×844, sin errores de consola y sin desbordamiento horizontal. Scripts y capturas de verificación bajo `/tmp/browser/b09/`.
+- Recorridos: A15 850 €, A16 margen 600 € / obligación 1.500 €, copropiedad 425+425 con honorario único, pagos parciales y repetidos, corrección con excedente y bloqueo de nuevos pagos, versiones históricas, reconocimiento de pendientes y foco, cierre/reapertura, revisión obsoleta tras navegación, filtros, enlaces owner/lessor, reinicio y recarga.
+- Integridad verificada: cartera ficticia y saldos previos intactos; deuda 1.400 €, cobros 4.720 € = 4.690 € asignados + 30 € libres, gastos 540 € / pagos 170 € / pendiente 370 €, 15 contactos y 12 contratos, AZA-06 bloqueada. Fianzas y cuenta bancaria didáctica excluidas de liquidaciones y cierre de cartera.
+- El reinicio solo limpia el escenario09; recargar elimina la memoria temporal. No hay guardado operativo, backend, conexión bancaria, autorización real, concurrencia, transferencias, exportación, fiscalidad automática ni publicación. No se inició bloque10.

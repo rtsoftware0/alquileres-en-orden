@@ -17,6 +17,9 @@ const tabs = [
   { to: "/dinero/fianzas", label: "Fianzas", exact: false },
   { to: "/dinero/gastos", label: "Gastos", exact: false },
   { to: "/dinero/banco", label: "Banco", exact: false },
+  { to: "/dinero/liquidaciones", label: "Liquidaciones", exact: false },
+  { to: "/dinero/informes", label: "Informes", exact: false },
+  { to: "/dinero/cierre", label: "Cierre mensual", exact: false },
 ] as const;
 
 export function MoneyNav() {

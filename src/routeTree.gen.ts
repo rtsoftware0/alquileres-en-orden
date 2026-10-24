@@ -19,6 +19,8 @@ import { Route as ContratosIndexRouteImport } from './routes/contratos.index'
 import { Route as ContratosContractIdRouteImport } from './routes/contratos.$contractId'
 import { Route as ContratosBorradorRouteImport } from './routes/contratos.borrador'
 import { Route as DineroIndexRouteImport } from './routes/dinero.index'
+import { Route as DineroCierreRouteImport } from './routes/dinero.cierre'
+import { Route as DineroInformesRouteImport } from './routes/dinero.informes'
 import { Route as DineroSimularRouteImport } from './routes/dinero.simular'
 import { Route as DocumentosIndexRouteImport } from './routes/documentos.index'
 import { Route as DocumentosDocumentIdRouteImport } from './routes/documentos.$documentId'
@@ -47,6 +49,9 @@ import { Route as DineroGastosPrepararRouteImport } from './routes/dinero.gastos
 import { Route as DineroGastosSimularPagoRouteImport } from './routes/dinero.gastos.simular-pago'
 import { Route as DineroInquilinosIndexRouteImport } from './routes/dinero.inquilinos.index'
 import { Route as DineroInquilinosContactIdRouteImport } from './routes/dinero.inquilinos.$contactId'
+import { Route as DineroLiquidacionesIndexRouteImport } from './routes/dinero.liquidaciones.index'
+import { Route as DineroLiquidacionesSettlementIdRouteImport } from './routes/dinero.liquidaciones.$settlementId'
+import { Route as DineroLiquidacionesPrepararRouteImport } from './routes/dinero.liquidaciones.preparar'
 import { Route as DineroProveedoresIndexRouteImport } from './routes/dinero.proveedores.index'
 import { Route as DineroProveedoresContactIdRouteImport } from './routes/dinero.proveedores.$contactId'
 import { Route as DineroVencimientosIndexRouteImport } from './routes/dinero.vencimientos.index'
@@ -102,6 +107,16 @@ const ContratosBorradorRoute = ContratosBorradorRouteImport.update({
 const DineroIndexRoute = DineroIndexRouteImport.update({
   id: '/dinero/',
   path: '/dinero/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DineroCierreRoute = DineroCierreRouteImport.update({
+  id: '/dinero/cierre',
+  path: '/dinero/cierre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DineroInformesRoute = DineroInformesRouteImport.update({
+  id: '/dinero/informes',
+  path: '/dinero/informes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DineroSimularRoute = DineroSimularRouteImport.update({
@@ -249,6 +264,24 @@ const DineroInquilinosContactIdRoute =
     path: '/dinero/inquilinos/$contactId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DineroLiquidacionesIndexRoute =
+  DineroLiquidacionesIndexRouteImport.update({
+    id: '/dinero/liquidaciones/',
+    path: '/dinero/liquidaciones/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DineroLiquidacionesSettlementIdRoute =
+  DineroLiquidacionesSettlementIdRouteImport.update({
+    id: '/dinero/liquidaciones/$settlementId',
+    path: '/dinero/liquidaciones/$settlementId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DineroLiquidacionesPrepararRoute =
+  DineroLiquidacionesPrepararRouteImport.update({
+    id: '/dinero/liquidaciones/preparar',
+    path: '/dinero/liquidaciones/preparar',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DineroProveedoresIndexRoute = DineroProveedoresIndexRouteImport.update({
   id: '/dinero/proveedores/',
   path: '/dinero/proveedores/',
@@ -290,6 +323,8 @@ export interface FileRoutesByFullPath {
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
+  '/dinero/cierre': typeof DineroCierreRoute
+  '/dinero/informes': typeof DineroInformesRoute
   '/dinero/simular': typeof DineroSimularRoute
   '/documentos/$documentId': typeof DocumentosDocumentIdRoute
   '/documentos/preparar': typeof DocumentosPrepararRoute
@@ -319,6 +354,8 @@ export interface FileRoutesByFullPath {
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
   '/dinero/gastos/simular-pago': typeof DineroGastosSimularPagoRoute
   '/dinero/inquilinos/$contactId': typeof DineroInquilinosContactIdRoute
+  '/dinero/liquidaciones/$settlementId': typeof DineroLiquidacionesSettlementIdRoute
+  '/dinero/liquidaciones/preparar': typeof DineroLiquidacionesPrepararRoute
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId/borrador': typeof SolicitudesApplicationIdBorradorRoute
@@ -326,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/dinero/fianzas/': typeof DineroFianzasIndexRoute
   '/dinero/gastos/': typeof DineroGastosIndexRoute
   '/dinero/inquilinos/': typeof DineroInquilinosIndexRoute
+  '/dinero/liquidaciones/': typeof DineroLiquidacionesIndexRoute
   '/dinero/proveedores/': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos/': typeof DineroVencimientosIndexRoute
   '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
@@ -336,6 +374,8 @@ export interface FileRoutesByTo {
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
+  '/dinero/cierre': typeof DineroCierreRoute
+  '/dinero/informes': typeof DineroInformesRoute
   '/dinero/simular': typeof DineroSimularRoute
   '/documentos/$documentId': typeof DocumentosDocumentIdRoute
   '/documentos/preparar': typeof DocumentosPrepararRoute
@@ -365,6 +405,8 @@ export interface FileRoutesByTo {
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
   '/dinero/gastos/simular-pago': typeof DineroGastosSimularPagoRoute
   '/dinero/inquilinos/$contactId': typeof DineroInquilinosContactIdRoute
+  '/dinero/liquidaciones/$settlementId': typeof DineroLiquidacionesSettlementIdRoute
+  '/dinero/liquidaciones/preparar': typeof DineroLiquidacionesPrepararRoute
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId/borrador': typeof SolicitudesApplicationIdBorradorRoute
@@ -372,6 +414,7 @@ export interface FileRoutesByTo {
   '/dinero/fianzas': typeof DineroFianzasIndexRoute
   '/dinero/gastos': typeof DineroGastosIndexRoute
   '/dinero/inquilinos': typeof DineroInquilinosIndexRoute
+  '/dinero/liquidaciones': typeof DineroLiquidacionesIndexRoute
   '/dinero/proveedores': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos': typeof DineroVencimientosIndexRoute
   '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
@@ -383,6 +426,8 @@ export interface FileRoutesById {
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
+  '/dinero/cierre': typeof DineroCierreRoute
+  '/dinero/informes': typeof DineroInformesRoute
   '/dinero/simular': typeof DineroSimularRoute
   '/documentos/$documentId': typeof DocumentosDocumentIdRoute
   '/documentos/preparar': typeof DocumentosPrepararRoute
@@ -412,6 +457,8 @@ export interface FileRoutesById {
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
   '/dinero/gastos/simular-pago': typeof DineroGastosSimularPagoRoute
   '/dinero/inquilinos/$contactId': typeof DineroInquilinosContactIdRoute
+  '/dinero/liquidaciones/$settlementId': typeof DineroLiquidacionesSettlementIdRoute
+  '/dinero/liquidaciones/preparar': typeof DineroLiquidacionesPrepararRoute
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId_/borrador': typeof SolicitudesApplicationIdBorradorRoute
@@ -419,6 +466,7 @@ export interface FileRoutesById {
   '/dinero/fianzas/': typeof DineroFianzasIndexRoute
   '/dinero/gastos/': typeof DineroGastosIndexRoute
   '/dinero/inquilinos/': typeof DineroInquilinosIndexRoute
+  '/dinero/liquidaciones/': typeof DineroLiquidacionesIndexRoute
   '/dinero/proveedores/': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos/': typeof DineroVencimientosIndexRoute
   '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
@@ -431,6 +479,8 @@ export interface FileRouteTypes {
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
+    | '/dinero/cierre'
+    | '/dinero/informes'
     | '/dinero/simular'
     | '/documentos/$documentId'
     | '/documentos/preparar'
@@ -460,6 +510,8 @@ export interface FileRouteTypes {
     | '/dinero/gastos/preparar'
     | '/dinero/gastos/simular-pago'
     | '/dinero/inquilinos/$contactId'
+    | '/dinero/liquidaciones/$settlementId'
+    | '/dinero/liquidaciones/preparar'
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId/borrador'
@@ -467,6 +519,7 @@ export interface FileRouteTypes {
     | '/dinero/fianzas/'
     | '/dinero/gastos/'
     | '/dinero/inquilinos/'
+    | '/dinero/liquidaciones/'
     | '/dinero/proveedores/'
     | '/dinero/vencimientos/'
     | '/dinero/banco/movimientos/$movementId'
@@ -477,6 +530,8 @@ export interface FileRouteTypes {
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
+    | '/dinero/cierre'
+    | '/dinero/informes'
     | '/dinero/simular'
     | '/documentos/$documentId'
     | '/documentos/preparar'
@@ -506,6 +561,8 @@ export interface FileRouteTypes {
     | '/dinero/gastos/preparar'
     | '/dinero/gastos/simular-pago'
     | '/dinero/inquilinos/$contactId'
+    | '/dinero/liquidaciones/$settlementId'
+    | '/dinero/liquidaciones/preparar'
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId/borrador'
@@ -513,6 +570,7 @@ export interface FileRouteTypes {
     | '/dinero/fianzas'
     | '/dinero/gastos'
     | '/dinero/inquilinos'
+    | '/dinero/liquidaciones'
     | '/dinero/proveedores'
     | '/dinero/vencimientos'
     | '/dinero/banco/movimientos/$movementId'
@@ -523,6 +581,8 @@ export interface FileRouteTypes {
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
+    | '/dinero/cierre'
+    | '/dinero/informes'
     | '/dinero/simular'
     | '/documentos/$documentId'
     | '/documentos/preparar'
@@ -552,6 +612,8 @@ export interface FileRouteTypes {
     | '/dinero/gastos/preparar'
     | '/dinero/gastos/simular-pago'
     | '/dinero/inquilinos/$contactId'
+    | '/dinero/liquidaciones/$settlementId'
+    | '/dinero/liquidaciones/preparar'
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId_/borrador'
@@ -559,6 +621,7 @@ export interface FileRouteTypes {
     | '/dinero/fianzas/'
     | '/dinero/gastos/'
     | '/dinero/inquilinos/'
+    | '/dinero/liquidaciones/'
     | '/dinero/proveedores/'
     | '/dinero/vencimientos/'
     | '/dinero/banco/movimientos/$movementId'
@@ -570,6 +633,8 @@ export interface RootRouteChildren {
   ContactosContactIdRoute: typeof ContactosContactIdRoute
   ContratosContractIdRoute: typeof ContratosContractIdRoute
   ContratosBorradorRoute: typeof ContratosBorradorRoute
+  DineroCierreRoute: typeof DineroCierreRoute
+  DineroInformesRoute: typeof DineroInformesRoute
   DineroSimularRoute: typeof DineroSimularRoute
   DocumentosDocumentIdRoute: typeof DocumentosDocumentIdRoute
   DocumentosPrepararRoute: typeof DocumentosPrepararRoute
@@ -599,6 +664,8 @@ export interface RootRouteChildren {
   DineroGastosPrepararRoute: typeof DineroGastosPrepararRoute
   DineroGastosSimularPagoRoute: typeof DineroGastosSimularPagoRoute
   DineroInquilinosContactIdRoute: typeof DineroInquilinosContactIdRoute
+  DineroLiquidacionesSettlementIdRoute: typeof DineroLiquidacionesSettlementIdRoute
+  DineroLiquidacionesPrepararRoute: typeof DineroLiquidacionesPrepararRoute
   DineroProveedoresContactIdRoute: typeof DineroProveedoresContactIdRoute
   DineroVencimientosChargeIdRoute: typeof DineroVencimientosChargeIdRoute
   SolicitudesApplicationIdBorradorRoute: typeof SolicitudesApplicationIdBorradorRoute
@@ -606,6 +673,7 @@ export interface RootRouteChildren {
   DineroFianzasIndexRoute: typeof DineroFianzasIndexRoute
   DineroGastosIndexRoute: typeof DineroGastosIndexRoute
   DineroInquilinosIndexRoute: typeof DineroInquilinosIndexRoute
+  DineroLiquidacionesIndexRoute: typeof DineroLiquidacionesIndexRoute
   DineroProveedoresIndexRoute: typeof DineroProveedoresIndexRoute
   DineroVencimientosIndexRoute: typeof DineroVencimientosIndexRoute
   DineroBancoMovimientosMovementIdRoute: typeof DineroBancoMovimientosMovementIdRoute
@@ -681,6 +749,20 @@ declare module '@tanstack/react-router' {
       path: '/dinero'
       fullPath: '/dinero/'
       preLoaderRoute: typeof DineroIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dinero/cierre': {
+      id: '/dinero/cierre'
+      path: '/dinero/cierre'
+      fullPath: '/dinero/cierre'
+      preLoaderRoute: typeof DineroCierreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dinero/informes': {
+      id: '/dinero/informes'
+      path: '/dinero/informes'
+      fullPath: '/dinero/informes'
+      preLoaderRoute: typeof DineroInformesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dinero/simular': {
@@ -879,6 +961,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DineroInquilinosContactIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dinero/liquidaciones/': {
+      id: '/dinero/liquidaciones/'
+      path: '/dinero/liquidaciones'
+      fullPath: '/dinero/liquidaciones/'
+      preLoaderRoute: typeof DineroLiquidacionesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dinero/liquidaciones/$settlementId': {
+      id: '/dinero/liquidaciones/$settlementId'
+      path: '/dinero/liquidaciones/$settlementId'
+      fullPath: '/dinero/liquidaciones/$settlementId'
+      preLoaderRoute: typeof DineroLiquidacionesSettlementIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dinero/liquidaciones/preparar': {
+      id: '/dinero/liquidaciones/preparar'
+      path: '/dinero/liquidaciones/preparar'
+      fullPath: '/dinero/liquidaciones/preparar'
+      preLoaderRoute: typeof DineroLiquidacionesPrepararRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dinero/proveedores/': {
       id: '/dinero/proveedores/'
       path: '/dinero/proveedores'
@@ -930,6 +1033,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactosContactIdRoute: ContactosContactIdRoute,
   ContratosContractIdRoute: ContratosContractIdRoute,
   ContratosBorradorRoute: ContratosBorradorRoute,
+  DineroCierreRoute: DineroCierreRoute,
+  DineroInformesRoute: DineroInformesRoute,
   DineroSimularRoute: DineroSimularRoute,
   DocumentosDocumentIdRoute: DocumentosDocumentIdRoute,
   DocumentosPrepararRoute: DocumentosPrepararRoute,
@@ -959,6 +1064,8 @@ const rootRouteChildren: RootRouteChildren = {
   DineroGastosPrepararRoute: DineroGastosPrepararRoute,
   DineroGastosSimularPagoRoute: DineroGastosSimularPagoRoute,
   DineroInquilinosContactIdRoute: DineroInquilinosContactIdRoute,
+  DineroLiquidacionesSettlementIdRoute: DineroLiquidacionesSettlementIdRoute,
+  DineroLiquidacionesPrepararRoute: DineroLiquidacionesPrepararRoute,
   DineroProveedoresContactIdRoute: DineroProveedoresContactIdRoute,
   DineroVencimientosChargeIdRoute: DineroVencimientosChargeIdRoute,
   SolicitudesApplicationIdBorradorRoute: SolicitudesApplicationIdBorradorRoute,
@@ -966,6 +1073,7 @@ const rootRouteChildren: RootRouteChildren = {
   DineroFianzasIndexRoute: DineroFianzasIndexRoute,
   DineroGastosIndexRoute: DineroGastosIndexRoute,
   DineroInquilinosIndexRoute: DineroInquilinosIndexRoute,
+  DineroLiquidacionesIndexRoute: DineroLiquidacionesIndexRoute,
   DineroProveedoresIndexRoute: DineroProveedoresIndexRoute,
   DineroVencimientosIndexRoute: DineroVencimientosIndexRoute,
   DineroBancoMovimientosMovementIdRoute: DineroBancoMovimientosMovementIdRoute,
