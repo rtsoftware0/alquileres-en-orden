@@ -1,4 +1,10 @@
-# Bloque visual 07
+# Bloque visual 08
+- [ ] Motor de CSV, identidad de lotes y conciliación temporal con pruebas
+- [ ] Banco, movimientos, asistente incorporado y ficha de conciliación
+- [ ] Navegación y separación del escenario didáctico
+- [ ] Verificación de pruebas, navegador escritorio/móvil y capturas
+
+## Bloque visual 07 completado
 - [x] Correcciones de revisión: arrendador explícito, reemplazo/reversión sin solapes, borrador pausado y contexto bloqueado; pruebas y navegador afectados
 - [x] Motor común de fechas/disponibilidad y pruebas
 - [x] Calendario
