@@ -1,4 +1,5 @@
 # Bloque visual 08
+- [ ] Revisión acotada: CSV cruzado, cuenta conservada, HIP únicas y mensajes por tipo; pruebas y navegador afectados
 - [x] Motor de CSV, identidad de lotes y conciliación temporal con pruebas
 - [x] Banco, movimientos, asistente incorporado y ficha de conciliación
 - [x] Navegación y separación del escenario didáctico

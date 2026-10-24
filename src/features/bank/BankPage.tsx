@@ -11,7 +11,7 @@ import { bankSummary, filterMovements, linkedMovement, movementRemaining, moveme
 import { useBank } from './BankContext';
 import { BankNav, BankNotice, Button, buttonVariants, fieldClass, linkClass } from './BankUi';
 export function BankPage(){
- const {state}=useBank();const [accountId,setAccount]=useState('cuenta-demo');const [q,setQ]=useState('');const [status,setStatus]=useState('todos');const [sign,setSign]=useState('todos');const [kind,setKind]=useState('todos');
+ const {state,accountId,setAccount}=useBank();const [q,setQ]=useState('');const [status,setStatus]=useState('todos');const [sign,setSign]=useState('todos');const [kind,setKind]=useState('todos');
  const sum=bankSummary(state,accountId);const rows=filterMovements(state,accountId,q,status,sign,kind);const cash=moneySummary(demoPortfolio);const expenses=expenseTotals(demoPortfolio);
  return <><PageHeader title="Banco y conciliación" subtitle="Extractos de ejemplo · Sin saldo inicial registrado" actions={<Link to="/dinero/banco/extracto" className={buttonVariants()}>Preparar extracto</Link>}/><BankNav/><BankNotice/>
  <label className="mb-4 block text-sm font-medium">Cuenta ficticia<select aria-label="Cuenta ficticia" className={`${fieldClass} mt-1`} value={accountId} onChange={e=>{setAccount(e.target.value);setQ('');setStatus('todos');setSign('todos');setKind('todos');}}>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>

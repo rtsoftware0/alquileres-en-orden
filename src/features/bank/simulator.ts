@@ -2,14 +2,16 @@ import { demoPortfolio } from '@/features/portfolio/data/demo-data';
 import { baseRecords } from './adapters';
 import { demoMovements, educationalRecords } from './data/demo-bank';
 import { compatible, movementRemaining, recordRemaining } from './selectors';
+import { sameBankFingerprint } from './csv';
 import type { BankState, Decision, ImportReview, Kind, RecordView } from './types';
-export function initialBank():BankState {return {movements:demoMovements(),records:[...baseRecords(demoPortfolio),...educationalRecords.map(r=>({...r}))],links:[],history:[],batches:[],operations:{}};}
+export function initialBank():BankState {return {movements:demoMovements(),records:[...baseRecords(demoPortfolio),...educationalRecords.map(r=>({...r}))],links:[],history:[],batches:[],operations:{},nextHypotheticalNumber:1};}
 function log(s:BankState,action:string,reason:string,extra:Partial<BankState['history'][number]>={}) {return {...s,history:[...s.history,{id:`event-${s.history.length+1}`,action,reason,actor:'Administrador de demostración',date:demoPortfolio.referenceDate,...extra}]};}
 export function incorporate(s:BankState,r:ImportReview,decisions:Record<number,Decision>):BankState {
  if(s.batches.includes(r.key))return s;
  const additions=[];let next=s;
  for(const row of r.rows){if(row.error)continue;if(row.disposition==='discrepancia')throw new Error(`Fila ${row.row}: referencia existente con datos distintos; cambia el ejemplo o mapeo.`);
  const m=row.movement;if(!m)continue;
+ if(!m.reference&&row.disposition!=='dudosa'&&[...s.movements,...additions].some(x=>sameBankFingerprint(x,m)))throw new Error('La revisión ha cambiado: hay una coincidencia dudosa. Revisa y decide incluir u omitir con motivo.');
  if(row.disposition==='duplicada'){next=log(next,'Duplicado omitido','Referencia estable con datos coincidentes',{movementId:m.id});continue;}
  if(row.disposition==='dudosa'){const d=decisions[row.row];if(!d?.choice||!d.reason.trim())throw new Error(`Fila ${row.row}: decide incluir u omitir e indica motivo.`);next=log(next,`Coincidencia dudosa: ${d.choice}`,d.reason,{movementId:m.id});if(d.choice==='omitir')continue;}
  // Defensive validation against state changes since preview.
@@ -42,8 +44,8 @@ export function prepareRecord(s:BankState,movementId:string,kind:Kind,cents:numb
  const m=s.movements.find(x=>x.id===movementId);if(!m||m.discarded)throw new Error('Movimiento no disponible.');
  if(!Number.isSafeInteger(cents)||cents<=0||cents>movementRemaining(s,m))throw new Error('Importe positivo, no superior al restante.');
  if(kind!==m.kind||(m.cents<0&&kind==='renta')||(m.cents>0&&kind==='proveedor'))throw new Error('Tipo incompatible con este movimiento.');
- const id=`hyp-${operationId}`;const r:RecordView={id,reference:`HIP-${s.records.filter(x=>x.temporary).length+1}`,date:m.date,cents:Math.sign(m.cents)*cents,kind,scope:m.scope,accountId:m.accountId,currency:m.currency,base:false,temporary:true};
- return log({...s,records:[...s.records,r],operations:{...s.operations,[operationId]:fingerprint}},'Registro hipotético preparado',kind==='renta'?'Cobro hipotético sin asignar. No crea obligaciones ni modifica caja base.':'Movimiento hipotético separado del dinero base.',{movementId,recordId:id,cents});
+ const id=`hyp-${operationId}`;const r:RecordView={id,reference:`HIP-${s.nextHypotheticalNumber}`,date:m.date,cents:Math.sign(m.cents)*cents,kind,scope:m.scope,accountId:m.accountId,currency:m.currency,base:false,temporary:true};
+ return log({...s,records:[...s.records,r],nextHypotheticalNumber:s.nextHypotheticalNumber+1,operations:{...s.operations,[operationId]:fingerprint}},'Registro hipotético preparado',kind==='renta'?'Cobro hipotético sin asignar. No crea obligaciones ni modifica caja base.':'Movimiento hipotético separado del dinero base.',{movementId,recordId:id,cents});
 }
 export function unlink(s:BankState,id:string,reason:string,decision:'conservar'|'revertir'):BankState {
  if(!reason.trim())throw new Error('Indica el motivo de la desconciliación.');

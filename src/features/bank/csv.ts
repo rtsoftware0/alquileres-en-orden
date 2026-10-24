@@ -12,6 +12,8 @@ export function parseCents(value:string,decimal:','|'.'):number|undefined {
 }
 export function csvHeaders(text:string,separator:string) {return Papa.parse<string[]>(text,{delimiter:separator,skipEmptyLines:'greedy'}).data[0]??[];}
 export const sameData=(a:Movement,b:Movement)=>a.accountId===b.accountId&&a.date===b.date&&a.cents===b.cents&&a.concept===b.concept&&a.currency===b.currency&&a.kind===b.kind;
+const normalizeConcept=(s:string)=>s.trim().replace(/\s+/g,' ').toLocaleLowerCase('es');
+export const sameBankFingerprint=(a:Movement,b:Movement)=>a.accountId===b.accountId&&a.date===b.date&&a.cents===b.cents&&a.currency===b.currency&&normalizeConcept(a.concept)===normalizeConcept(b.concept);
 const hash=(s:string)=>{let h=2166136261;for(const ch of s){h=Math.imul(h^ch.charCodeAt(0),16777619);}return (h>>>0).toString(36);};
 export function reviewCsv(text:string,c:CsvConfig,state:BankState):ImportReview {
  const parsed=Papa.parse<string[]>(text,{delimiter:c.separator,skipEmptyLines:'greedy'});const headers=parsed.data[0]??[];
@@ -30,7 +32,7 @@ export function reviewCsv(text:string,c:CsvConfig,state:BankState):ImportReview 
  const kind=original?.kind??(c.kind==='fianza'?'fianza':cents<0?'proveedor':'renta');
  const movement:Movement={id:`csv-${hash(key)}-${row}`,accountId:account.id,scope:account.scope,origin:c.exampleId,date,concept,reference,cents,currency,kind};
  const stable=movement.reference?seen.filter(m=>m.accountId===movement.accountId&&m.reference===movement.reference):[];
- const doubtful=!movement.reference?seen.filter(m=>m.origin===movement.origin&&sameData(m,movement)):[];
+ const doubtful=!movement.reference?seen.filter(m=>sameBankFingerprint(m,movement)):[];
  const disposition=stable.length?(stable.every(m=>sameData(m,movement))?'duplicada' as const:'discrepancia' as const):doubtful.length?'dudosa' as const:'nueva' as const;
  seen.push(movement);return {row,movement,disposition,matches:[...stable,...doubtful].map(m=>m.id)};
  });
