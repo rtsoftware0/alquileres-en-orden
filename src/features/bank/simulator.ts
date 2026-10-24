@@ -19,7 +19,7 @@ export function incorporate(s:BankState,r:ImportReview,decisions:Record<number,D
  }
  if(!r.rows.some(row=>row.movement))throw new Error('No hay filas válidas que incorporar.');
  next={...next,movements:[...s.movements,...additions],batches:[...s.batches,r.key]};
- return log(next,'Lote incorporado temporalmente',`${additions.length} movimientos; ${r.rows.filter(x=>x.error).length} filas inválidas excluidas explícitamente.`);
+ return log(next,additions.length?'Lote incorporado temporalmente':'Lote revisado sin nuevos movimientos',`${additions.length} movimientos; ${r.rows.filter(x=>x.error).length} filas inválidas excluidas explícitamente.`);
 }
 export function linkErrors(s:BankState,movementId:string,recordId:string,cents:number) {
  const e:Record<string,string>={};const m=s.movements.find(x=>x.id===movementId);const r=s.records.find(x=>x.id===recordId);
@@ -32,13 +32,13 @@ export function linkErrors(s:BankState,movementId:string,recordId:string,cents:n
 }
 export function reconcile(s:BankState,movementId:string,recordId:string,cents:number,operationId:string):BankState {
  const fingerprint=JSON.stringify([movementId,recordId,cents]);
- if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento con datos incompatibles.');return s;}
+ if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento con datos incompatibles.');if(!s.links.some(l=>l.active&&l.movementId===movementId&&l.recordId===recordId&&l.cents===cents))throw new Error('Este vínculo ya se deshizo. Prepara una revisión nueva, no repitas la anterior.');return s;}
  const e=linkErrors(s,movementId,recordId,cents);if(Object.keys(e).length)throw new Error(Object.values(e)[0]);
  const id=`link-${s.links.length+1}`;
  return log({...s,links:[...s.links,{id,movementId,recordId,cents,active:true}],operations:{...s.operations,[operationId]:fingerprint}},'Conciliación simulada','Enlace explícito; no cambia caja ni deuda',{movementId,recordId,cents});
 }
 export function prepareRecord(s:BankState,movementId:string,kind:Kind,cents:number,operationId:string):BankState {
- const fingerprint=JSON.stringify(['new',movementId,kind,cents]);if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento incompatible.');return s;}
+ const fingerprint=JSON.stringify(['new',movementId,kind,cents]);if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento incompatible.');if(!s.records.some(r=>r.id===`hyp-${operationId}`))throw new Error('Este registro hipotético ya se revirtió. Prepara una revisión nueva.');return s;}
  const m=s.movements.find(x=>x.id===movementId);if(!m||m.discarded)throw new Error('Movimiento no disponible.');
  if(!Number.isSafeInteger(cents)||cents<=0||cents>movementRemaining(s,m))throw new Error('Importe positivo, no superior al restante.');
  if(kind!==m.kind||(m.cents<0&&kind==='renta')||(m.cents>0&&kind==='proveedor'))throw new Error('Tipo incompatible con este movimiento.');
