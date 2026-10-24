@@ -2,7 +2,7 @@ import {describe,it,expect} from 'vitest';
 import {demoPortfolio as d} from '@/features/portfolio/data/demo-data';
 import {initialBank} from '@/features/bank/simulator';
 import {moneySummary} from '@/features/money/selectors';
-import {sourceFor,closeReview} from './adapters';
+import {sourceFor,closeReview,validatePortfolio,validCivilDate} from './adapters';
 import {contexts} from './data/examples';
 import {calculate,defaultRules,rulesErrors,prepare,initialSettlements,transition,edit,pay,balances,differences,close,reopen,distribute} from './engine';
 import type {Rules,Source} from './types';
@@ -11,6 +11,8 @@ const src=(id='a15')=>sourceFor(d,id,'2026-10');
 const rules=(id='a15')=>defaultRules(context(id));
 function approved(id='a15'){let result=prepare(initialSettlements(),src(id),rules(id));result.state=transition(transition(result.state,result.id,'revisado'),result.id,'aprobado');return result;}
 describe('Liquidaciones demo09',()=>{
+ it('fechas civiles inválidas no desaparecen al filtrar; cierre detecta fuentes rotas',()=>{expect(validCivilDate('2026-02-30')).toBe(false);expect(validCivilDate('2028-02-29')).toBe(true);const bad=structuredClone(d);const p=bad.payments[0];if(!p)throw new Error('missing');p.receivedOn='no-fecha';expect(validatePortfolio(bad)).toContain(`Cobro inválido ${p.id}`);expect(sourceFor(bad,'olivo','2026-10').invalid.length).toBeGreaterThan(0);expect(closeReview(bad,initialBank(),initialSettlements(),'2026-10').invalid.length).toBeGreaterThan(0);});
+ it('cierre detecta vínculos bancarios con exceso y pagos proveedor inválidos',()=>{const bank=initialBank();const m=bank.movements.find(m=>m.scope==='base');const r=bank.records.find(r=>r.scope==='base');if(!m||!r)throw new Error('missing');bank.links.push({id:'bad',operationId:'bad',movementId:m.id,recordId:r.id,cents:999999999,active:true});expect(closeReview(d,bank,initialSettlements(),m.date.slice(0,7)).invalid.length).toBeGreaterThan(0);const bad=structuredClone(d);const p=bad.expensePayments[0];if(!p)throw new Error('missing');p.amountCents=99999999;expect(validatePortfolio(bad)).toContain(`Pago proveedor inválido ${p.id}`);});
  it('A15: 1000 asignados − 10% − 50 propietario = 850',()=>{const c=calculate(src(),rules());expect(c.incomeCents).toBe(100000);expect(c.feeCents).toBe(10000);expect(c.deductibleCents).toBe(5000);expect(c.operatingCents).toBe(85000);expect(c.payableCents).toBe(85000);expect(c.excluded.map(x=>x.kind)).toEqual(['fianza','libre']);});
  it('A16: 2400 − 1500 − 200 − 100 = margen600, dueño1500, costes pendientes300',()=>{const source=src('a16');const c=calculate(source,rules('a16'));expect(c.marginCents).toBe(60000);expect(c.payableCents).toBe(150000);expect(source.costCents-source.paidCostCents).toBe(30000);expect(source.cashCents).toBe(240000);});
  it('E8 incluye renta otro devengo recibida en mes y excluye fuera de recepción, libre, fianzas y pendientes',()=>{const s=src();s.lines.push({id:'outside',label:'fuera',kind:'renta',assigned:true,cents:50000,date:'2026-09-30',period:'2026-10'},{id:'pending',label:'pendiente',kind:'renta',assigned:false,cents:70000,date:'2026-10-01',period:'2026-10'});const c=calculate(s,rules());expect(c.incomeCents).toBe(100000);expect(c.income[0]?.period).toBe('2026-09');});
