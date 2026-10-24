@@ -8,7 +8,7 @@ import { incorporate } from './simulator';
 import { useBank } from './BankContext';
 import { aria, BankNav, BankNotice, Button, Field, fieldClass, focusError, linkClass } from './BankUi';
 import type { CsvConfig, Decision, ImportReview } from './types';
-const defaultConfig:CsvConfig={accountId:'cuenta-demo',exampleId:'bueno',separator:';',dateFormat:'es',decimal:',',...csvExamples[0]?.columns, date:'Fecha',concept:'Concepto',reference:'Referencia',amount:'Importe',currency:'Moneda',kind:'renta'};
+const defaultConfig:CsvConfig={accountId:'cuenta-demo',exampleId:'bueno',separator:';',dateFormat:'es',decimal:',',date:'Fecha',concept:'Concepto',reference:'Referencia',amount:'Importe',currency:'Moneda',kind:'renta'};
 export function ImportWizard(){
  const {state,setState}=useBank();const [config,setConfig]=useState(defaultConfig);const [review,setReview]=useState<ImportReview|null>(null);const [decisions,setDecisions]=useState<Record<number,Decision>>({});const [errors,setErrors]=useState<Record<string,string>>({});const [step,setStep]=useState(0);const [done,setDone]=useState(false);
  const example=csvExamples.find(x=>x.id===config.exampleId);const headers=csvHeaders(example?.text??'',config.separator);

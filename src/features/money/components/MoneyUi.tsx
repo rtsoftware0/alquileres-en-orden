@@ -16,6 +16,7 @@ const tabs = [
   { to: "/dinero/simular", label: "Simular un cobro", exact: false },
   { to: "/dinero/fianzas", label: "Fianzas", exact: false },
   { to: "/dinero/gastos", label: "Gastos", exact: false },
+  { to: "/dinero/banco", label: "Banco", exact: false },
 ] as const;
 
 export function MoneyNav() {
