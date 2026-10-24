@@ -11,7 +11,7 @@ export function rangeErrors(start: string, end: string) {
  else if (!e['startDate'] && end <= start) e['endDate'] = 'La salida debe ser posterior a la entrada.';
  return e;
 }
-export const overlaps = (a: {startDate:string;endDate?:string}, b: {startDate:string;endDate?:string}) => a.startDate < (b.endDate ?? '9999-12-31') && b.startDate < (a.endDate ?? '9999-12-31');
+export const overlaps = (a: {startDate:string;endDate?:string | undefined}, b: {startDate:string;endDate?:string | undefined}) => a.startDate < (b.endDate ?? '9999-12-31') && b.startDate < (a.endDate ?? '9999-12-31');
 /** Round once after adding monthly civil-day fractions. */
 export function prorate(rentCents:number,start:string,end:string) {
  if (Object.keys(rangeErrors(start,end)).length || !Number.isSafeInteger(rentCents) || rentCents < 0) throw new Error('Periodo o renta no válidos');

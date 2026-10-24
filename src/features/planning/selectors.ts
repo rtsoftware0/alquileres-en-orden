@@ -9,7 +9,7 @@ export function intervals(data:PortfolioDataset,state:PlanningState):Interval[] 
  const reservations=state.reservations.filter(r=>r.status==='confirmada').map(r=>({id:r.id,propertyId:r.propertyId,roomId:r.roomId,startDate:r.startDate,endDate:r.endDate,kind:'reserva' as const,label:r.id==='res-1'?'Reserva OLI-06':`Reserva simulada ${r.id}`,reservationId:r.id,contractId:r.contractId}));
  return [...contracts,...reservations,{id:'maint-aza-06',propertyId:'casa-azahar',roomId:'aza-06',startDate:'2026-10-14',kind:'mantenimiento',label:'Humedad · sin fin conocido',incidentId:'inc-1'}];
 }
-export function conflicts(list:Interval[],scope:{propertyId:string;roomId?:string;startDate:string;endDate:string},ignoreIds:string[]=[]) {
+export function conflicts(list:Interval[],scope:{propertyId:string;roomId?:string | undefined;startDate:string;endDate:string},ignoreIds:string[]=[]) {
  return list.filter(i=>!ignoreIds.includes(i.id)&&i.propertyId===scope.propertyId&&(!scope.roomId||!i.roomId||i.roomId===scope.roomId)&&overlaps(i,scope));
 }
 export const contactName=(data:PortfolioDataset,id:string)=>data.contacts.find(c=>c.id===id)?.name??id;

@@ -5,7 +5,7 @@ import { demoApplications, demoReservations } from './data/demo-planning';
 import type { ApplicationStatus, ChangeValues, ChangePreview, PlanningState, Reservation, Segment } from './types';
 import { conflicts, intervals } from './selectors';
 import { rangeErrors, validDate } from './dates';
-export const initialPlanning = ():PlanningState=>({applications:demoApplications.map(a=>({...a})),reservations:demoReservations.map(r=>({...r})),drafts:{},changes:{}});
+export const initialPlanning = ():PlanningState=>({applications:demoApplications.map(a=>({...a})),reservations:demoReservations.map(r=>({...r})),drafts:{},changes:{},changeInputs:{},reservationPreparation:{values:{id:'',applicationId:'',propertyId:'',roomId:'',startDate:'',endDate:'',expiresOn:'',status:'confirmada'},review:false,createdId:''}});
 export const STATUS_LABELS:Record<ApplicationStatus,string>={nueva:'Nueva',en_revision:'En revisión',pendiente_informacion:'Pendiente de información',aceptada:'Aceptada',rechazada:'Rechazada',retirada:'Retirada'};
 export function transitionApplication(state:PlanningState,id:string,status:ApplicationStatus,reason:string):PlanningState {
  const a=state.applications.find(a=>a.id===id);
@@ -23,6 +23,7 @@ export function convertApplication(state:PlanningState,id:string):PlanningState 
  if(!room||!property) throw new Error('Unidad no válida.');
  return {...state,drafts:{...state.drafts,[id]:{applicationId:id,step:0,values:{...emptyDraft,roomId:a.roomId,tenantId:a.contactId,landlordId:property.ownerId,startDate:a.startDate,endDate:a.endDate,rent:String(room.monthlyRent),deposit:String(room.monthlyRent),dueDay:'5',modality:'Larga estancia por habitación'}}}};
 }
+const sameReservation=(a:Reservation,b:Reservation)=>a.applicationId===b.applicationId&&a.propertyId===b.propertyId&&(a.roomId||'')===(b.roomId||'')&&a.startDate===b.startDate&&a.endDate===b.endDate&&a.expiresOn===b.expiresOn;
 export function reservationErrors(state:PlanningState,r:Reservation) {
  const e=rangeErrors(r.startDate,r.endDate);
  const a=state.applications.find(a=>a.id===r.applicationId);
@@ -31,13 +32,16 @@ export function reservationErrors(state:PlanningState,r:Reservation) {
  if(!validDate(r.expiresOn)||r.expiresOn<=data.referenceDate||r.expiresOn>=r.startDate) e['expiresOn']='Usa una caducidad posterior al 21/10/2026 y anterior a la entrada en este ejemplo.';
  if(validDate(r.startDate)&&r.startDate<data.referenceDate) e['startDate']='La reserva no puede comenzar antes de la referencia.';
  if(!Object.keys(e).length) {
- const hits=conflicts(intervals(data,state),r,[r.id]);
+ const collision=state.reservations.find(x=>x.id===r.id);
+ if(collision&&(collision.status!=='confirmada'||!sameReservation(collision,r)))e['roomId']='La reserva existente tiene otras fechas o estado. Reinicia el escenario.';
+ const hits=conflicts(intervals(data,state),r,collision&&sameReservation(collision,r)?[r.id]:[]);
  if(hits.length)e['roomId']=`Conflicto: ${hits.map(h=>h.label).join(', ')}.`;
  }
  return e;
 }
 export function confirmReservation(state:PlanningState,r:Reservation):PlanningState {
- if(state.reservations.some(x=>x.id===r.id)) return state;
+ const existing=state.reservations.find(x=>x.id===r.id);
+ if(existing){if(existing.status==='confirmada'&&sameReservation(existing,r))return state;throw new Error('Esta reserva ya existe con otras fechas o estado. Reinicia el escenario para otra preparación.');}
  const e=reservationErrors(state,r); if(Object.keys(e).length) throw new Error(Object.values(e)[0]);
  return {...state,reservations:[...state.reservations,{...r,status:'confirmada'}]};
 }

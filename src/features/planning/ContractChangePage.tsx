@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { PageHeader } from '@/features/layout/PageHeader';
@@ -13,11 +13,10 @@ import { unitName } from './selectors';
 import { Field, Period, ScenarioNotice, ariaField, focusError } from './PlanningUi';
 const kinds:Record<ChangeKind,string>={renta:'Cambio de renta',habitacion:'Cambio de habitación',prorroga:'Prórroga',salida:'Salida anticipada'};
 export function ContractChangePage({id}:{id:string}){
- const c=data.contracts.find(c=>c.id===id);const {state,setState}=usePlanning();const [v,setV]=useState<ChangeValues>(()=>c?emptyChange(c):{kind:'renta',effectiveDate:'',endDate:'',roomId:'',rent:'',dueDay:'',reason:'',futureDecision:''});const [errors,setErrors]=useState<Record<string,string>>({});
+ const c=data.contracts.find(c=>c.id===id);const {state,setState}=usePlanning();const v=state.changeInputs[id]??(c?emptyChange(c):{kind:'renta' as const,effectiveDate:'',endDate:'',roomId:'',rent:'',dueDay:'',reason:'',futureDecision:''});const setV=(value:ChangeValues|((old:ChangeValues)=>ChangeValues))=>setState(s=>({...s,changeInputs:{...s.changeInputs,[id]:typeof value==='function'?value(s.changeInputs[id]??v):value}}));const [errors,setErrors]=useState<Record<string,string>>({});
  const preview=state.changes[id];
- useEffect(()=>{if(!preview&&c){setV(emptyChange(c));setErrors({});}},[preview,c]);
  if(!c||c.status!=='activo')return <NotFoundMessage title="Cambio no disponible" text="La simulación solo está disponible desde un contrato activo."/>;
- function set<K extends keyof ChangeValues>(k:K,val:ChangeValues[K]){setV(old=>({...old,[k]:val}));setErrors({});}
+ function set<K extends keyof ChangeValues>(k:K,val:ChangeValues[K]){setState(s=>{const changes={...s.changes};delete changes[id];return {...s,changes,changeInputs:{...s.changeInputs,[id]:{...v,[k]:val}}};});setErrors({});}
  function review(){if(!c)return;const e=changeErrors(c,v,state);setErrors(e);if(focusError(e))return;const result=previewChange(c,v,state);setState(s=>({...s,changes:{...s.changes,[id]:result}}));requestAnimationFrame(()=>document.getElementById('change-review')?.focus());}
  function clear(){if(!c)return;setState(s=>{const changes={...s.changes};delete changes[id];return {...s,changes};});setV(emptyChange(c));setErrors({});}
  return <><PageHeader title={`Simular cambios · ${c.reference}`} subtitle={`${unitName(data,c.propertyId,c.roomId)} · Contrato activo base`} actions={<Link to="/contratos/$contractId" params={{contractId:c.id}} className={buttonVariants({variant:'outline'})}>Volver al contrato</Link>}/><ScenarioNotice/>
