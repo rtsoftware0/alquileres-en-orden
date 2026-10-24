@@ -1,0 +1,7 @@
+import type { Application, Reservation } from '../types';
+export const demoApplications: Application[] = [
+ {id:'sol-1',contactId:'con-013',status:'aceptada',origin:'Consulta de ejemplo',date:'2026-10-10',propertyId:'casa-olivo',roomId:'oli-06',startDate:'2026-11-01',endDate:'2027-07-01',responsible:'Administrador de demostración',nextAction:'Revisar contrato pendiente',notes:'Solicitud vinculada a la reserva existente. Sin comunicación enviada.',contractId:'ct-ej-0106'},
+ {id:'sol-2',contactId:'con-014',status:'aceptada',origin:'Consulta de ejemplo',date:'2026-10-19',propertyId:'casa-olivo',roomId:'oli-05',startDate:'2026-11-15',endDate:'2027-06-01',responsible:'Administrador de demostración',nextAction:'Revisar borrador existente',notes:'El borrador no bloquea disponibilidad.',contractId:'ct-ej-0105'},
+ {id:'sol-3',contactId:'con-014',status:'nueva',origin:'Consulta alternativa de ejemplo',date:'2026-10-21',propertyId:'casa-azahar',roomId:'aza-05',startDate:'2026-11-01',endDate:'2027-04-01',responsible:'Administrador de demostración',nextAction:'Revisar preferencias',notes:'Otra solicitud de Ana para una alternativa en Casa Azahar; no es otro contacto ni sustituye sol-2.'},
+];
+export const demoReservations: Reservation[] = [{id:'res-1',applicationId:'sol-1',propertyId:'casa-olivo',roomId:'oli-06',startDate:'2026-11-01',endDate:'2027-07-01',expiresOn:'2026-10-30',contractId:'ct-ej-0106',status:'confirmada'}];
