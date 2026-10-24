@@ -28,7 +28,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
   );
 }
 
-export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; resetValues?: DraftValues; onChange: (values: DraftValues, step: number) => void } } = {}) {
+export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; linked?: boolean; resetValues?: DraftValues; onChange: (values: DraftValues, step: number) => void } } = {}) {
   const [localStep, setLocalStep] = useState(0);
   const [localValues, setLocalValues] = useState<DraftValues>(emptyDraft);
   const step = session?.step ?? localStep;
@@ -98,18 +98,19 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
 
       <Panel>
         <h2 ref={headingRef} tabIndex={-1} className="mb-4 text-base font-semibold focus:outline-none">Paso {step + 1} de 3 · {steps[step]}</h2>
+        {session?.linked&&session.resetValues&&<p className="mb-4 text-sm text-demo-foreground">Candidato y habitación vinculados a la solicitud (solo lectura). Fechas solicitadas: {formatDate(session.resetValues.startDate)} – {formatDate(session.resetValues.endDate)}. {values.startDate!==session.resetValues.startDate||values.endDate!==session.resetValues.endDate?'Las fechas de este borrador difieren de las solicitadas; no modifican la solicitud ni la reserva.':'Las fechas de este borrador coinciden con las solicitadas.'}</p>}
 
         {step === 0 && (
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="roomId" label="Habitación" error={errors.roomId}>
-              <select {...aria("roomId")} value={values.roomId} onChange={set("roomId")} className={fieldClass}>
+              {session?.linked?<input {...aria('roomId')} readOnly value={room?.code ?? values.roomId} className={fieldClass}/>:<select {...aria("roomId")} value={values.roomId} onChange={set("roomId")} className={fieldClass}>
                 <option value="">Elige una habitación</option>
                 {data.properties.map((p) => (
                   <optgroup key={p.id} label={p.name}>
                     {data.rooms.filter((r) => r.propertyId === p.id).map((r) => <option key={r.id} value={r.id}>{r.code}</option>)}
                   </optgroup>
                 ))}
-              </select>
+              </select>}
             </Field>
             <Field id="landlordId" label="Parte arrendadora" hint="Quien arrienda. Puede no ser el propietario (p. ej. subarriendo)." error={errors.landlordId}>
               <select {...aria("landlordId", true)} value={values.landlordId} onChange={set("landlordId")} className={fieldClass}>
@@ -118,10 +119,10 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
               </select>
             </Field>
             <Field id="tenantId" label="Inquilino" hint="Contactos con rol inquilino o candidato." error={errors.tenantId}>
-              <select {...aria("tenantId", true)} value={values.tenantId} onChange={set("tenantId")} className={fieldClass}>
+              {session?.linked?<input {...aria('tenantId',true)} readOnly value={getContact(data,values.tenantId)?.name ?? values.tenantId} className={fieldClass}/>:<select {...aria("tenantId", true)} value={values.tenantId} onChange={set("tenantId")} className={fieldClass}>
                 <option value="">Elige un inquilino</option>
                 {tenants.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              </select>}
             </Field>
             <Field id="guarantorId" label="Avalista (opcional)" error={errors.guarantorId}>
               <select {...aria("guarantorId")} value={values.guarantorId} onChange={set("guarantorId")} className={fieldClass}>
