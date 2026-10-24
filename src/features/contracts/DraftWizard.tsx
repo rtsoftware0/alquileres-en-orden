@@ -28,7 +28,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
   );
 }
 
-export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; onChange: (values: DraftValues, step: number) => void } } = {}) {
+export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; resetValues?: DraftValues; onChange: (values: DraftValues, step: number) => void } } = {}) {
   const [localStep, setLocalStep] = useState(0);
   const [localValues, setLocalValues] = useState<DraftValues>(emptyDraft);
   const step = session?.step ?? localStep;
@@ -69,7 +69,7 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
     setStep((s) => s + 1);
   };
   const back = () => { setErrors({}); setStep((s) => s - 1); };
-  const restart = () => { if (session) session.onChange(session.values, 0); else { setLocalValues(emptyDraft); setLocalStep(0); } setErrors({}); };
+  const restart = () => { if (session) session.onChange(session.resetValues ?? session.values, 0); else { setLocalValues(emptyDraft); setLocalStep(0); } setErrors({}); };
 
   const landlords = contactsWithRole(data, ["propietario", "arrendador"]);
   const tenants = contactsWithRole(data, ["inquilino", "candidato"]);
