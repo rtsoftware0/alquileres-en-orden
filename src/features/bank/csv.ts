@@ -24,8 +24,8 @@ export function reviewCsv(text:string,c:CsvConfig,state:BankState):ImportReview 
  const rows=parsed.data.slice(1).map((values,i)=>{
  const row=i+2;const read=(column:string)=>values[headers.indexOf(column)]?.trim()??'';
  const raw=read(c.date);const date=c.dateFormat==='es'&&/^\d{2}\/\d{2}\/\d{4}$/.test(raw)?raw.split('/').reverse().join('-'):c.dateFormat==='iso'?raw:'';
- const cents=parseCents(read(c.amount),c.decimal);const concept=read(c.concept);const currency=c.currency?read(c.currency):'EUR';
- let error=parsed.errors.some(e=>e.row===i+1)?'CSV mal formado.':values.length!==headers.length?'Número de columnas incompatible.':!isValidIsoDate(date)?'Fecha inexistente o formato incompatible.':cents===undefined?'Importe inválido: usa euros con hasta dos decimales, distinto de cero.':currency!=='EUR'?'Solo se admiten ejemplos EUR.':!concept?'Falta concepto.':undefined;
+ const cents=parseCents(read(c.amount),c.decimal);const concept=values[headers.indexOf(c.concept)]??'';const currency=c.currency?read(c.currency):'EUR';
+ let error=parsed.errors.some(e=>e.row===i+1)?'CSV mal formado.':values.length!==headers.length?'Número de columnas incompatible.':!isValidIsoDate(date)?'Fecha inexistente o formato incompatible.':cents===undefined?'Importe inválido: usa euros con hasta dos decimales, distinto de cero.':currency!=='EUR'?'Solo se admiten ejemplos EUR.':!concept.trim()?'Falta concepto.':undefined;
  if(error||cents===undefined)return {row,error:error??'Importe inválido',matches:[]};
  const reference=c.reference?read(c.reference):'';
  const original=state.movements.find(m=>m.accountId===account.id&&reference&&m.reference===reference);
