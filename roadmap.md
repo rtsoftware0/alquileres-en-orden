@@ -1,6 +1,6 @@
 # Bloque visual 07
-- [ ] Motor común de fechas/disponibilidad y pruebas
-- [ ] Calendario
-- [ ] Solicitudes, reservas y borradores temporales idempotentes
-- [ ] Simulador de cambios contractuales
-- [ ] Integración, verificación y capturas
+- [x] Motor común de fechas/disponibilidad y pruebas
+- [x] Calendario
+- [x] Solicitudes, reservas y borradores temporales idempotentes
+- [x] Simulador de cambios contractuales
+- [x] Integración, verificación y capturas

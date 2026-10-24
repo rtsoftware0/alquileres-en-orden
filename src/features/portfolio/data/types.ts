@@ -1,6 +1,7 @@
 // Domain types for the demo. Shapes are flat and id-based so a future data
 // source can replace the local demo modules without touching the UI.
 // Money is stored in integer cents; dates as ISO yyyy-mm-dd calendar strings.
+import type { Application, Reservation } from '@/features/planning/types';
 
 export type RoomStatus = "ocupada" | "disponible" | "reservada" | "bloqueada";
 
@@ -137,6 +138,8 @@ export interface PortfolioDataset {
   documents: DemoDocument[];
   threads: MessageThread[];
   notices: DemoNotice[];
+  applications: Application[];
+  reservations: Reservation[];
 }
 
 // --- Money (demo). Balances are never stored: they derive from charges,
