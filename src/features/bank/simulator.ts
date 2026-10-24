@@ -32,10 +32,10 @@ export function linkErrors(s:BankState,movementId:string,recordId:string,cents:n
 }
 export function reconcile(s:BankState,movementId:string,recordId:string,cents:number,operationId:string):BankState {
  const fingerprint=JSON.stringify([movementId,recordId,cents]);
- if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento con datos incompatibles.');if(!s.links.some(l=>l.active&&l.movementId===movementId&&l.recordId===recordId&&l.cents===cents))throw new Error('Este vínculo ya se deshizo. Prepara una revisión nueva, no repitas la anterior.');return s;}
+ if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento con datos incompatibles.');if(!s.links.some(l=>l.active&&l.operationId===operationId))throw new Error('Este vínculo ya se deshizo. Prepara una revisión nueva, no repitas la anterior.');return s;}
  const e=linkErrors(s,movementId,recordId,cents);if(Object.keys(e).length)throw new Error(Object.values(e)[0]);
  const id=`link-${s.links.length+1}`;
- return log({...s,links:[...s.links,{id,movementId,recordId,cents,active:true}],operations:{...s.operations,[operationId]:fingerprint}},'Conciliación simulada','Enlace explícito; no cambia caja ni deuda',{movementId,recordId,cents});
+ return log({...s,links:[...s.links,{id,operationId,movementId,recordId,cents,active:true}],operations:{...s.operations,[operationId]:fingerprint}},'Conciliación simulada','Enlace explícito; no cambia caja ni deuda',{movementId,recordId,cents});
 }
 export function prepareRecord(s:BankState,movementId:string,kind:Kind,cents:number,operationId:string):BankState {
  const fingerprint=JSON.stringify(['new',movementId,kind,cents]);if(s.operations[operationId]){if(s.operations[operationId]!==fingerprint)throw new Error('Reintento incompatible.');if(!s.records.some(r=>r.id===`hyp-${operationId}`))throw new Error('Este registro hipotético ya se revirtió. Prepara una revisión nueva.');return s;}
