@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Banking (`src/features/bank/`) uses a root React context, read-only ledger adapters, Papa Parse for embedded CSV, a pure reconciliation engine and derived remaining amounts across all active links; educational records are account-scoped and separate from portfolio data. Why: navigation preserves a reversible, idempotent-in-memory scenario without changing cash, debt, deposits or prior modules.
 - Planning (`src/features/planning/`) uses a root React context, ID-only metadata and one interval engine; edits retain the applied change, all replacement segments and individual reversions are conflict-checked, and application-linked drafts lock candidate/unit with explicit lessor relationships. Why: temporal navigation must preserve coherent availability and application identity without mutating the base dataset.
 - Feature code lives in `src/features/<feature>/` (components, logic); routes in `src/routes/` stay thin. Why: keeps the future SaaS modules isolated and maintainable.
 - Product-wide constants (name, copy) live in `src/config/site.ts`. Why: single source for branding.

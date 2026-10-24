@@ -37,6 +37,8 @@ import { Route as TareasIndexRouteImport } from './routes/tareas.index'
 import { Route as CarteraHabitacionesRoomIdRouteImport } from './routes/cartera.habitaciones.$roomId'
 import { Route as CarteraInmueblesPropertyIdRouteImport } from './routes/cartera.inmuebles.$propertyId'
 import { Route as ContratosContractIdCambiosRouteImport } from './routes/contratos.$contractId_.cambios'
+import { Route as DineroBancoIndexRouteImport } from './routes/dinero.banco.index'
+import { Route as DineroBancoExtractoRouteImport } from './routes/dinero.banco.extracto'
 import { Route as DineroFianzasIndexRouteImport } from './routes/dinero.fianzas.index'
 import { Route as DineroFianzasContractIdRouteImport } from './routes/dinero.fianzas.$contractId'
 import { Route as DineroGastosIndexRouteImport } from './routes/dinero.gastos.index'
@@ -50,6 +52,7 @@ import { Route as DineroProveedoresContactIdRouteImport } from './routes/dinero.
 import { Route as DineroVencimientosIndexRouteImport } from './routes/dinero.vencimientos.index'
 import { Route as DineroVencimientosChargeIdRouteImport } from './routes/dinero.vencimientos.$chargeId'
 import { Route as SolicitudesApplicationIdBorradorRouteImport } from './routes/solicitudes.$applicationId_.borrador'
+import { Route as DineroBancoMovimientosMovementIdRouteImport } from './routes/dinero.banco.movimientos.$movementId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -195,6 +198,16 @@ const ContratosContractIdCambiosRoute =
     path: '/contratos/$contractId/cambios',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DineroBancoIndexRoute = DineroBancoIndexRouteImport.update({
+  id: '/dinero/banco/',
+  path: '/dinero/banco/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DineroBancoExtractoRoute = DineroBancoExtractoRouteImport.update({
+  id: '/dinero/banco/extracto',
+  path: '/dinero/banco/extracto',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DineroFianzasIndexRoute = DineroFianzasIndexRouteImport.update({
   id: '/dinero/fianzas/',
   path: '/dinero/fianzas/',
@@ -264,6 +277,12 @@ const SolicitudesApplicationIdBorradorRoute =
     path: '/solicitudes/$applicationId/borrador',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DineroBancoMovimientosMovementIdRoute =
+  DineroBancoMovimientosMovementIdRouteImport.update({
+    id: '/dinero/banco/movimientos/$movementId',
+    path: '/dinero/banco/movimientos/$movementId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -294,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
   '/contratos/$contractId/cambios': typeof ContratosContractIdCambiosRoute
+  '/dinero/banco/extracto': typeof DineroBancoExtractoRoute
   '/dinero/fianzas/$contractId': typeof DineroFianzasContractIdRoute
   '/dinero/gastos/$expenseId': typeof DineroGastosExpenseIdRoute
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
@@ -302,11 +322,13 @@ export interface FileRoutesByFullPath {
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId/borrador': typeof SolicitudesApplicationIdBorradorRoute
+  '/dinero/banco/': typeof DineroBancoIndexRoute
   '/dinero/fianzas/': typeof DineroFianzasIndexRoute
   '/dinero/gastos/': typeof DineroGastosIndexRoute
   '/dinero/inquilinos/': typeof DineroInquilinosIndexRoute
   '/dinero/proveedores/': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos/': typeof DineroVencimientosIndexRoute
+  '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -337,6 +359,7 @@ export interface FileRoutesByTo {
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
   '/contratos/$contractId/cambios': typeof ContratosContractIdCambiosRoute
+  '/dinero/banco/extracto': typeof DineroBancoExtractoRoute
   '/dinero/fianzas/$contractId': typeof DineroFianzasContractIdRoute
   '/dinero/gastos/$expenseId': typeof DineroGastosExpenseIdRoute
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
@@ -345,11 +368,13 @@ export interface FileRoutesByTo {
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId/borrador': typeof SolicitudesApplicationIdBorradorRoute
+  '/dinero/banco': typeof DineroBancoIndexRoute
   '/dinero/fianzas': typeof DineroFianzasIndexRoute
   '/dinero/gastos': typeof DineroGastosIndexRoute
   '/dinero/inquilinos': typeof DineroInquilinosIndexRoute
   '/dinero/proveedores': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos': typeof DineroVencimientosIndexRoute
+  '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -381,6 +406,7 @@ export interface FileRoutesById {
   '/cartera/habitaciones/$roomId': typeof CarteraHabitacionesRoomIdRoute
   '/cartera/inmuebles/$propertyId': typeof CarteraInmueblesPropertyIdRoute
   '/contratos/$contractId_/cambios': typeof ContratosContractIdCambiosRoute
+  '/dinero/banco/extracto': typeof DineroBancoExtractoRoute
   '/dinero/fianzas/$contractId': typeof DineroFianzasContractIdRoute
   '/dinero/gastos/$expenseId': typeof DineroGastosExpenseIdRoute
   '/dinero/gastos/preparar': typeof DineroGastosPrepararRoute
@@ -389,11 +415,13 @@ export interface FileRoutesById {
   '/dinero/proveedores/$contactId': typeof DineroProveedoresContactIdRoute
   '/dinero/vencimientos/$chargeId': typeof DineroVencimientosChargeIdRoute
   '/solicitudes/$applicationId_/borrador': typeof SolicitudesApplicationIdBorradorRoute
+  '/dinero/banco/': typeof DineroBancoIndexRoute
   '/dinero/fianzas/': typeof DineroFianzasIndexRoute
   '/dinero/gastos/': typeof DineroGastosIndexRoute
   '/dinero/inquilinos/': typeof DineroInquilinosIndexRoute
   '/dinero/proveedores/': typeof DineroProveedoresIndexRoute
   '/dinero/vencimientos/': typeof DineroVencimientosIndexRoute
+  '/dinero/banco/movimientos/$movementId': typeof DineroBancoMovimientosMovementIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -426,6 +454,7 @@ export interface FileRouteTypes {
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
     | '/contratos/$contractId/cambios'
+    | '/dinero/banco/extracto'
     | '/dinero/fianzas/$contractId'
     | '/dinero/gastos/$expenseId'
     | '/dinero/gastos/preparar'
@@ -434,11 +463,13 @@ export interface FileRouteTypes {
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId/borrador'
+    | '/dinero/banco/'
     | '/dinero/fianzas/'
     | '/dinero/gastos/'
     | '/dinero/inquilinos/'
     | '/dinero/proveedores/'
     | '/dinero/vencimientos/'
+    | '/dinero/banco/movimientos/$movementId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -469,6 +500,7 @@ export interface FileRouteTypes {
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
     | '/contratos/$contractId/cambios'
+    | '/dinero/banco/extracto'
     | '/dinero/fianzas/$contractId'
     | '/dinero/gastos/$expenseId'
     | '/dinero/gastos/preparar'
@@ -477,11 +509,13 @@ export interface FileRouteTypes {
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId/borrador'
+    | '/dinero/banco'
     | '/dinero/fianzas'
     | '/dinero/gastos'
     | '/dinero/inquilinos'
     | '/dinero/proveedores'
     | '/dinero/vencimientos'
+    | '/dinero/banco/movimientos/$movementId'
   id:
     | '__root__'
     | '/'
@@ -512,6 +546,7 @@ export interface FileRouteTypes {
     | '/cartera/habitaciones/$roomId'
     | '/cartera/inmuebles/$propertyId'
     | '/contratos/$contractId_/cambios'
+    | '/dinero/banco/extracto'
     | '/dinero/fianzas/$contractId'
     | '/dinero/gastos/$expenseId'
     | '/dinero/gastos/preparar'
@@ -520,11 +555,13 @@ export interface FileRouteTypes {
     | '/dinero/proveedores/$contactId'
     | '/dinero/vencimientos/$chargeId'
     | '/solicitudes/$applicationId_/borrador'
+    | '/dinero/banco/'
     | '/dinero/fianzas/'
     | '/dinero/gastos/'
     | '/dinero/inquilinos/'
     | '/dinero/proveedores/'
     | '/dinero/vencimientos/'
+    | '/dinero/banco/movimientos/$movementId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -556,6 +593,7 @@ export interface RootRouteChildren {
   CarteraHabitacionesRoomIdRoute: typeof CarteraHabitacionesRoomIdRoute
   CarteraInmueblesPropertyIdRoute: typeof CarteraInmueblesPropertyIdRoute
   ContratosContractIdCambiosRoute: typeof ContratosContractIdCambiosRoute
+  DineroBancoExtractoRoute: typeof DineroBancoExtractoRoute
   DineroFianzasContractIdRoute: typeof DineroFianzasContractIdRoute
   DineroGastosExpenseIdRoute: typeof DineroGastosExpenseIdRoute
   DineroGastosPrepararRoute: typeof DineroGastosPrepararRoute
@@ -564,11 +602,13 @@ export interface RootRouteChildren {
   DineroProveedoresContactIdRoute: typeof DineroProveedoresContactIdRoute
   DineroVencimientosChargeIdRoute: typeof DineroVencimientosChargeIdRoute
   SolicitudesApplicationIdBorradorRoute: typeof SolicitudesApplicationIdBorradorRoute
+  DineroBancoIndexRoute: typeof DineroBancoIndexRoute
   DineroFianzasIndexRoute: typeof DineroFianzasIndexRoute
   DineroGastosIndexRoute: typeof DineroGastosIndexRoute
   DineroInquilinosIndexRoute: typeof DineroInquilinosIndexRoute
   DineroProveedoresIndexRoute: typeof DineroProveedoresIndexRoute
   DineroVencimientosIndexRoute: typeof DineroVencimientosIndexRoute
+  DineroBancoMovimientosMovementIdRoute: typeof DineroBancoMovimientosMovementIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -769,6 +809,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContratosContractIdCambiosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dinero/banco/': {
+      id: '/dinero/banco/'
+      path: '/dinero/banco'
+      fullPath: '/dinero/banco/'
+      preLoaderRoute: typeof DineroBancoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dinero/banco/extracto': {
+      id: '/dinero/banco/extracto'
+      path: '/dinero/banco/extracto'
+      fullPath: '/dinero/banco/extracto'
+      preLoaderRoute: typeof DineroBancoExtractoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dinero/fianzas/': {
       id: '/dinero/fianzas/'
       path: '/dinero/fianzas'
@@ -860,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SolicitudesApplicationIdBorradorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dinero/banco/movimientos/$movementId': {
+      id: '/dinero/banco/movimientos/$movementId'
+      path: '/dinero/banco/movimientos/$movementId'
+      fullPath: '/dinero/banco/movimientos/$movementId'
+      preLoaderRoute: typeof DineroBancoMovimientosMovementIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -892,6 +953,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarteraHabitacionesRoomIdRoute: CarteraHabitacionesRoomIdRoute,
   CarteraInmueblesPropertyIdRoute: CarteraInmueblesPropertyIdRoute,
   ContratosContractIdCambiosRoute: ContratosContractIdCambiosRoute,
+  DineroBancoExtractoRoute: DineroBancoExtractoRoute,
   DineroFianzasContractIdRoute: DineroFianzasContractIdRoute,
   DineroGastosExpenseIdRoute: DineroGastosExpenseIdRoute,
   DineroGastosPrepararRoute: DineroGastosPrepararRoute,
@@ -900,11 +962,13 @@ const rootRouteChildren: RootRouteChildren = {
   DineroProveedoresContactIdRoute: DineroProveedoresContactIdRoute,
   DineroVencimientosChargeIdRoute: DineroVencimientosChargeIdRoute,
   SolicitudesApplicationIdBorradorRoute: SolicitudesApplicationIdBorradorRoute,
+  DineroBancoIndexRoute: DineroBancoIndexRoute,
   DineroFianzasIndexRoute: DineroFianzasIndexRoute,
   DineroGastosIndexRoute: DineroGastosIndexRoute,
   DineroInquilinosIndexRoute: DineroInquilinosIndexRoute,
   DineroProveedoresIndexRoute: DineroProveedoresIndexRoute,
   DineroVencimientosIndexRoute: DineroVencimientosIndexRoute,
+  DineroBancoMovimientosMovementIdRoute: DineroBancoMovimientosMovementIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
