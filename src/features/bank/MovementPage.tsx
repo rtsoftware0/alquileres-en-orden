@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { PageHeader } from '@/features/layout/PageHeader';
 import { NotFoundMessage } from '@/features/layout/NotFound';
@@ -11,13 +11,14 @@ import { useBank } from './BankContext';
 import { aria, BankNav, BankNotice, Button, Field, fieldClass, focusError, linkClass, RecordLink } from './BankUi';
 export function MovementPage({id}:{id:string}) {
  const sessionId=useId();
- const {state,setState}=useBank();const m=state.movements.find(x=>x.id===id);
+ const {state,setState,setAccount}=useBank();const m=state.movements.find(x=>x.id===id);
+ useEffect(()=>{if(m)setAccount(m.accountId);},[m?.accountId,setAccount]);
  const [mode,setMode]=useState('existente');const [recordId,setRecordId]=useState('');const [amount,setAmount]=useState('');const [review,setReview]=useState(false);const [errors,setErrors]=useState<Record<string,string>>({});const [notice,setNotice]=useState('');const [reason,setReason]=useState('');const [decision,setDecision]=useState<'conservar'|'revertir'|''>('');const [op,setOp]=useState(0);const [revision,setRevision]=useState(0);const [correctionId,setCorrection]=useState('');
  if(!m)return <NotFoundMessage/>;
  const selected=state.records.find(r=>r.id===recordId);const cents=parseCents(amount,',')??0;const remaining=movementRemaining(state,m);const options=suggestions(state,m);const links=state.links.filter(l=>l.movementId===id);const edited=()=>{setReview(false);setNotice('');setErrors({});setRevision(x=>x+1);};
  function fail(e:Record<string,string>){setErrors(e);setTimeout(()=>focusError(e),0);}
  function inspect(){const e=mode==='existente'?linkErrors(state,id,recordId,cents):(!Number.isSafeInteger(cents)||cents<=0||cents>remaining?{amount:'Indica un importe positivo no superior al restante.'}:{});if(Object.keys(e).length){fail(e);return;}setErrors({});setReview(true);setNotice('');}
- function confirm(){if(!review||!m)return;try{const operation=`${sessionId}:${id}:${mode}:${op}:${revision}`;const next=mode==='existente'?reconcile(state,id,recordId,cents,operation):prepareRecord(state,id,m.kind,cents,operation);setState(next);setNotice(mode==='existente'?'Vínculo aplicado solo en esta simulación. La caja base no cambia.':'Registro hipotético preparado, todavía sin conciliar. Cobro sin asignar; no cambia caja ni deuda base.');setErrors({});setReview(false);setOp(x=>x+1);}catch(e){fail({amount:e instanceof Error?e.message:'Revisa el importe.'});}}
+ function confirm(){if(!review||!m)return;try{const operation=`${sessionId}:${id}:${mode}:${op}:${revision}`;const next=mode==='existente'?reconcile(state,id,recordId,cents,operation):prepareRecord(state,id,m.kind,cents,operation);setState(next);const prepared=m.kind==='renta'?'Cobro renta hipotético sin asignar':m.kind==='proveedor'?'Pago hipotético a proveedor':m.cents>0?'Recepción hipotética de fianza':'Devolución hipotética de fianza';setNotice(mode==='existente'?'Vínculo aplicado solo en esta simulación. La caja base no cambia.':`${prepared} preparado, todavía sin conciliar. Separado del dinero base; no cambia caja ni deuda base.`);setErrors({});setReview(false);setOp(x=>x+1);}catch(e){fail({amount:e instanceof Error?e.message:'Revisa el importe.'});}}
  function correct(action:()=>typeof state){try{if(!reason.trim()){fail({reason:'Indica un motivo para esta corrección.'});return;}setState(action());setErrors({});setNotice('Corrección aplicada solo al escenario temporal; historial conservado.');setReview(false);}catch(e){fail({reason:e instanceof Error?e.message:'Corrección inválida.'});}}
  return <><PageHeader title={m.concept} subtitle={`${formatDate(m.date)} · ${m.reference||'Sin referencia estable'}`} actions={<Link to="/dinero/banco" className={linkClass}>Volver a Banco</Link>}/><BankNav/><BankNotice/>
  <p className="mb-4 text-sm text-muted-foreground">{accounts.find(a=>a.id===m.accountId)?.name} · {m.scope==='didactico'?'Escenario didáctico independiente':'Datos de cartera leídos, nunca modificados'} · {m.kind}</p>
