@@ -98,6 +98,7 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
 
       <Panel>
         <h2 ref={headingRef} tabIndex={-1} className="mb-4 text-base font-semibold focus:outline-none">Paso {step + 1} de 3 · {steps[step]}</h2>
+        {session?.linked&&session.resetValues&&<p className="mb-4 text-sm text-demo-foreground">Candidato y habitación vinculados a la solicitud (solo lectura). Fechas solicitadas: {formatDate(session.resetValues.startDate)} – {formatDate(session.resetValues.endDate)}. {values.startDate!==session.resetValues.startDate||values.endDate!==session.resetValues.endDate?'Las fechas de este borrador difieren de las solicitadas; no modifican la solicitud ni la reserva.':'Las fechas de este borrador coinciden con las solicitadas.'}</p>}
 
         {step === 0 && (
           <div className="grid gap-4 sm:grid-cols-2">
