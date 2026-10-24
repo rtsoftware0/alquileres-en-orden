@@ -12,6 +12,7 @@ export function parseCents(value:string,decimal:','|'.'):number|undefined {
 }
 export function csvHeaders(text:string,separator:string) {return Papa.parse<string[]>(text,{delimiter:separator,skipEmptyLines:'greedy'}).data[0]??[];}
 export const sameData=(a:Movement,b:Movement)=>a.accountId===b.accountId&&a.date===b.date&&a.cents===b.cents&&a.concept===b.concept&&a.currency===b.currency&&a.kind===b.kind;
+const hash=(s:string)=>{let h=2166136261;for(const ch of s){h=Math.imul(h^ch.charCodeAt(0),16777619);}return (h>>>0).toString(36);};
 export function reviewCsv(text:string,c:CsvConfig,state:BankState):ImportReview {
  const parsed=Papa.parse<string[]>(text,{delimiter:c.separator,skipEmptyLines:'greedy'});const headers=parsed.data[0]??[];
  const account=accounts.find(a=>a.id===c.accountId);
@@ -24,7 +25,10 @@ export function reviewCsv(text:string,c:CsvConfig,state:BankState):ImportReview 
  const cents=parseCents(read(c.amount),c.decimal);const concept=read(c.concept);const currency=c.currency?read(c.currency):'EUR';
  let error=parsed.errors.some(e=>e.row===i+1)?'CSV mal formado.':values.length!==headers.length?'Número de columnas incompatible.':!isValidIsoDate(date)?'Fecha inexistente o formato incompatible.':cents===undefined?'Importe inválido: usa euros con hasta dos decimales, distinto de cero.':currency!=='EUR'?'Solo se admiten ejemplos EUR.':!concept?'Falta concepto.':undefined;
  if(error||cents===undefined)return {row,error:error??'Importe inválido',matches:[]};
- const movement:Movement={id:`csv:${key}:${row}`,accountId:account.id,scope:account.scope,origin:c.exampleId,date,concept,reference:c.reference?read(c.reference):'',cents,currency,kind:c.kind};
+ const reference=c.reference?read(c.reference):'';
+ const original=state.movements.find(m=>m.accountId===account.id&&reference&&m.reference===reference);
+ const kind=original?.kind??(c.kind==='fianza'?'fianza':cents<0?'proveedor':'renta');
+ const movement:Movement={id:`csv-${hash(key)}-${row}`,accountId:account.id,scope:account.scope,origin:c.exampleId,date,concept,reference,cents,currency,kind};
  const stable=movement.reference?seen.filter(m=>m.accountId===movement.accountId&&m.reference===movement.reference):[];
  const doubtful=!movement.reference?seen.filter(m=>m.origin===movement.origin&&sameData(m,movement)):[];
  const disposition=stable.length?(stable.every(m=>sameData(m,movement))?'duplicada' as const:'discrepancia' as const):doubtful.length?'dudosa' as const:'nueva' as const;
