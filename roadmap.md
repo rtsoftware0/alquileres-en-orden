@@ -1,7 +1,7 @@
 # Bloque visual 08
-- [ ] Motor de CSV, identidad de lotes y conciliación temporal con pruebas
-- [ ] Banco, movimientos, asistente incorporado y ficha de conciliación
-- [ ] Navegación y separación del escenario didáctico
+- [x] Motor de CSV, identidad de lotes y conciliación temporal con pruebas
+- [x] Banco, movimientos, asistente incorporado y ficha de conciliación
+- [x] Navegación y separación del escenario didáctico
 - [ ] Verificación de pruebas, navegador escritorio/móvil y capturas
 
 ## Bloque visual 07 completado
