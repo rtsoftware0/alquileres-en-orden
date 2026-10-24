@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Planning (`src/features/planning/`) uses a root React context for temporary route-to-route scenarios, ID-only demo metadata, and one civil-date/interval engine shared by calendar, reservations and contract previews; the base dataset never mutates. Why: navigation retains simulation context without persistence or divergent availability checks.
 - Feature code lives in `src/features/<feature>/` (components, logic); routes in `src/routes/` stay thin. Why: keeps the future SaaS modules isolated and maintainable.
 - Product-wide constants (name, copy) live in `src/config/site.ts`. Why: single source for branding.
 - No backend is connected; any future backend must be the owner's independent Supabase, never Lovable Cloud. Why: explicit owner constraint.

@@ -28,9 +28,19 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
   );
 }
 
-export function DraftWizard() {
-  const [step, setStep] = useState(0);
-  const [values, setValues] = useState<DraftValues>(emptyDraft);
+export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; onChange: (values: DraftValues, step: number) => void } } = {}) {
+  const [localStep, setLocalStep] = useState(0);
+  const [localValues, setLocalValues] = useState<DraftValues>(emptyDraft);
+  const step = session?.step ?? localStep;
+  const values = session?.values ?? localValues;
+  const setStep = (update: number | ((previous: number) => number)) => {
+    const next = typeof update === 'function' ? update(step) : update;
+    if (session) session.onChange(values, next); else setLocalStep(next);
+  };
+  const setValues = (update: DraftValues | ((previous: DraftValues) => DraftValues)) => {
+    const next = typeof update === 'function' ? update(values) : update;
+    if (session) session.onChange(next, step); else setLocalValues(next);
+  };
   const [errors, setErrors] = useState<DraftErrors>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(true);
@@ -59,7 +69,7 @@ export function DraftWizard() {
     setStep((s) => s + 1);
   };
   const back = () => { setErrors({}); setStep((s) => s - 1); };
-  const restart = () => { setValues(emptyDraft); setErrors({}); setStep(0); };
+  const restart = () => { if (session) session.onChange(session.values, 0); else { setLocalValues(emptyDraft); setLocalStep(0); } setErrors({}); };
 
   const landlords = contactsWithRole(data, ["propietario", "arrendador"]);
   const tenants = contactsWithRole(data, ["inquilino", "candidato"]);
