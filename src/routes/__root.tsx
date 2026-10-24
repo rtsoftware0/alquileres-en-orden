@@ -16,6 +16,7 @@ import { AppShell } from "@/features/layout/AppShell";
 import { NotFoundMessage } from "@/features/layout/NotFound";
 import { PlanningProvider } from "@/features/planning/PlanningContext";
 import { BankProvider } from "@/features/bank/BankContext";
+import { SettlementProvider } from "@/features/settlements/SettlementContext";
 
 function NotFoundComponent() {
   return <NotFoundMessage />;
@@ -108,9 +109,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <PlanningProvider><BankProvider><AppShell>
+      <PlanningProvider><BankProvider><SettlementProvider><AppShell>
         <Outlet />
-      </AppShell></BankProvider></PlanningProvider>
+      </AppShell></SettlementProvider></BankProvider></PlanningProvider>
     </QueryClientProvider>
   );
 }
