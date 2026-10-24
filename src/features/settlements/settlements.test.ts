@@ -6,11 +6,13 @@ import {sourceFor,closeReview,validatePortfolio,validCivilDate} from './adapters
 import {contexts} from './data/examples';
 import {calculate,defaultRules,rulesErrors,prepare,initialSettlements,transition,edit,pay,balances,differences,close,reopen,distribute} from './engine';
 import type {Rules,Source} from './types';
+import {parseAmount} from './amount';
 const context=(id:string)=>{const c=contexts.find(c=>c.id===id);if(!c)throw new Error('missing');return c;};
 const src=(id='a15')=>sourceFor(d,id,'2026-10');
 const rules=(id='a15')=>defaultRules(context(id));
 function approved(id='a15'){let result=prepare(initialSettlements(),src(id),rules(id));result.state=transition(transition(result.state,result.id,'revisado'),result.id,'aprobado');return result;}
 describe('Liquidaciones demo09',()=>{
+ it('importes monetarios conservan céntimos exactos y rechazan precisión extra',()=>{expect(parseAmount('0.29')).toBe(29);expect(parseAmount('425,01')).toBe(42501);expect(parseAmount('-0.01')).toBe(-1);expect(Number.isNaN(parseAmount('1.001'))).toBe(true);expect(Number.isNaN(parseAmount('1e3'))).toBe(true);expect(Number.isNaN(parseAmount('9007199254740992'))).toBe(true);});
  it('fechas civiles inválidas no desaparecen al filtrar; cierre detecta fuentes rotas',()=>{expect(validCivilDate('2026-02-30')).toBe(false);expect(validCivilDate('2028-02-29')).toBe(true);const bad=structuredClone(d);const p=bad.payments[0];if(!p)throw new Error('missing');p.receivedOn='no-fecha';expect(validatePortfolio(bad)).toContain(`Cobro inválido ${p.id}`);expect(sourceFor(bad,'olivo','2026-10').invalid.length).toBeGreaterThan(0);expect(closeReview(bad,initialBank(),initialSettlements(),'2026-10').invalid.length).toBeGreaterThan(0);});
  it('cierre detecta vínculos bancarios con exceso y pagos proveedor inválidos',()=>{const bank=initialBank();const m=bank.movements.find(m=>m.scope==='base');const r=bank.records.find(r=>r.scope==='base');if(!m||!r)throw new Error('missing');bank.links.push({id:'bad',operationId:'bad',movementId:m.id,recordId:r.id,cents:999999999,active:true});expect(closeReview(d,bank,initialSettlements(),m.date.slice(0,7)).invalid.length).toBeGreaterThan(0);const bad=structuredClone(d);const p=bad.expensePayments[0];if(!p)throw new Error('missing');p.amountCents=99999999;expect(validatePortfolio(bad)).toContain(`Pago proveedor inválido ${p.id}`);});
  it('A15: 1000 asignados − 10% − 50 propietario = 850',()=>{const c=calculate(src(),rules());expect(c.incomeCents).toBe(100000);expect(c.feeCents).toBe(10000);expect(c.deductibleCents).toBe(5000);expect(c.operatingCents).toBe(85000);expect(c.payableCents).toBe(85000);expect(c.excluded.map(x=>x.kind)).toEqual(['fianza','libre']);});
