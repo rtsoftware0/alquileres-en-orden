@@ -26,13 +26,13 @@ export function convertApplication(state:PlanningState,id:string):PlanningState 
 export function reservationErrors(state:PlanningState,r:Reservation) {
  const e=rangeErrors(r.startDate,r.endDate);
  const a=state.applications.find(a=>a.id===r.applicationId);
- if(!a||['rechazada','retirada'].includes(a.status)) e.applicationId='Elige una solicitud vigente.';
- if(!data.properties.some(p=>p.id===r.propertyId)|| (r.roomId&&!data.rooms.some(x=>x.id===r.roomId&&x.propertyId===r.propertyId))) e.roomId='Elige una vivienda y unidad válidas.';
- if(!validDate(r.expiresOn)||r.expiresOn<=data.referenceDate||r.expiresOn>=r.startDate) e.expiresOn='Usa una caducidad posterior al 21/10/2026 y anterior a la entrada en este ejemplo.';
- if(validDate(r.startDate)&&r.startDate<data.referenceDate) e.startDate='La reserva no puede comenzar antes de la referencia.';
+ if(!a||['rechazada','retirada'].includes(a.status)) e['applicationId']='Elige una solicitud vigente.';
+ if(!data.properties.some(p=>p.id===r.propertyId)|| (r.roomId&&!data.rooms.some(x=>x.id===r.roomId&&x.propertyId===r.propertyId))) e['roomId']='Elige una vivienda y unidad válidas.';
+ if(!validDate(r.expiresOn)||r.expiresOn<=data.referenceDate||r.expiresOn>=r.startDate) e['expiresOn']='Usa una caducidad posterior al 21/10/2026 y anterior a la entrada en este ejemplo.';
+ if(validDate(r.startDate)&&r.startDate<data.referenceDate) e['startDate']='La reserva no puede comenzar antes de la referencia.';
  if(!Object.keys(e).length) {
  const hits=conflicts(intervals(data,state),r,[r.id]);
- if(hits.length)e.roomId=`Conflicto: ${hits.map(h=>h.label).join(', ')}.`;
+ if(hits.length)e['roomId']=`Conflicto: ${hits.map(h=>h.label).join(', ')}.`;
  }
  return e;
 }
@@ -48,25 +48,25 @@ export function releaseReservation(state:PlanningState,id:string,status:'cancela
 export const emptyChange=(c:Contract):ChangeValues=>({kind:'renta',effectiveDate:'',endDate:'',roomId:'',rent:String(c.rentCents/100),dueDay:String(c.dueDay),reason:'',futureDecision:''});
 export function changeErrors(c:Contract,v:ChangeValues,state:PlanningState) {
  const e:Record<string,string>={};
- if(c.status!=='activo') e.kind='Solo contratos activos.';
+ if(c.status!=='activo') e['kind']='Solo contratos activos.';
  const effective=v.kind==='prorroga'?c.endDate:v.effectiveDate;
- if(!validDate(effective)||effective<data.referenceDate||effective<c.startDate||(v.kind!=='prorroga'&&effective>=c.endDate)) e.effectiveDate='Elige una fecha desde 21/10/2026 y dentro de la vigencia.';
+ if(!validDate(effective)||effective<data.referenceDate||effective<c.startDate||(v.kind!=='prorroga'&&effective>=c.endDate)) e['effectiveDate']='Elige una fecha desde 21/10/2026 y dentro de la vigencia.';
  if(v.kind==='prorroga') {
- if(!validDate(v.endDate)||v.endDate<=c.endDate) e.endDate='La nueva salida debe ser posterior al fin actual.';
- else if(conflicts(intervals(data,state),{propertyId:c.propertyId,roomId:c.roomId,startDate:c.endDate,endDate:v.endDate},intervals(data,state).filter(i=>i.contractId===c.id).map(i=>i.id)).length)e.endDate='La prórroga coincide con otro intervalo.';
+ if(!validDate(v.endDate)||v.endDate<=c.endDate) e['endDate']='La nueva salida debe ser posterior al fin actual.';
+ else if(conflicts(intervals(data,state),{propertyId:c.propertyId,roomId:c.roomId,startDate:c.endDate,endDate:v.endDate},intervals(data,state).filter(i=>i.contractId===c.id).map(i=>i.id)).length)e['endDate']='La prórroga coincide con otro intervalo.';
  }
  if(v.kind==='habitacion') {
  const dest=data.rooms.find(r=>r.id===v.roomId);
- if(!dest||dest.id===c.roomId)e.roomId='Elige una habitación distinta.';
- else if(!e.effectiveDate&&conflicts(intervals(data,state),{propertyId:dest.propertyId,roomId:dest.id,startDate:effective,endDate:c.endDate},intervals(data,state).filter(i=>i.contractId===c.id).map(i=>i.id)).length)e.roomId='El destino tiene ocupación, reserva o mantenimiento en ese tramo.';
+ if(!dest||dest.id===c.roomId)e['roomId']='Elige una habitación distinta.';
+ else if(!e['effectiveDate']&&conflicts(intervals(data,state),{propertyId:dest.propertyId,roomId:dest.id,startDate:effective,endDate:c.endDate},intervals(data,state).filter(i=>i.contractId===c.id).map(i=>i.id)).length)e['roomId']='El destino tiene ocupación, reserva o mantenimiento en ese tramo.';
  }
  if(v.kind==='renta') {
  const terms=validateTerms({...emptyDraft,startDate:c.startDate,endDate:c.endDate,rent:v.rent,deposit:'0',dueDay:v.dueDay,modality:c.modality});
- if(terms.rent)e.rent=terms.rent; if(terms.dueDay)e.dueDay=terms.dueDay;
+ if(terms.rent)e['rent']=terms.rent; if(terms.dueDay)e['dueDay']=terms.dueDay;
  }
  if(v.kind==='salida') {
- if(!v.reason.trim())e.reason='Indica el motivo de la salida anticipada.';
- if(!['revisar','mantener','anular'].includes(v.futureDecision))e.futureDecision='Elige qué se propondría hacer con obligaciones futuras.';
+ if(!v.reason.trim())e['reason']='Indica el motivo de la salida anticipada.';
+ if(!['revisar','mantener','anular'].includes(v.futureDecision))e['futureDecision']='Elige qué se propondría hacer con obligaciones futuras.';
  }
  return e;
 }

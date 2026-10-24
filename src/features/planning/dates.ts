@@ -6,9 +6,9 @@ export const nextDay = (iso: string, days = 1) => format(civilAddDays(parseISO(i
 export const dayCount = (start: string, end: string) => differenceInCalendarDays(parseISO(end), parseISO(start));
 export function rangeErrors(start: string, end: string) {
  const e: Record<string,string> = {};
- if (!validDate(start)) e.startDate = 'Indica una entrada válida.';
- if (!validDate(end)) e.endDate = 'Indica una salida válida.';
- else if (!e.startDate && end <= start) e.endDate = 'La salida debe ser posterior a la entrada.';
+ if (!validDate(start)) e['startDate'] = 'Indica una entrada válida.';
+ if (!validDate(end)) e['endDate'] = 'Indica una salida válida.';
+ else if (!e['startDate'] && end <= start) e['endDate'] = 'La salida debe ser posterior a la entrada.';
  return e;
 }
 export const overlaps = (a: {startDate:string;endDate?:string}, b: {startDate:string;endDate?:string}) => a.startDate < (b.endDate ?? '9999-12-31') && b.startDate < (a.endDate ?? '9999-12-31');
