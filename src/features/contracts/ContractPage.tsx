@@ -37,7 +37,7 @@ export function ContractPage({ contract: c }: { contract: Contract }) {
           {" · "}
           <Link to="/cartera/habitaciones/$roomId" params={{ roomId: room.id }} className={linkClass}>Habitación {room.code}</Link>
         </>}
-        actions={<Link to="/contratos" className={buttonVariants({ variant: "outline" })}><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a contratos</Link>}
+        actions={<div className="flex flex-wrap gap-2">{c.status === 'activo' && <Link to="/contratos/$contractId/cambios" params={{ contractId: c.id }} className={buttonVariants({ variant: 'outline' })}>Simular cambios</Link>}<Link to="/contratos" className={buttonVariants({ variant: "outline" })}><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a contratos</Link></div>}
       />
       <p className="mb-4 flex items-start gap-2 rounded-md border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />

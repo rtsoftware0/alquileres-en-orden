@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Building2, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench } from "lucide-react";
+import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/config/site";
 import { demoPortfolio } from "@/features/portfolio/data/demo-data";
@@ -10,6 +10,9 @@ const nav = [
   { to: "/cartera", label: "Cartera", icon: Building2, exact: false },
   { to: "/contactos", label: "Contactos", icon: Users, exact: false },
   { to: "/contratos", label: "Contratos", icon: FileText, exact: false },
+  { to: "/calendario", label: "Calendario", icon: CalendarDays, exact: false },
+  { to: "/solicitudes", label: "Solicitudes", icon: ClipboardList, exact: false },
+  { to: "/reservas", label: "Reservas", icon: CalendarCheck, exact: false },
   { to: "/dinero", label: "Dinero", icon: Wallet, exact: false },
   { to: "/incidencias", label: "Incidencias", icon: Wrench, exact: false },
   { to: "/tareas", label: "Tareas", icon: CheckSquare, exact: false },
@@ -77,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm">
         Saltar al contenido
       </a>
-      <aside className="hidden border-r border-sidebar-border bg-sidebar lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:gap-8 lg:p-5">
+      <aside className="hidden overflow-y-auto border-r border-sidebar-border bg-sidebar lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:gap-8 lg:p-5">
         <Brand />
         <NavLinks />
         <div className="mt-auto"><OrgInfo /></div>
@@ -93,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <Menu className="h-4 w-4" aria-hidden="true" />
               </SheetTrigger>
-              <SheetContent side="left" className="flex w-72 flex-col gap-8 bg-sidebar p-5">
+              <SheetContent side="left" className="flex w-72 overflow-y-auto flex-col gap-8 bg-sidebar p-5">
                 <div>
                   <SheetTitle className="text-sm font-bold tracking-[0.12em] text-primary">{site.name}</SheetTitle>
                   <SheetDescription className="sr-only">Menú de navegación</SheetDescription>

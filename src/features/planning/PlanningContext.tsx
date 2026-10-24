@@ -1,0 +1,10 @@
+import { Fragment, createContext, useContext, useState, type ReactNode } from 'react';
+import type { PlanningState } from './types';
+import { initialPlanning } from './simulator';
+const PlanningContext=createContext<{state:PlanningState;setState:React.Dispatch<React.SetStateAction<PlanningState>>;reset:()=>void}|null>(null);
+export function PlanningProvider({children}:{children:ReactNode}) {
+ const [state,setState]=useState(initialPlanning);
+ const [epoch,setEpoch]=useState(0);
+ return <PlanningContext.Provider value={{state,setState,reset:()=>{setState(initialPlanning());setEpoch(n=>n+1);}}}><Fragment key={epoch}>{children}</Fragment></PlanningContext.Provider>;
+}
+export function usePlanning(){const value=useContext(PlanningContext);if(!value)throw new Error('Falta el escenario temporal');return value;}

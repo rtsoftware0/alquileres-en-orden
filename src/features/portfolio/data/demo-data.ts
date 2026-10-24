@@ -5,6 +5,7 @@ import { demoAllocations, demoCharges, demoDepositMovements, demoPayments } from
 import { demoExpensePayments, demoExpenseShares, demoExpenses } from "@/features/money/data/demo-expenses";
 import { demoIncidents, demoTasks } from "@/features/incidents/data/demo-incidents";
 import { demoDocuments, demoNotices, demoThreads } from "@/features/docs/data/demo-docs";
+import { demoApplications, demoReservations } from '@/features/planning/data/demo-planning';
 
 // Fictitious demonstration data. No real people, addresses or payments.
 
@@ -89,4 +90,6 @@ export const demoPortfolio: PortfolioDataset = {
   documents: demoDocuments,
   threads: demoThreads,
   notices: demoNotices,
+  applications: demoApplications,
+  reservations: demoReservations,
 };

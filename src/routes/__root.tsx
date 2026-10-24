@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/features/layout/AppShell";
 import { NotFoundMessage } from "@/features/layout/NotFound";
+import { PlanningProvider } from "@/features/planning/PlanningContext";
 
 function NotFoundComponent() {
   return <NotFoundMessage />;
@@ -106,9 +107,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <AppShell>
+      <PlanningProvider><AppShell>
         <Outlet />
-      </AppShell>
+      </AppShell></PlanningProvider>
     </QueryClientProvider>
   );
 }
