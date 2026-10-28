@@ -92,6 +92,9 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
   const contact = contacts.find((c) => c.id === ctx.contactId);
   const company = PORTAL_COMPANIES.find((c) => c.id === ctx.companyId)!;
   const change = (patch: Partial<PortalContext>) => {
+    // Any context change invalidates an open revocation confirmation: a new
+    // preview is required for the new company/profile/contact.
+    setConfirmRevoke(false);
     const next = { ...ctx, ...patch };
     if (patch.companyId || patch.profile) next.contactId = selectableContacts(data, next.companyId, next.profile)[0]?.id ?? "";
     setCtx(next);
@@ -122,7 +125,8 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
         <div className="mb-4 text-sm">
           {confirmRevoke ? (
             <div className="rounded-md border border-border bg-muted/40 p-3" role="region" aria-label="Vista previa de revocación">
-              <p>Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
+              <p>Contacto: <strong>{contact.code} {contact.name}</strong> · Perfil: {profileLabel[ctx.profile]} · Empresa: {company.name}</p>
+              <p className="mt-1">Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
               <div className="mt-2 flex gap-2"><button type="button" className={btnPrimary} onClick={() => { setConfirmRevoke(false); onRevokeCurrent(); }}>Aplicar en la demostración</button><button type="button" className={btn} onClick={() => setConfirmRevoke(false)}>Cancelar</button></div>
             </div>
           ) : <button type="button" className={btn} onClick={() => setConfirmRevoke(true)}>Simular revocación de este acceso</button>}
