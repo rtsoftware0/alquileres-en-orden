@@ -1,4 +1,4 @@
-import type { Contact, DemoDocument, Incident, MessageThread, PortfolioDataset, ThreadMessage } from "@/features/portfolio/data/types";
+import type { Contact, Incident, MessageThread, PortfolioDataset, ThreadMessage } from "@/features/portfolio/data/types";
 import { roomsOf, summarizeOccupancy } from "@/features/portfolio/selectors";
 import { chargeBalance, tenantAccount } from "@/features/money/selectors";
 import { currentVersion } from "@/features/docs/selectors";

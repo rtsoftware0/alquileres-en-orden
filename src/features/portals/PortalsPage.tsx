@@ -6,7 +6,7 @@ import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { currentVersion } from "@/features/docs/selectors";
 import { PORTAL_COMPANIES, demoPortalGrants, profileLabel, type PortalProfile } from "./data/demo-portal-access";
 import {
-  ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, sharedThreadMessages,
+  ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, visibleThreadMessages,
   type PortalContext,
 } from "./selectors";
 import { OwnerPortal, ProviderPortal, TenantPortal, btn, btnPrimary } from "./PortalViews";
