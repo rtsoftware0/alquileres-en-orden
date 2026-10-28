@@ -115,28 +115,67 @@ export function providerView(d: PortfolioDataset, ctx: PortalContext, revoked?: 
 export const sharedThreadMessages = (t?: MessageThread): ThreadMessage[] =>
   t ? t.messages.filter((m) => m.visibility === "compartida") : [];
 
-// --- Documents: explicit recipient AND authorized relation with the linked record.
+// --- Documents and threads: explicit recipient AND authorized relation with the linked record.
 
-function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], doc: DemoDocument): boolean {
-  const { kind, id } = doc.link;
+type RelKind = "inmueble" | "contrato" | "incidencia";
+
+/** The relation must still hold in the dataset; grant metadata alone never suffices. */
+function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, id: string): boolean {
   if (ctx.profile === "inquilino") {
-    if (kind === "contrato") return relIds(gs, "contrato").includes(id);
-    if (kind === "incidencia") return gs.some((g) => g.incidentIds.includes(id));
+    if (kind === "contrato") {
+      const c = d.contracts.find((x) => x.id === id);
+      return !!c && c.tenantIds.includes(ctx.contactId);
+    }
+    if (kind === "incidencia") {
+      const i = d.incidents.find((x) => x.id === id);
+      // Coherent with one of the contact's own contracts (same room or property).
+      return !!i && d.contracts.some((c) => c.tenantIds.includes(ctx.contactId) && (c.roomId === i.roomId || c.propertyId === i.propertyId));
+    }
     return false;
   }
-  if (ctx.profile === "proveedor") return kind === "incidencia" && relIds(gs, "incidencia").includes(id);
+  if (ctx.profile === "proveedor") {
+    if (kind !== "incidencia") return false;
+    const i = d.incidents.find((x) => x.id === id);
+    return !!i && i.providerId === ctx.contactId;
+  }
   // Owner
-  if (kind === "inmueble") return relIds(gs, "inmueble").includes(id);
-  if (kind === "incidencia") return gs.some((g) => g.incidentIds.includes(id));
+  if (kind === "inmueble") {
+    const p = d.properties.find((x) => x.id === id);
+    return !!p && p.ownerId === ctx.contactId;
+  }
+  if (kind === "incidencia") {
+    const i = d.incidents.find((x) => x.id === id);
+    const p = i && d.properties.find((x) => x.id === i.propertyId);
+    return !!p && p.ownerId === ctx.contactId;
+  }
   return false;
+}
+
+function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], kind: RelKind, id: string): boolean {
+  const granted =
+    (ctx.profile === "inquilino" && (kind === "contrato" ? relIds(gs, "contrato").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id)))) ||
+    (ctx.profile === "proveedor" && kind === "incidencia" && relIds(gs, "incidencia").includes(id)) ||
+    (ctx.profile === "propietario" && (kind === "inmueble" ? relIds(gs, "inmueble").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id))));
+  return granted && relationHolds(d, ctx, kind, id);
 }
 
 export function visibleDocuments(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>) {
   const gs = grantsFor(ctx, revoked);
   if (gs.length === 0) return [];
   return d.documents
-    .filter((doc) => doc.visibility === "compartida" && doc.recipientIds.includes(ctx.contactId) && authorizedRecord(d, ctx, gs, doc))
+    .filter((doc) => doc.visibility === "compartida" && doc.recipientIds.includes(ctx.contactId) && authorizedRecord(d, ctx, gs, doc.link.kind, doc.link.id))
     .map((doc) => ({ id: doc.id, title: doc.title, category: doc.category, versions: doc.versions, current: currentVersion(doc) }));
+}
+
+/**
+ * Shared messages of a thread for a context, or null when the thread's record
+ * is not authorized for it. A shared message is never visible to any contact.
+ */
+export function visibleThreadMessages(d: PortfolioDataset, ctx: PortalContext, thread: MessageThread, revoked?: ReadonlySet<string>): ThreadMessage[] | null {
+  const gs = grantsFor(ctx, revoked);
+  if (gs.length === 0) return null;
+  if (!authorizedRecord(d, ctx, gs, thread.context.kind, thread.context.id)) return null;
+  return thread.messages.filter((m) => m.visibility === "compartida");
 }
 
 /** Direct lookup used by detail panels: returns null for any ID outside the context. */
@@ -179,10 +218,19 @@ export const permissionsFor: Record<PortalProfile, string[]> = {
 export interface ProviderDraft { incidentId: string; kind: "presupuesto" | "evidencia" | ""; amount: string; text: string }
 export type ProviderDraftErrors = Partial<Record<"incidentId" | "kind" | "amount" | "text", string>>;
 
-export function parseEuroToCents(s: string): number | null {
-  const t = s.trim().replace(/\./g, "").replace(",", ".");
-  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
-  return Math.round(Number(t) * 100);
+/**
+ * Strict demo parser: Spanish thousands ("1.250,50"), plain digits ("120") or a
+ * single decimal comma/dot with 1–2 digits ("95,50" / "95.50"). Rejects
+ * ambiguous or mis-grouped thousands and non-finite / non-safe-integer cents.
+ */
+export function parseEuroToCents(input: string): number | null {
+  const s = input.trim().replace(/\s|€/g, "");
+  if (!s) return null;
+  const m = /^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/.exec(s) ?? /^(\d+)[.,](\d{1,2})$/.exec(s);
+  if (!m) return null;
+  const euros = Number(m[1]!.replace(/\./g, ""));
+  const cents = euros * 100 + Number((m[2] ?? "").padEnd(2, "0"));
+  return Number.isSafeInteger(cents) ? cents : null;
 }
 
 export function validateProviderDraft(draft: ProviderDraft, allowedIncidentIds: string[]): ProviderDraftErrors {
