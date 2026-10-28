@@ -65,7 +65,15 @@ export function PortalsPage() {
           <Panel title="Estado del bloque" className="mt-6"><p className="text-sm text-muted-foreground">Liquidaciones: integración pendiente del bloque 09.</p></Panel>
         </>
       )}
-      {mode === "portal" && <PortalPreview ctx={ctx} setCtx={setCtx} revoked={revoked} onExit={() => setMode("centro")} onRestore={restore} />}
+      {mode === "portal" && (
+        <PortalPreview ctx={ctx} setCtx={setCtx} revoked={revoked} onExit={() => setMode("centro")} onRestore={restore}
+          onRevokeCurrent={() => {
+            const ids = demoPortalGrants.filter((g) => g.companyId === ctx.companyId && g.profile === ctx.profile && g.contactId === ctx.contactId).map((g) => g.id);
+            if (ids.length === 0) return;
+            setRevoked((r) => new Set([...r, ...ids]));
+            log(`acceso de ${ctx.contactId.toUpperCase()} como ${profileLabel[ctx.profile].toLowerCase()} revocado en memoria; expediente conservado.`);
+          }} />
+      )}
       {mode === "accesos" && (
         <AccessPanel revoked={revoked} history={history} log={log}
           onRevoke={(ids) => setRevoked((r) => new Set([...r, ...ids]))} onRestore={restore} onExit={() => setMode("centro")} />
@@ -76,9 +84,10 @@ export function PortalsPage() {
 
 // ---------------- Portal preview with context selector
 
-export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore }: {
-  ctx: PortalContext; setCtx: (c: PortalContext) => void; revoked: ReadonlySet<string>; onExit: () => void; onRestore: () => void;
+export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevokeCurrent }: {
+  ctx: PortalContext; setCtx: (c: PortalContext) => void; revoked: ReadonlySet<string>; onExit: () => void; onRestore: () => void; onRevokeCurrent?: () => void;
 }) {
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
   const contacts = selectableContacts(data, ctx.companyId, ctx.profile);
   const contact = contacts.find((c) => c.id === ctx.contactId);
   const company = PORTAL_COMPANIES.find((c) => c.id === ctx.companyId)!;
@@ -109,6 +118,16 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore }: {
       <p className="mb-4 text-sm text-foreground" aria-live="polite">
         Viendo como: <strong>{profileLabel[ctx.profile]}</strong> · {contact ? `${contact.code} ${contact.name}` : "sin contacto"} · {company.name}
       </p>
+      {contact && !blocked && onRevokeCurrent && demoPortalGrants.some((g) => g.companyId === ctx.companyId && g.profile === ctx.profile && g.contactId === ctx.contactId) && (
+        <div className="mb-4 text-sm">
+          {confirmRevoke ? (
+            <div className="rounded-md border border-border bg-muted/40 p-3" role="region" aria-label="Vista previa de revocación">
+              <p>Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
+              <div className="mt-2 flex gap-2"><button type="button" className={btnPrimary} onClick={() => { setConfirmRevoke(false); onRevokeCurrent(); }}>Aplicar en la demostración</button><button type="button" className={btn} onClick={() => setConfirmRevoke(false)}>Cancelar</button></div>
+            </div>
+          ) : <button type="button" className={btn} onClick={() => setConfirmRevoke(true)}>Simular revocación de este acceso</button>}
+        </div>
+      )}
       <div key={`${ctxKey(ctx)}|${blocked ? "rev" : "ok"}`}>
         {!contact ? (
           <Panel title="Sin relaciones"><p className="text-sm text-muted-foreground">Esta empresa no tiene contactos con relaciones para este perfil. No se muestra ningún dato.</p></Panel>

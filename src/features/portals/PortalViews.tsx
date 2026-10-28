@@ -120,7 +120,7 @@ export function OwnerPortal({ ctx }: { ctx: PortalContext }) {
 function IncidentList({ ctx, items }: { ctx: PortalContext; items: { id: string; title: string; status: keyof typeof incidentStatusLabel; targetDate: string; description: string }[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const detail = openId ? portalDetail(data, ctx, "incidencia", openId) : null;
-  const item = detail ? items.find((i) => i.id === detail.id) : undefined;
+  const item = detail && "id" in detail ? items.find((i) => i.id === detail.id) : undefined;
   if (items.length === 0) return <Empty>No hay incidencias autorizadas para este contexto.</Empty>;
   return (
     <div>
