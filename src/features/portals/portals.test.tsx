@@ -85,7 +85,8 @@ describe("contexts and revocation", () => {
 
 function Harness({ revoked = new Set<string>(), onRevokeCurrent }: { revoked?: Set<string>; onRevokeCurrent?: () => void }) {
   const [ctx, setCtx] = useState<PortalContext>(c("inquilino", "con-002"));
-  return <PortalPreview ctx={ctx} setCtx={setCtx} revoked={revoked} onExit={() => {}} onRestore={() => {}} onRevokeCurrent={onRevokeCurrent} />;
+  const props = { ctx, setCtx, revoked, onExit: () => {}, onRestore: () => {}, ...(onRevokeCurrent ? { onRevokeCurrent } : {}) };
+  return <PortalPreview {...props} />;
 }
 
 describe("portal UI", () => {

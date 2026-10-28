@@ -151,7 +151,8 @@ function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, i
   return false;
 }
 
-function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], kind: RelKind, id: string): boolean {
+function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], kind: DocLinkKind, id: string): boolean {
+  if (kind !== "inmueble" && kind !== "contrato" && kind !== "incidencia") return false;
   const granted =
     (ctx.profile === "inquilino" && (kind === "contrato" ? relIds(gs, "contrato").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id)))) ||
     (ctx.profile === "proveedor" && kind === "incidencia" && relIds(gs, "incidencia").includes(id)) ||
