@@ -76,11 +76,13 @@ export function ownerView(d: PortfolioDataset, ctx: PortalContext, revoked?: Rea
  * suffices, and a different contract without grant gives no access.
  */
 function tenantIncidentAuthorized(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], i: Incident): boolean {
-  if (!gs.some((g) => g.incidentIds.includes(i.id))) return false;
-  const contractIds = relIds(gs, "contrato");
-  return d.contracts.some(
-    (c) => contractIds.includes(c.id) && c.tenantIds.includes(ctx.contactId) && c.propertyId === i.propertyId && (i.roomId ? c.roomId === i.roomId : true),
-  );
+  // The same grant must list the incident AND relate to a contract that still
+  // belongs to the tenant and matches the incident's room (or property).
+  return gs.some((g) => {
+    if (!g.incidentIds.includes(i.id) || g.relation.kind !== "contrato") return false;
+    const c = d.contracts.find((x) => x.id === g.relation.id);
+    return !!c && c.tenantIds.includes(ctx.contactId) && c.propertyId === i.propertyId && (i.roomId ? c.roomId === i.roomId : true);
+  });
 }
 
 export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>, grants: PortalGrant[] = demoPortalGrants) {
