@@ -8,6 +8,7 @@ import {
   validateProviderDraft, visibleDocuments, visibleThreadMessages, type PortalContext,
 } from "./selectors";
 import { PortalPreview, PortalsPage } from "./PortalsPage";
+import { demoPortalGrants } from "./data/demo-portal-access";
 
 afterEach(cleanup);
 const c = (profile: PortalContext["profile"], contactId: string, companyId = "cartera"): PortalContext => ({ companyId, profile, contactId });
