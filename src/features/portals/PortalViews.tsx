@@ -286,7 +286,8 @@ function ProviderDraftForm({ options }: { options: { id: string; label: string }
               <option value="">Elige…</option><option value="presupuesto">Nueva propuesta de presupuesto</option><option value="evidencia">Evidencia de resolución</option>
             </select></label>{err("kind")}
           {d.kind === "presupuesto" && <><label className="block text-sm"><span className="font-medium">Importe (€)</span>
-            <input id="pp-amount" inputMode="decimal" className={fieldClass} value={d.amount} {...aria("amount")} onChange={(e) => setD({ ...d, amount: e.target.value })} /></label>{err("amount")}</>}
+            <input id="pp-amount" inputMode="decimal" className={fieldClass} value={d.amount} {...aria("amount")} onChange={(e) => setD({ ...d, amount: e.target.value })} />
+            <span className="mt-1 block text-xs text-muted-foreground">Formato aceptado: 120, 120,50 o 120.50 (hasta dos decimales; miles con punto: 1.250,50).</span></label>{err("amount")}</>}
           <label className="block text-sm"><span className="font-medium">Descripción</span>
             <textarea id="pp-text" rows={3} className={`${fieldClass} h-auto py-2`} value={d.text} {...aria("text")} onChange={(e) => setD({ ...d, text: e.target.value })} /></label>{err("text")}
           <div className="flex gap-2"><button type="button" className={btnPrimary} onClick={review}>Ver resumen previo</button><button type="button" className={btn} onClick={discard}>Descartar</button></div>

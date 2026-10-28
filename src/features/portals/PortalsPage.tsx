@@ -6,7 +6,7 @@ import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { currentVersion } from "@/features/docs/selectors";
 import { PORTAL_COMPANIES, demoPortalGrants, profileLabel, type PortalProfile } from "./data/demo-portal-access";
 import {
-  ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, sharedThreadMessages,
+  ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, visibleThreadMessages,
   type PortalContext,
 } from "./selectors";
 import { OwnerPortal, ProviderPortal, TenantPortal, btn, btnPrimary } from "./PortalViews";
@@ -92,6 +92,9 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
   const contact = contacts.find((c) => c.id === ctx.contactId);
   const company = PORTAL_COMPANIES.find((c) => c.id === ctx.companyId)!;
   const change = (patch: Partial<PortalContext>) => {
+    // Any context change invalidates an open revocation confirmation: a new
+    // preview is required for the new company/profile/contact.
+    setConfirmRevoke(false);
     const next = { ...ctx, ...patch };
     if (patch.companyId || patch.profile) next.contactId = selectableContacts(data, next.companyId, next.profile)[0]?.id ?? "";
     setCtx(next);
@@ -122,7 +125,8 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
         <div className="mb-4 text-sm">
           {confirmRevoke ? (
             <div className="rounded-md border border-border bg-muted/40 p-3" role="region" aria-label="Vista previa de revocación">
-              <p>Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
+              <p>Contacto: <strong>{contact.code} {contact.name}</strong> · Perfil: {profileLabel[ctx.profile]} · Empresa: {company.name}</p>
+              <p className="mt-1">Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
               <div className="mt-2 flex gap-2"><button type="button" className={btnPrimary} onClick={() => { setConfirmRevoke(false); onRevokeCurrent(); }}>Aplicar en la demostración</button><button type="button" className={btn} onClick={() => setConfirmRevoke(false)}>Cancelar</button></div>
             </div>
           ) : <button type="button" className={btn} onClick={() => setConfirmRevoke(true)}>Simular revocación de este acceso</button>}
@@ -154,7 +158,7 @@ function AccessPanel({ revoked, history, log, onRevoke, onRestore, onExit }: {
       <div className="flex flex-wrap gap-2"><button type="button" className={btn} onClick={onExit}>Volver a gestión</button><button type="button" className={btn} onClick={onRestore}>Restaurar demo</button></div>
       <InviteForm log={log} />
       <RevokeForm revoked={revoked} log={log} onRevoke={onRevoke} />
-      <SharePreview />
+      <SharePreview revoked={revoked} />
       <Panel title="Historial temporal (simulación)">
         {history.length === 0 ? <p className="text-sm text-muted-foreground">Sin acciones simuladas.</p> : (
           <ol className="list-decimal space-y-1 pl-5 text-sm">{history.map((h) => <li key={h.id}>{h.text}</li>)}</ol>
@@ -236,7 +240,7 @@ function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; 
   );
 }
 
-function SharePreview() {
+function SharePreview({ revoked }: { revoked: ReadonlySet<string> }) {
   const [item, setItem] = useState("");
   const [recipientKey, setRecipientKey] = useState("");
   const recipients = [...new Map(demoPortalGrants.map((g) => [`${g.profile}|${g.contactId}`, g])).values()];
@@ -246,7 +250,13 @@ function SharePreview() {
   const doc = kind === "doc" ? data.documents.find((d) => d.id === id) : undefined;
   const thread = kind === "thr" ? data.threads.find((t) => t.id === id) : undefined;
   const ctx: PortalContext | undefined = r && { companyId: "cartera", profile: r.profile, contactId: r.contactId };
-  const visibleNow = doc && ctx ? visibleDocuments(data, ctx).some((d) => d.id === doc.id) : false;
+  // Revocations apply to every visibility derivation, including this preview.
+  const ctxRevoked = ctx ? isRevoked(ctx, revoked) : false;
+  const visibleNow = !!(doc && ctx && visibleDocuments(data, ctx, revoked).some((d) => d.id === doc.id));
+  const threadMsgs = thread && ctx ? visibleThreadMessages(data, ctx, thread, revoked) : null;
+  const notVisibleReason = ctxRevoked
+    ? "El acceso de este contacto está revocado en esta demostración: nada aparece en su portal hasta restaurar la demo."
+    : "Hoy no aparece en el portal de este contacto: requiere destinatario explícito y relación autorizada con su registro.";
   return (
     <Panel title="Vista previa de visibilidad">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -270,14 +280,29 @@ function SharePreview() {
               <p className="mt-1">Documento: {doc.title} · versión {currentVersion(doc).version}</p>
               {doc.visibility === "interna" ? (
                 <p className="mt-2 font-medium text-destructive">Advertencia: documento interno. No se muestra su contenido en vistas externas.</p>
-              ) : <p className="mt-2">{currentVersion(doc).content}</p>}
-              <p className="mt-2 text-muted-foreground">{visibleNow ? "Hoy ya aparece en el portal de este contacto." : "Hoy no aparece en el portal de este contacto: requiere destinatario explícito y relación autorizada con su registro."}</p>
+              ) : visibleNow ? (
+                <>
+                  <p className="mt-2">{currentVersion(doc).content}</p>
+                  <p className="mt-2 text-muted-foreground">Hoy ya aparece en el portal de este contacto.</p>
+                </>
+              ) : (
+                <p className="mt-2 text-muted-foreground">{notVisibleReason}</p>
+              )}
             </>
           )}
           {thread && (
             <>
               <p className="mt-1">Conversación: {thread.title}</p>
-              {sharedThreadMessages(thread).length ? <ul className="mt-2 space-y-1">{sharedThreadMessages(thread).map((m) => <li key={m.id}>{m.text}</li>)}</ul> : <p>Sin mensajes compartidos.</p>}
+              {threadMsgs === null ? (
+                <p className="mt-2 text-muted-foreground">{ctxRevoked ? notVisibleReason : "Hoy no aparece en el portal de este contacto: la conversación requiere relación autorizada con su registro; un mensaje compartido no es visible para cualquier contacto."}</p>
+              ) : threadMsgs.length ? (
+                <>
+                  <ul className="mt-2 space-y-1">{threadMsgs.map((m) => <li key={m.id}>{m.text}</li>)}</ul>
+                  <p className="mt-2 text-muted-foreground">Solo se muestran los mensajes compartidos de una conversación autorizada para este contacto.</p>
+                </>
+              ) : (
+                <p className="mt-2">Sin mensajes compartidos.</p>
+              )}
               <p className="mt-2 text-muted-foreground">Las notas internas nunca se muestran en vistas externas.</p>
             </>
           )}
