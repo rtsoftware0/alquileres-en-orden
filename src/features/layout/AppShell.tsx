@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck } from "lucide-react";
+import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck, Globe } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/config/site";
 import { demoPortfolio } from "@/features/portfolio/data/demo-data";
@@ -19,6 +19,7 @@ const nav = [
   { to: "/documentos", label: "Documentos", icon: Files, exact: false },
   { to: "/mensajes", label: "Mensajes", icon: MessageSquare, exact: false },
   { to: "/avisos", label: "Avisos", icon: Bell, exact: false },
+  { to: "/portales", label: "Portales", icon: Globe, exact: false },
 ] as const;
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

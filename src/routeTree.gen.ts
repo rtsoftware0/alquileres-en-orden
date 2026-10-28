@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as PortalesRouteImport } from './routes/portales'
 import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
 import { Route as ContactosIndexRouteImport } from './routes/contactos.index'
@@ -67,6 +68,11 @@ const IndexRoute = IndexRouteImport.update({
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalesRoute = PortalesRouteImport.update({
+  id: '/portales',
+  path: '/portales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AvisosIndexRoute = AvisosIndexRouteImport.update({
@@ -320,6 +326,7 @@ const DineroBancoMovimientosMovementIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/portales': typeof PortalesRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/portales': typeof PortalesRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
@@ -423,6 +431,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/portales': typeof PortalesRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
   '/contratos/borrador': typeof ContratosBorradorRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/calendario'
+    | '/portales'
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendario'
+    | '/portales'
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
@@ -578,6 +589,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/calendario'
+    | '/portales'
     | '/contactos/$contactId'
     | '/contratos/$contractId'
     | '/contratos/borrador'
@@ -630,6 +642,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarioRoute: typeof CalendarioRoute
+  PortalesRoute: typeof PortalesRoute
   ContactosContactIdRoute: typeof ContactosContactIdRoute
   ContratosContractIdRoute: typeof ContratosContractIdRoute
   ContratosBorradorRoute: typeof ContratosBorradorRoute
@@ -693,6 +706,13 @@ declare module '@tanstack/react-router' {
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portales': {
+      id: '/portales'
+      path: '/portales'
+      fullPath: '/portales'
+      preLoaderRoute: typeof PortalesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/avisos/': {
@@ -1030,6 +1050,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarioRoute: CalendarioRoute,
+  PortalesRoute: PortalesRoute,
   ContactosContactIdRoute: ContactosContactIdRoute,
   ContratosContractIdRoute: ContratosContractIdRoute,
   ContratosBorradorRoute: ContratosBorradorRoute,
