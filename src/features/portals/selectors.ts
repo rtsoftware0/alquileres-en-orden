@@ -162,8 +162,12 @@ function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, i
 
 function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], kind: DocLinkKind, id: string): boolean {
   if (kind !== "inmueble" && kind !== "contrato" && kind !== "incidencia") return false;
+  if (ctx.profile === "inquilino" && kind === "incidencia") {
+    const i = d.incidents.find((x) => x.id === id);
+    return !!i && tenantIncidentAuthorized(d, ctx, gs, i);
+  }
   const granted =
-    (ctx.profile === "inquilino" && (kind === "contrato" ? relIds(gs, "contrato").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id)))) ||
+    (ctx.profile === "inquilino" && kind === "contrato" && relIds(gs, "contrato").includes(id)) ||
     (ctx.profile === "proveedor" && kind === "incidencia" && relIds(gs, "incidencia").includes(id)) ||
     (ctx.profile === "propietario" && (kind === "inmueble" ? relIds(gs, "inmueble").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id))));
   return granted && relationHolds(d, ctx, kind, id);
