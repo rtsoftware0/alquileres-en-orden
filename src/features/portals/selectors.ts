@@ -69,8 +69,24 @@ export function ownerView(d: PortfolioDataset, ctx: PortalContext, revoked?: Rea
 
 // --- Tenant
 
-export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>) {
-  const gs = ctx.profile === "inquilino" ? grantsFor(ctx, revoked) : [];
+/**
+ * A tenant incident is visible only when a grant lists it AND the granting
+ * contract still belongs to the tenant and matches the incident's room (or,
+ * for common areas without roomId, its property). Grant metadata alone never
+ * suffices, and a different contract without grant gives no access.
+ */
+function tenantIncidentAuthorized(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], i: Incident): boolean {
+  // The same grant must list the incident AND relate to a contract that still
+  // belongs to the tenant and matches the incident's room (or property).
+  return gs.some((g) => {
+    if (!g.incidentIds.includes(i.id) || g.relation.kind !== "contrato") return false;
+    const c = d.contracts.find((x) => x.id === g.relation.id);
+    return !!c && c.tenantIds.includes(ctx.contactId) && c.propertyId === i.propertyId && (i.roomId ? c.roomId === i.roomId : true);
+  });
+}
+
+export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>, grants: PortalGrant[] = demoPortalGrants) {
+  const gs = ctx.profile === "inquilino" ? grantsFor(ctx, revoked, grants) : [];
   const ids = relIds(gs, "contrato");
   // Only contracts where the contact is a tenant; guarantor-only links never appear.
   const contracts = d.contracts.filter((c) => ids.includes(c.id) && c.tenantIds.includes(ctx.contactId));
@@ -83,8 +99,7 @@ export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: Re
       pendingCents: acc.pendingCents,
     };
   });
-  const incidentIds = new Set(gs.flatMap((g) => g.incidentIds));
-  const incidents = d.incidents.filter((i) => incidentIds.has(i.id)).map((i) => portalIncident(d, i));
+  const incidents = d.incidents.filter((i) => tenantIncidentAuthorized(d, ctx, gs, i)).map((i) => portalIncident(d, i));
   return {
     current: accounts.filter((a) => a.contract.status === "activo" || a.contract.status === "pendiente"),
     history: accounts.filter((a) => a.contract.status === "finalizado"),
@@ -126,11 +141,7 @@ function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, i
       const c = d.contracts.find((x) => x.id === id);
       return !!c && c.tenantIds.includes(ctx.contactId);
     }
-    if (kind === "incidencia") {
-      const i = d.incidents.find((x) => x.id === id);
-      // Coherent with one of the contact's own contracts (same room or property).
-      return !!i && d.contracts.some((c) => c.tenantIds.includes(ctx.contactId) && (c.roomId === i.roomId || c.propertyId === i.propertyId));
-    }
+    // Tenant incidents are checked in authorizedRecord via tenantIncidentAuthorized.
     return false;
   }
   if (ctx.profile === "proveedor") {
@@ -153,8 +164,12 @@ function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, i
 
 function authorizedRecord(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], kind: DocLinkKind, id: string): boolean {
   if (kind !== "inmueble" && kind !== "contrato" && kind !== "incidencia") return false;
+  if (ctx.profile === "inquilino" && kind === "incidencia") {
+    const i = d.incidents.find((x) => x.id === id);
+    return !!i && tenantIncidentAuthorized(d, ctx, gs, i);
+  }
   const granted =
-    (ctx.profile === "inquilino" && (kind === "contrato" ? relIds(gs, "contrato").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id)))) ||
+    (ctx.profile === "inquilino" && kind === "contrato" && relIds(gs, "contrato").includes(id)) ||
     (ctx.profile === "proveedor" && kind === "incidencia" && relIds(gs, "incidencia").includes(id)) ||
     (ctx.profile === "propietario" && (kind === "inmueble" ? relIds(gs, "inmueble").includes(id) : kind === "incidencia" && gs.some((g) => g.incidentIds.includes(id))));
   return granted && relationHolds(d, ctx, kind, id);

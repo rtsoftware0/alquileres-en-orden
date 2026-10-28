@@ -8,6 +8,7 @@ import {
   validateProviderDraft, visibleDocuments, visibleThreadMessages, type PortalContext,
 } from "./selectors";
 import { PortalPreview, PortalsPage } from "./PortalsPage";
+import { demoPortalGrants } from "./data/demo-portal-access";
 
 afterEach(cleanup);
 const c = (profile: PortalContext["profile"], contactId: string, companyId = "cartera"): PortalContext => ({ companyId, profile, contactId });
@@ -44,6 +45,31 @@ describe("tenant portal", () => {
   });
   it("con-008 keeps own historic contract", () => {
     expect(tenantView(data, c("inquilino", "con-008")).history.map((a) => a.contract.id)).toEqual(["ct-ej-0098"]);
+  });
+});
+
+describe("tenant incident authorization", () => {
+  it("loses inc-2 when ct-ej-0101 no longer belongs to con-001", () => {
+    const changed = { ...data, contracts: data.contracts.map((x) => (x.id === "ct-ej-0101" ? { ...x, tenantIds: ["con-002"] } : x)) };
+    expect(tenantView(changed, c("inquilino", "con-001")).incidents).toEqual([]);
+    expect(portalDetail(changed, c("inquilino", "con-001"), "incidencia", "inc-2")).toBeNull();
+  });
+  it("hides an incident of another room in the same property", () => {
+    const changed = { ...data, incidents: data.incidents.map((i) => (i.id === "inc-2" ? { ...i, roomId: "oli-02" } : i)) };
+    expect(tenantView(changed, c("inquilino", "con-001")).incidents).toEqual([]);
+    expect(portalDetail(changed, c("inquilino", "con-001"), "incidencia", "inc-2")).toBeNull();
+  });
+  it("keeps a historic incident authorized by its own historic contract", () => {
+    const changed = { ...data, incidents: data.incidents.map((i) => (i.id === "inc-1" ? { ...i, roomId: "aza-04" } : i)) };
+    const grants = demoPortalGrants.map((g) => (g.id === "pg-ten-008b" ? { ...g, incidentIds: ["inc-1"] } : g));
+    expect(tenantView(changed, c("inquilino", "con-008"), undefined, grants).incidents.map((i) => i.id)).toEqual(["inc-1"]);
+  });
+  it("a different contract without grant gives no access", () => {
+    // The grant listing inc-1 belongs to ct-ej-0204 (aza-04), but the incident is on aza-01.
+    const changed = { ...data, incidents: data.incidents.map((i) => (i.id === "inc-1" ? { ...i, roomId: "aza-01" } : i)) };
+    const grants = demoPortalGrants.map((g) => (g.id === "pg-ten-008a" ? { ...g, incidentIds: ["inc-1"] } : g));
+    expect(tenantView(changed, c("inquilino", "con-008"), undefined, grants).incidents).toEqual([]);
+    expect(portalDetail(changed, c("inquilino", "con-008"), "incidencia", "inc-1")).toBeNull();
   });
 });
 
