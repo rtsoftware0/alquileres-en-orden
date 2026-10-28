@@ -69,8 +69,22 @@ export function ownerView(d: PortfolioDataset, ctx: PortalContext, revoked?: Rea
 
 // --- Tenant
 
-export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>) {
-  const gs = ctx.profile === "inquilino" ? grantsFor(ctx, revoked) : [];
+/**
+ * A tenant incident is visible only when a grant lists it AND the granting
+ * contract still belongs to the tenant and matches the incident's room (or,
+ * for common areas without roomId, its property). Grant metadata alone never
+ * suffices, and a different contract without grant gives no access.
+ */
+function tenantIncidentAuthorized(d: PortfolioDataset, ctx: PortalContext, gs: PortalGrant[], i: Incident): boolean {
+  if (!gs.some((g) => g.incidentIds.includes(i.id))) return false;
+  const contractIds = relIds(gs, "contrato");
+  return d.contracts.some(
+    (c) => contractIds.includes(c.id) && c.tenantIds.includes(ctx.contactId) && c.propertyId === i.propertyId && (i.roomId ? c.roomId === i.roomId : true),
+  );
+}
+
+export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>, grants: PortalGrant[] = demoPortalGrants) {
+  const gs = ctx.profile === "inquilino" ? grantsFor(ctx, revoked, grants) : [];
   const ids = relIds(gs, "contrato");
   // Only contracts where the contact is a tenant; guarantor-only links never appear.
   const contracts = d.contracts.filter((c) => ids.includes(c.id) && c.tenantIds.includes(ctx.contactId));
