@@ -40,6 +40,17 @@ const relIds = (gs: PortalGrant[], kind: PortalGrant["relation"]["kind"]) => gs.
 
 // --- Owner
 
+/** Minimal external projection of an incident: no internal notes, no linked expense, no internal assignee or provider. */
+const portalIncident = (d: PortfolioDataset, i: Incident) => ({
+  id: i.id,
+  title: i.title,
+  description: i.description,
+  status: i.status,
+  targetDate: i.targetDate,
+  roomCode: i.roomId ? d.rooms.find((r) => r.id === i.roomId)?.code ?? "" : "Zonas comunes",
+  propertyName: d.properties.find((p) => p.id === i.propertyId)?.name ?? "",
+});
+
 export function ownerView(d: PortfolioDataset, ctx: PortalContext, revoked?: ReadonlySet<string>) {
   const gs = ctx.profile === "propietario" ? grantsFor(ctx, revoked) : [];
   const propIds = relIds(gs, "inmueble");
@@ -52,7 +63,7 @@ export function ownerView(d: PortfolioDataset, ctx: PortalContext, revoked?: Rea
     });
   const allowedProps = properties.map((p) => p.id);
   const incidentIds = new Set(gs.flatMap((g) => g.incidentIds));
-  const incidents = d.incidents.filter((i) => incidentIds.has(i.id) && allowedProps.includes(i.propertyId));
+  const incidents = d.incidents.filter((i) => incidentIds.has(i.id) && allowedProps.includes(i.propertyId)).map((i) => portalIncident(d, i));
   return { properties, incidents, documents: visibleDocuments(d, ctx, revoked), referenceDate: d.referenceDate };
 }
 
@@ -73,7 +84,7 @@ export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: Re
     };
   });
   const incidentIds = new Set(gs.flatMap((g) => g.incidentIds));
-  const incidents = d.incidents.filter((i) => incidentIds.has(i.id));
+  const incidents = d.incidents.filter((i) => incidentIds.has(i.id)).map((i) => portalIncident(d, i));
   return {
     current: accounts.filter((a) => a.contract.status === "activo" || a.contract.status === "pendiente"),
     history: accounts.filter((a) => a.contract.status === "finalizado"),
