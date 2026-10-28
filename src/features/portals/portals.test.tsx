@@ -65,10 +65,11 @@ describe("tenant incident authorization", () => {
     expect(tenantView(changed, c("inquilino", "con-008"), undefined, grants).incidents.map((i) => i.id)).toEqual(["inc-1"]);
   });
   it("a different contract without grant gives no access", () => {
-    // The grant listing inc-1 belongs to ct-ej-0204, but the incident is on aza-04 (ct-ej-0098's room).
-    const changed = { ...data, incidents: data.incidents.map((i) => (i.id === "inc-1" ? { ...i, roomId: "aza-04" } : i)) };
+    // The grant listing inc-1 belongs to ct-ej-0204 (aza-04), but the incident is on aza-01.
+    const changed = { ...data, incidents: data.incidents.map((i) => (i.id === "inc-1" ? { ...i, roomId: "aza-01" } : i)) };
     const grants = demoPortalGrants.map((g) => (g.id === "pg-ten-008a" ? { ...g, incidentIds: ["inc-1"] } : g));
     expect(tenantView(changed, c("inquilino", "con-008"), undefined, grants).incidents).toEqual([]);
+    expect(portalDetail(changed, c("inquilino", "con-008"), "incidencia", "inc-1")).toBeNull();
   });
 });
 
