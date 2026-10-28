@@ -139,11 +139,7 @@ function relationHolds(d: PortfolioDataset, ctx: PortalContext, kind: RelKind, i
       const c = d.contracts.find((x) => x.id === id);
       return !!c && c.tenantIds.includes(ctx.contactId);
     }
-    if (kind === "incidencia") {
-      const i = d.incidents.find((x) => x.id === id);
-      // Coherent with one of the contact's own contracts (same room or property).
-      return !!i && d.contracts.some((c) => c.tenantIds.includes(ctx.contactId) && (c.roomId === i.roomId || c.propertyId === i.propertyId));
-    }
+    // Tenant incidents are checked in authorizedRecord via tenantIncidentAuthorized.
     return false;
   }
   if (ctx.profile === "proveedor") {
