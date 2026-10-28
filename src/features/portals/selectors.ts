@@ -97,8 +97,7 @@ export function tenantView(d: PortfolioDataset, ctx: PortalContext, revoked?: Re
       pendingCents: acc.pendingCents,
     };
   });
-  const incidentIds = new Set(gs.flatMap((g) => g.incidentIds));
-  const incidents = d.incidents.filter((i) => incidentIds.has(i.id)).map((i) => portalIncident(d, i));
+  const incidents = d.incidents.filter((i) => tenantIncidentAuthorized(d, ctx, gs, i)).map((i) => portalIncident(d, i));
   return {
     current: accounts.filter((a) => a.contract.status === "activo" || a.contract.status === "pendiente"),
     history: accounts.filter((a) => a.contract.status === "finalizado"),
