@@ -30,9 +30,12 @@ const DemoNotice = () => (
 );
 
 export function PortalsPage() {
+  const sharing = usePortalSharing();
   const [mode, setMode] = useState<Mode>("centro");
   const [ctx, setCtx] = useState<PortalContext>({ companyId: "cartera", profile: "propietario", contactId: "" });
-  const [revoked, setRevoked] = useState<Set<string>>(new Set());
+  // Single revocation state for every profile, document, thread and settlement.
+  const revoked = sharing.revoked;
+  const revokeMany = (ids: string[]) => ids.forEach((id) => sharing.revoke(id));
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const log = (text: string) => setHistory((h) => [...h, { id: h.length + 1, text: `Simulación: ${text}` }]);
 
@@ -41,7 +44,8 @@ export function PortalsPage() {
     setCtx({ companyId: "cartera", profile, contactId: first?.id ?? "" });
     setMode("portal");
   };
-  const restore = () => { setRevoked(new Set()); setHistory([]); };
+  // Restores grants only: shares stay inactive and their history is kept.
+  const restore = () => { sharing.state.revokedGrants.forEach((id) => sharing.restore(id)); setHistory([]); };
 
   return (
     <div>
