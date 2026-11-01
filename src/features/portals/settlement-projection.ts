@@ -33,7 +33,6 @@ export function shareEligibility(t: ShareTarget, deps: ShareDeps, revoked: reado
   const ctx = ctxs.find((c) => c.id === s.contextId);
   if (!ctx || ctx.scope !== "cartera" || !ctx.propertyId) return "Los contextos didácticos no se comparten.";
   if (v.rules.model !== "agencia" && v.rules.model !== "renta_fija") return "El patrimonio propio no se comparte.";
-  if (ctx.model !== "agencia" && ctx.model !== "renta_fija") return "El patrimonio propio no se comparte.";
   const property = deps.data.properties.find((p) => p.id === ctx.propertyId);
   if (!property || property.ownerId !== t.contactId || ctx.ownerId !== t.contactId) return "El destinatario no es el propietario actual.";
   if (!v.rules.participants.some((p) => p.id === t.contactId && p.basisPoints > 0)) return "El destinatario no participa en esta versión.";
