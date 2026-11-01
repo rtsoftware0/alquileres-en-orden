@@ -1,4 +1,6 @@
 # Bloque visual 09
+- [x] Recuperación01/11: diez reemplazos comprobados por huella y siete regresiones de pantalla; suite190/190
+- [ ] Verificar navegador escritorio/móvil y lectura de revisión recuperable de esta recuperación
 - [x] Proyecciones económicas, cálculos, versiones, pagos y cierre temporal con pruebas
 - [x] Liquidaciones, preparación, detalle/versiones, informes y cierre mensual
 - [x] Integración, navegador escritorio/móvil, capturas y regresión: 152 pruebas, 12 archivos; compilación automática OK
