@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { incidentStatusLabel } from "@/features/incidents/selectors";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
@@ -7,6 +7,8 @@ import {
   ownerView, portalDetail, providerView, tenantView, validateProviderDraft, validateTenantDraft, parseEuroToCents,
   type PortalContext, type ProviderDraft, type TenantDraft,
 } from "./selectors";
+import { usePortalSharing } from "./PortalShareContext";
+import type { SettlementProjection } from "./settlement-projection";
 
 // Portal previews. All state is local React memory; the parent remounts
 // these views (key) on any context change or revocation, which clears open
@@ -80,8 +82,64 @@ function DocList({ ctx, docs, emptyText }: { ctx: PortalContext; docs: Doc[]; em
   );
 }
 
-function SettlementPending() {
-  return <p className="rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">Liquidaciones: integración pendiente del bloque 09.</p>;
+// ---------------- Shared settlements (minimal external projection only)
+
+export const monthLabel = (m: string) =>
+  new Date(`${m}-01T00:00:00Z`).toLocaleDateString("es-ES", { month: "long", year: "numeric", timeZone: "UTC" });
+
+const bpLabel = (bp: number) => `${(bp / 100).toLocaleString("es-ES", { maximumFractionDigits: 2 })} %`;
+
+/** Renders only a SettlementProjection: generic lines, signed result and recipient amount. */
+export function SettlementSummary({ p }: { p: SettlementProjection }) {
+  return (
+    <div className="text-sm">
+      <p className="font-semibold text-foreground">{p.propertyName} · {monthLabel(p.month)} · versión {p.version}</p>
+      <p className="text-muted-foreground">Fecha ficticia de la versión: {formatDate(p.versionDate)} · Participación: {bpLabel(p.shareBasisPoints)}</p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full min-w-[280px] text-sm">
+          <caption className="sr-only">Resumen de la liquidación {monthLabel(p.month)}, versión {p.version}</caption>
+          <tbody>
+            {p.lines.map((l) => (
+              <tr key={l.label} className="border-t border-border"><th scope="row" className="py-1 text-left font-normal">{l.label}</th><td className="text-right tabular-nums">{formatMoney(l.cents)}</td></tr>
+            ))}
+            <tr className="border-t border-border"><th scope="row" className="py-1 text-left font-medium">Resultado firmado</th><td className="text-right font-medium tabular-nums">{formatMoney(p.resultCents)}</td></tr>
+            <tr className="border-t border-border"><th scope="row" className="py-1 text-left font-medium">Importe correspondiente</th><td className="text-right font-semibold tabular-nums">{formatMoney(p.recipientPayableCents)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">Resumen de ejemplo de la versión aprobada. No incluye pagos ni saldos actuales.</p>
+    </div>
+  );
+}
+
+function OwnerSettlements({ ctx }: { ctx: PortalContext }) {
+  const sharing = usePortalSharing();
+  const list = sharing.listFor(ctx);
+  // Only the open share id is kept; the detail is revalidated on every render.
+  const [openShareId, setOpenShareId] = useState<string | null>(null);
+  const opened = openShareId ? list.find((p) => p.shareId === openShareId) : undefined;
+  const fresh = opened ? sharing.detailFor(ctx, opened.settlementId) : null;
+  const detail = fresh && fresh.shareId === openShareId ? fresh : null;
+  useEffect(() => { if (openShareId && !detail) setOpenShareId(null); }, [openShareId, detail]);
+  if (list.length === 0) return <Empty>No hay liquidaciones compartidas contigo. Solo aparecen versiones aprobadas que la gestión comparta expresamente.</Empty>;
+  return (
+    <div>
+      <ul className="divide-y divide-border">
+        {list.map((p) => (
+          <li key={p.shareId} className="flex flex-wrap items-center justify-between gap-2 py-2">
+            <span className="text-sm"><span className="font-medium text-foreground">{p.propertyName} · {monthLabel(p.month)}</span> <span className="text-muted-foreground">· versión {p.version} · {formatMoney(p.recipientPayableCents)}</span></span>
+            <button type="button" className={btn} onClick={() => setOpenShareId(p.shareId)} aria-label={`Ver liquidación ${p.propertyName} ${monthLabel(p.month)}`}>Ver</button>
+          </li>
+        ))}
+      </ul>
+      {detail && (
+        <div className="mt-3 rounded-md border border-border bg-muted/40 p-3" role="region" aria-label="Detalle de la liquidación">
+          <SettlementSummary p={detail} />
+          <button type="button" className={`${btn} mt-3`} onClick={() => setOpenShareId(null)}>Cerrar detalle</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ---------------- Owner
@@ -112,7 +170,7 @@ export function OwnerPortal({ ctx }: { ctx: PortalContext }) {
       )}
       {tab === "documentos" && <Section title="Documentos compartidos contigo"><DocList ctx={ctx} docs={v.documents} emptyText="No hay documentos compartidos explícitamente con este propietario en los datos de ejemplo." /></Section>}
       {tab === "incidencias" && <Section title="Incidencias autorizadas"><IncidentList ctx={ctx} items={v.incidents} /></Section>}
-      {tab === "liquidaciones" && <Section title="Liquidaciones"><SettlementPending /></Section>}
+      {tab === "liquidaciones" && <Section title="Liquidaciones compartidas"><OwnerSettlements ctx={ctx} /></Section>}
     </div>
   );
 }
