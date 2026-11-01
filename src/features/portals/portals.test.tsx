@@ -242,6 +242,24 @@ const T = { companyId: "cartera", contactId: "con-010", settlementId: "liq-1" };
 const own = c("propietario", "con-010");
 
 describe("settlement sharing rules", () => {
+  it("uses the approved version model when Olivo was prepared as agency", () => {
+    const v = ver(1, "aprobado", 90000, "agencia");
+    v.rules.participants = [{ id: "con-009", name: "Propietaria Casa Olivo", basisPoints: 10000 }];
+    v.calculation.shares = [{ id: "con-009", name: "Propietaria Casa Olivo", cents: 90000 }];
+    v.source.contextId = "olivo";
+    const deps = { data, settlements: sst([{ id: "liq-1", contextId: "olivo", month: "2026-10", versions: [v] }]) };
+    const result = shareVersion(initialSharing(), { ...T, contactId: "con-009", version: 1 }, deps);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error);
+    expect(sharedSettlementsFor(result.state, c("propietario", "con-009"), deps)).toMatchObject([
+      { version: 1, model: "agencia", recipientPayableCents: 90000 },
+    ]);
+    expect(sharedSettlementsFor(result.state, own, deps)).toEqual([]);
+    v.rules.model = "propio";
+    expect(shareVersion(initialSharing(), { ...T, contactId: "con-009", version: 1 }, deps).ok).toBe(false);
+    expect(sharedSettlementsFor(result.state, c("propietario", "con-009"), deps)).toEqual([]);
+  });
+
   it("denies drafts, propio, didactic, empty company, other owners and con-011", () => {
     const deps = { data, settlements: sst([azahar([ver(1, "borrador", 90000)]), { id: "liq-2", contextId: "olivo", month: "2026-10", versions: [ver(1, "aprobado", 1, "propio")] }, { id: "liq-3", contextId: "a16", month: "2026-10", versions: [ver(1, "aprobado", 1)] }]) };
     const s0 = initialSharing();
