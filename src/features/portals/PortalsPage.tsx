@@ -9,10 +9,15 @@ import {
   ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, visibleThreadMessages,
   type PortalContext,
 } from "./selectors";
-import { OwnerPortal, ProviderPortal, TenantPortal, btn, btnPrimary } from "./PortalViews";
+import { OwnerPortal, ProviderPortal, SettlementSummary, TenantPortal, btn, btnPrimary, monthLabel } from "./PortalViews";
+import { usePortalSharing } from "./PortalShareContext";
+import { shareEligibility, shareVersion, sharedSettlementsFor, type ShareDeps, type ShareTarget } from "./settlement-projection";
+import { useSettlements } from "@/features/settlements/SettlementContext";
+import { contexts as settlementContexts } from "@/features/settlements/data/examples";
 
 // Portal demo center. Everything is React memory: no accounts, no links,
-// no emails, nothing persisted. Revocations and history reset on "Restaurar demo".
+// no emails, nothing persisted. Revocations and settlement shares live in
+// PortalShareContext; "Restaurar demo" restores grants without reviving shares.
 
 type Mode = "centro" | "portal" | "accesos";
 interface HistoryEntry { id: number; text: string }
@@ -30,9 +35,12 @@ const DemoNotice = () => (
 );
 
 export function PortalsPage() {
+  const sharing = usePortalSharing();
   const [mode, setMode] = useState<Mode>("centro");
   const [ctx, setCtx] = useState<PortalContext>({ companyId: "cartera", profile: "propietario", contactId: "" });
-  const [revoked, setRevoked] = useState<Set<string>>(new Set());
+  // Single revocation state for every profile, document, thread and settlement.
+  const revoked = sharing.revoked;
+  const revokeMany = (ids: string[]) => ids.forEach((id) => sharing.revoke(id));
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const log = (text: string) => setHistory((h) => [...h, { id: h.length + 1, text: `Simulación: ${text}` }]);
 
@@ -41,7 +49,8 @@ export function PortalsPage() {
     setCtx({ companyId: "cartera", profile, contactId: first?.id ?? "" });
     setMode("portal");
   };
-  const restore = () => { setRevoked(new Set()); setHistory([]); };
+  // Restores grants only: shares stay inactive and their history is kept.
+  const restore = () => { sharing.state.revokedGrants.forEach((id) => sharing.restore(id)); setHistory([]); };
 
   return (
     <div>
@@ -62,7 +71,7 @@ export function PortalsPage() {
             <p className="mb-3 text-sm text-muted-foreground">Prepara invitaciones, revocaciones y vistas previas de lo que se compartiría. Solo simulación.</p>
             <button type="button" className={btn} onClick={() => setMode("accesos")}><KeyRound className="mr-2 h-4 w-4" aria-hidden="true" />Preparar accesos</button>
           </Panel>
-          <Panel title="Estado del bloque" className="mt-6"><p className="text-sm text-muted-foreground">Liquidaciones: integración pendiente del bloque 09.</p></Panel>
+          <Panel title="Estado del bloque" className="mt-6"><p className="text-sm text-muted-foreground">Liquidaciones: el portal del propietario solo muestra versiones aprobadas que se compartan expresamente desde Preparar accesos.</p></Panel>
         </>
       )}
       {mode === "portal" && (
@@ -70,13 +79,13 @@ export function PortalsPage() {
           onRevokeCurrent={() => {
             const ids = demoPortalGrants.filter((g) => g.companyId === ctx.companyId && g.profile === ctx.profile && g.contactId === ctx.contactId).map((g) => g.id);
             if (ids.length === 0) return;
-            setRevoked((r) => new Set([...r, ...ids]));
+            revokeMany(ids);
             log(`acceso de ${ctx.contactId.toUpperCase()} como ${profileLabel[ctx.profile].toLowerCase()} revocado en memoria; expediente conservado.`);
           }} />
       )}
       {mode === "accesos" && (
         <AccessPanel revoked={revoked} history={history} log={log}
-          onRevoke={(ids) => setRevoked((r) => new Set([...r, ...ids]))} onRestore={restore} onExit={() => setMode("centro")} />
+          onRevoke={revokeMany} onRestore={restore} onExit={() => setMode("centro")} />
       )}
     </div>
   );
@@ -159,6 +168,7 @@ function AccessPanel({ revoked, history, log, onRevoke, onRestore, onExit }: {
       <InviteForm log={log} />
       <RevokeForm revoked={revoked} log={log} onRevoke={onRevoke} />
       <SharePreview revoked={revoked} />
+      <SettlementSharePanel />
       <Panel title="Historial temporal (simulación)">
         {history.length === 0 ? <p className="text-sm text-muted-foreground">Sin acciones simuladas.</p> : (
           <ol className="list-decimal space-y-1 pl-5 text-sm">{history.map((h) => <li key={h.id}>{h.text}</li>)}</ol>
@@ -309,6 +319,140 @@ function SharePreview({ revoked }: { revoked: ReadonlySet<string> }) {
           <p className="mt-2 text-muted-foreground">Nada se envía, publica ni cambia la visibilidad del original.</p>
         </div>
       )}
+    </Panel>
+  );
+}
+
+// ---------------- Share an approved settlement version (demo)
+
+const COMPANY = "cartera";
+const actionLabel: Record<string, string> = {
+  compartir: "Compartida", reemplazar: "Sustituida por nueva versión", retirar: "Retirada",
+  revocar_acceso: "Acceso revocado", restaurar_acceso: "Acceso restaurado",
+};
+const endLabel: Record<string, string> = { reemplazada: "Sustituida", retirada: "Retirada", revocada: "Inactiva por revocación" };
+const contactLabel = (id: string) => { const ct = data.contacts.find((x) => x.id === id); return ct ? `${ct.code} · ${ct.name}` : id; };
+
+function SettlementSharePanel() {
+  const sharing = usePortalSharing();
+  const { state: settlements } = useSettlements();
+  const deps: ShareDeps = { data, settlements };
+  const ctxName = (id: string) => settlementContexts.find((c) => c.id === id)?.name ?? id;
+  const labelOf = (settlementId: string) => {
+    const s = settlements.settlements.find((x) => x.id === settlementId);
+    return s ? `${ctxName(s.contextId)} · ${monthLabel(s.month)}` : settlementId;
+  };
+  const options = settlements.settlements.flatMap((s) => s.versions.filter((v) => v.status === "aprobado").map((v) => ({
+    key: `${s.id}|${v.number}`, settlementId: s.id, version: v.number, label: `${ctxName(s.contextId)} · ${monthLabel(s.month)} · versión ${v.number}`,
+  })));
+  const recipients = demoPortalGrants.filter((g) => g.companyId === COMPANY && g.profile === "propietario");
+  const [optKey, setOptKey] = useState("");
+  const [contactId, setContactId] = useState("");
+  const [previewStamp, setPreviewStamp] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
+  const [withdrawId, setWithdrawId] = useState<string | null>(null);
+
+  const opt = options.find((o) => o.key === optKey);
+  const target: ShareTarget | null = opt && contactId ? { companyId: COMPANY, contactId, settlementId: opt.settlementId, version: opt.version } : null;
+  const active = target ? sharing.activeShare(target) : undefined;
+  // Any change of selection, active share or revocations invalidates the preview.
+  const stamp = target ? [optKey, contactId, sharing.state.revokedGrants.join(","), active?.id ?? "", active?.version ?? ""].join("|") : "";
+  const previewValid = previewStamp !== null && previewStamp === stamp;
+  let candidate: ReturnType<typeof sharedSettlementsFor>[number] | null = null;
+  if (previewValid && target) {
+    // Pure candidate state: never calls sharing.share nor mutates anything.
+    const r = shareVersion(sharing.state, target, deps);
+    candidate = r.ok ? sharedSettlementsFor(r.state, { companyId: COMPANY, profile: "propietario", contactId }, deps).find((p) => p.settlementId === target.settlementId) ?? null : null;
+  }
+  const sameVersion = !!(active && target && active.version === target.version);
+  const clear = () => { setPreviewStamp(null); setError(""); setMsg(""); };
+
+  const preview = () => {
+    if (!target) return;
+    setMsg("");
+    const e = shareEligibility(target, deps, sharing.state.revokedGrants);
+    if (e) { setError(e); setPreviewStamp(null); return; }
+    setError(""); setPreviewStamp(stamp);
+  };
+  const confirm = () => {
+    if (!target || !previewValid) return;
+    const e = shareEligibility(target, deps, sharing.state.revokedGrants);
+    if (e) { setError(e); setPreviewStamp(null); return; }
+    const r = sharing.share(target);
+    setPreviewStamp(null);
+    if (!r.ok) { setError(r.error); return; }
+    setError("");
+    setMsg(!r.changed ? "Esta versión ya estaba compartida; no se duplica." : active ? `Versión ${target.version} compartida en sustitución de la versión ${active.version}.` : `Versión ${target.version} compartida en la demostración.`);
+  };
+
+  const activeShares = sharing.state.shares.filter((s) => s.active);
+  const pendingWithdraw = withdrawId ? activeShares.find((s) => s.id === withdrawId) : undefined;
+
+  return (
+    <Panel title="Compartir liquidación (demostración)">
+      <p className="mb-3 text-sm text-muted-foreground">Empresa: Cartera de ejemplo. Solo se comparten versiones aprobadas con el propietario actual del inmueble y con acceso activo.</p>
+      {options.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No hay versiones aprobadas. Prepara, revisa y aprueba una liquidación en Dinero → Liquidaciones; después podrás compartirla aquí.</p>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm"><span className="font-medium">Liquidación y versión</span>
+              <select className={fieldClass} value={optKey} onChange={(e) => { setOptKey(e.target.value); clear(); }}>
+                <option value="">Elige…</option>{options.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+              </select></label>
+            <label className="block text-sm"><span className="font-medium">Destinatario de liquidación</span>
+              <select className={fieldClass} value={contactId} onChange={(e) => { setContactId(e.target.value); clear(); }}>
+                <option value="">Elige…</option>{recipients.map((g) => <option key={g.id} value={g.contactId}>{contactLabel(g.contactId)} · Propietario</option>)}
+              </select></label>
+          </div>
+          {active && target && <p className="mt-2 text-sm text-foreground">Versión compartida ahora con este destinatario: {active.version}.{sameVersion ? " Es la versión elegida." : " Confirmar la elegida la sustituirá."}</p>}
+          <button type="button" className={`${btn} mt-3`} disabled={!target} onClick={preview}>Ver vista previa de liquidación</button>
+          {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
+          {previewValid && target && candidate && (
+            <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Vista previa de liquidación compartida">
+              <p className="mb-2">Destinatario: <strong>{contactLabel(target.contactId)}</strong> · Inmueble: {candidate.propertyName} · Mes: {monthLabel(candidate.month)} · Versión: {candidate.version}</p>
+              <SettlementSummary p={candidate} />
+              <p className="mt-2 text-muted-foreground">Vista previa: aún no se ha compartido. Nada se envía ni se publica.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" className={btnPrimary} disabled={sameVersion} onClick={confirm}>{sameVersion ? "Ya compartida" : "Confirmar compartición"}</button>
+                <button type="button" className={btn} onClick={() => setPreviewStamp(null)}>Cancelar</button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      {msg && <p role="status" className="mt-2 text-sm text-foreground">{msg}</p>}
+
+      <h3 className="mt-5 text-sm font-semibold text-foreground">Comparticiones</h3>
+      {sharing.state.shares.length === 0 ? <p className="text-sm text-muted-foreground">Ninguna liquidación compartida.</p> : (
+        <ul className="divide-y divide-border text-sm" aria-label="Comparticiones">
+          {sharing.state.shares.map((s) => (
+            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <span>{labelOf(s.settlementId)} · versión {s.version} · {contactLabel(s.contactId)} · <strong>{s.active ? "Activa" : endLabel[s.endedReason ?? ""] ?? "Inactiva"}</strong></span>
+              {s.active && <button type="button" className={btn} onClick={() => setWithdrawId(s.id)} aria-label={`Retirar compartición versión ${s.version}`}>Retirar compartición</button>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {pendingWithdraw && (
+        <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Confirmar retirada">
+          <p>Se dejará de mostrar la versión {pendingWithdraw.version} de {labelOf(pendingWithdraw.settlementId)} a {contactLabel(pendingWithdraw.contactId)}. Para volver a mostrarla habrá que compartirla de nuevo.</p>
+          <div className="mt-2 flex gap-2">
+            <button type="button" className={btnPrimary} onClick={() => { sharing.withdraw(pendingWithdraw); setWithdrawId(null); clear(); setMsg("Compartición retirada en la demostración."); }}>Confirmar retirada</button>
+            <button type="button" className={btn} onClick={() => setWithdrawId(null)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      <h3 className="mt-5 text-sm font-semibold text-foreground">Historial de compartición</h3>
+      {sharing.state.log.length === 0 ? <p className="text-sm text-muted-foreground">Sin acciones de compartición.</p> : (
+        <ol className="list-decimal space-y-1 pl-5 text-sm" aria-label="Historial de compartición">
+          {sharing.state.log.map((e) => (
+            <li key={e.seq}>Paso {e.seq}: {actionLabel[e.action]} · {contactLabel(e.contactId)}{e.settlementId ? ` · ${labelOf(e.settlementId)}` : ""}{e.version !== undefined ? ` · versión ${e.version}` : ""}</li>
+          ))}
+        </ol>
+      )}
+      <p className="mt-2 text-xs text-muted-foreground">Pasos numerados de la simulación; no son fechas reales.</p>
     </Panel>
   );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { totalPending } from "@/features/portfolio/selectors";
 import {
@@ -117,7 +117,7 @@ function Harness({ revoked = new Set<string>(), onRevokeCurrent }: { revoked?: S
 
 describe("portal UI", () => {
   it("changing contact clears open detail; empty company shows empty state", () => {
-    render(<Harness />);
+    wrap(<Harness />);
     fireEvent.click(screen.getByRole("button", { name: "Documentos" }));
     fireEvent.click(screen.getByRole("button", { name: /Ver documento Inventario/ }));
     expect(screen.getByRole("region", { name: "Detalle del documento" })).toBeInTheDocument();
@@ -128,13 +128,13 @@ describe("portal UI", () => {
     expect(screen.queryByText(/CT-EJ-01/)).toBeNull();
   });
   it("revoked context is blocked", () => {
-    render(<Harness revoked={new Set(["pg-ten-002"])} />);
+    wrap(<Harness revoked={new Set(["pg-ten-002"])} />);
     const panel = screen.getByRole("heading", { name: /Acceso revocado/ }).closest("section")!;
     expect(within(panel).getByText(/expediente interno se conserva/)).toBeInTheDocument();
     expect(screen.queryByText(/Inventario/)).toBeNull();
   });
   it("changing context invalidates an open revocation confirmation", () => {
-    render(<Harness onRevokeCurrent={() => {}} />);
+    wrap(<Harness onRevokeCurrent={() => {}} />);
     fireEvent.click(screen.getByRole("button", { name: "Simular revocación de este acceso" }));
     const region = screen.getByRole("region", { name: "Vista previa de revocación" });
     expect(within(region).getByText(/CON-002/)).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe("external incident projection", () => {
 
 describe("access panel UI", () => {
   it("doc-3 shows content to con-002, hides it to con-001, and revocation hides it until restore", () => {
-    render(<PortalsPage />);
+    wrap(<PortalsPage />);
     fireEvent.click(screen.getByRole("button", { name: /Preparar accesos/ }));
     fireEvent.change(screen.getByLabelText("Documento o conversación"), { target: { value: "doc:doc-3" } });
     fireEvent.change(screen.getByLabelText("Destinatario"), { target: { value: "inquilino|con-002" } });
@@ -211,7 +211,7 @@ describe("access panel UI", () => {
     expect(screen.getByText(/Lista ficticia del mobiliario/)).toBeInTheDocument();
   });
   it("thr-inc-2 messages hidden for unrelated owner, visible for assigned provider", () => {
-    render(<PortalsPage />);
+    wrap(<PortalsPage />);
     fireEvent.click(screen.getByRole("button", { name: /Preparar accesos/ }));
     fireEvent.change(screen.getByLabelText("Documento o conversación"), { target: { value: "thr:thr-inc-2" } });
     fireEvent.change(screen.getByLabelText("Destinatario"), { target: { value: "propietario|con-010" } });
@@ -322,5 +322,201 @@ describe("settlement sharing rules", () => {
     expect(api.listFor(own)).toHaveLength(1); expect(api.state.revokedGrants).toEqual(["pg-ten-001"]);
     act(() => set.reset());
     expect(api.state.shares).toEqual([]); expect(api.state.revokedGrants).toEqual([]);
+  });
+});
+
+// ---- Settlement sharing UI (tanda 2) ----
+
+function wrap(ui: ReactNode) {
+  return render(<SettlementProvider><PortalShareProvider>{ui}</PortalShareProvider></SettlementProvider>);
+}
+
+let uiApi!: ReturnType<typeof usePortalSharing>;
+let uiSet!: ReturnType<typeof useSettlements>;
+function UiProbe() { uiApi = usePortalSharing(); uiSet = useSettlements(); return null; }
+
+function OwnerHarness({ initial = "con-010" }: { initial?: string }) {
+  const [ctx, setCtx] = useState<PortalContext>(c("propietario", initial));
+  const s = usePortalSharing();
+  return <PortalPreview ctx={ctx} setCtx={setCtx} revoked={s.revoked} onExit={() => {}} onRestore={() => {}} />;
+}
+
+function Toggle() {
+  const [show, setShow] = useState(true);
+  return <><button type="button" onClick={() => setShow((x) => !x)}>alternar página</button>{show && <PortalsPage />}</>;
+}
+
+const seed = (versions: Version[]) => act(() => uiSet.setState(sst([azahar(versions)])));
+const openAccess = () => fireEvent.click(screen.getByRole("button", { name: /Preparar accesos/ }));
+const pick = (key: string, contactId: string) => {
+  fireEvent.change(screen.getByLabelText("Liquidación y versión"), { target: { value: key } });
+  fireEvent.change(screen.getByLabelText("Destinatario de liquidación"), { target: { value: contactId } });
+};
+const previewRegion = () => screen.queryByRole("region", { name: "Vista previa de liquidación compartida" });
+
+describe("settlement sharing UI", () => {
+  it("shows an explanatory empty state without approved versions", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    openAccess();
+    expect(screen.getByText(/No hay versiones aprobadas/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Liquidación y versión")).toBeNull();
+  });
+
+  it("preview does not share; only confirmation changes visibility", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    const region = previewRegion()!;
+    expect(within(region).getByText(/CON-010/)).toBeInTheDocument();
+    expect(within(region).getAllByText(/Casa Azahar/).length).toBeGreaterThan(0);
+    expect(within(region).getAllByText(/versión 1/i).length).toBeGreaterThan(0);
+    expect(uiApi.state.shares).toEqual([]);
+    expect(uiApi.listFor(own)).toEqual([]);
+    fireEvent.click(within(region).getByRole("button", { name: "Confirmar compartición" }));
+    expect(uiApi.listFor(own).map((p) => p.version)).toEqual([1]);
+    expect(screen.getByRole("status")).toHaveTextContent(/Versión 1 compartida/);
+    expect(previewRegion()).toBeNull();
+  });
+
+  it("changing the selection invalidates the preview", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    expect(previewRegion()).not.toBeNull();
+    fireEvent.change(screen.getByLabelText("Destinatario de liquidación"), { target: { value: "con-009" } });
+    expect(previewRegion()).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(/propietario actual/);
+    expect(previewRegion()).toBeNull();
+    expect(uiApi.state.shares).toEqual([]);
+  });
+
+  it("revoking access invalidates an open preview", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    act(() => uiApi.revoke("pg-own-010"));
+    expect(previewRegion()).toBeNull();
+  });
+
+  it("correct owner sees the record; another owner does not; detail is minimal", () => {
+    wrap(<><UiProbe /><OwnerHarness /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: /Ver liquidación Casa Azahar/ }));
+    const detail = screen.getByRole("region", { name: "Detalle de la liquidación" });
+    expect(within(detail).getByText("Obligación fija")).toBeInTheDocument();
+    expect(within(detail).getByText("Resultado firmado")).toBeInTheDocument();
+    expect(within(detail).getByText("Importe correspondiente")).toBeInTheDocument();
+    expect(within(detail).queryByText(/Ingresos incluidos/)).toBeNull();
+    for (const t of [/motivo interno/, /Gestor interno/, /ajuste interno/, /Margen/i]) expect(within(detail).queryByText(t)).toBeNull();
+    fireEvent.change(screen.getByLabelText("Contacto"), { target: { value: "con-009" } });
+    expect(screen.queryByRole("region", { name: "Detalle de la liquidación" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    expect(screen.getByText(/No hay liquidaciones compartidas contigo/)).toBeInTheDocument();
+  });
+
+  it("shows zero as a value for the recipient amount", () => {
+    wrap(<><UiProbe /><OwnerHarness /></>);
+    seed([ver(1, "aprobado", 0)]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: /Ver liquidación Casa Azahar/ }));
+    const detail = screen.getByRole("region", { name: "Detalle de la liquidación" });
+    const row = within(detail).getByText("Importe correspondiente").closest("tr")!;
+    expect(row.textContent).toMatch(/0,00/);
+  });
+
+  it("withdrawing or revoking closes an open detail", () => {
+    wrap(<><UiProbe /><OwnerHarness /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: /Ver liquidación Casa Azahar/ }));
+    act(() => uiApi.withdraw(T));
+    expect(screen.queryByRole("region", { name: "Detalle de la liquidación" })).toBeNull();
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.click(screen.getByRole("button", { name: /Ver liquidación Casa Azahar/ }));
+    act(() => uiApi.revoke("pg-own-010"));
+    expect(screen.queryByRole("region", { name: "Detalle de la liquidación" })).toBeNull();
+  });
+
+  it("approving v2 keeps v1 visible until v2 is shared; sharing v2 replaces with history", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar compartición" }));
+    seed([ver(1, "aprobado", 90000), ver(2, "aprobado", 0)]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    expect(uiApi.listFor(own).map((p) => p.version)).toEqual([1]);
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    expect(screen.getByRole("button", { name: "Ya compartida" })).toBeDisabled();
+    pick("liq-1|2", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar compartición" }));
+    expect(uiApi.listFor(own).map((p) => p.version)).toEqual([2]);
+    expect(uiApi.state.shares).toHaveLength(2);
+    const list = screen.getByRole("list", { name: "Comparticiones" });
+    expect(within(list).getByText("Sustituida")).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Historial de compartición" })).getByText(/Sustituida por nueva versión/)).toBeInTheDocument();
+  });
+
+  it("explicit withdrawal, revoke and restore never revive a share", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar compartición" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retirar compartición versión 1" }));
+    expect(uiApi.listFor(own)).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar retirada" }));
+    expect(uiApi.listFor(own)).toEqual([]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.change(screen.getByLabelText("Acceso de ejemplo"), { target: { value: "propietario|con-010" } });
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa de revocación" }));
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar en la demostración" }));
+    expect(uiApi.state.revokedGrants).toEqual(["pg-own-010"]);
+    expect(uiApi.listFor(own)).toEqual([]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Restaurar demo" })[0]!);
+    expect(uiApi.state.revokedGrants).toEqual([]);
+    expect(uiApi.listFor(own)).toEqual([]);
+    expect(uiApi.state.log.map((e) => e.action)).toEqual(["compartir", "retirar", "compartir", "revocar_acceso", "restaurar_acceso"]);
+  });
+
+  it("revocations persist when leaving and returning to the page", () => {
+    wrap(<><UiProbe /><Toggle /></>);
+    openAccess();
+    fireEvent.change(screen.getByLabelText("Acceso de ejemplo"), { target: { value: "inquilino|con-002" } });
+    fireEvent.click(screen.getByRole("button", { name: "Vista previa de revocación" }));
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar en la demostración" }));
+    fireEvent.click(screen.getByRole("button", { name: "alternar página" }));
+    fireEvent.click(screen.getByRole("button", { name: "alternar página" }));
+    expect(uiApi.state.revokedGrants).toEqual(["pg-ten-002"]);
+    openAccess();
+    fireEvent.change(screen.getByLabelText("Acceso de ejemplo"), { target: { value: "inquilino|con-002" } });
+    expect(screen.getByRole("button", { name: "Ya revocado" })).toBeDisabled();
+  });
+
+  it("settlement reset clears shares and empties the owner list", () => {
+    wrap(<><UiProbe /><OwnerHarness /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    act(() => { uiApi.share({ ...T, version: 1 }); });
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    expect(screen.getByRole("button", { name: /Ver liquidación Casa Azahar/ })).toBeInTheDocument();
+    act(() => uiSet.reset());
+    fireEvent.click(screen.getByRole("button", { name: "Liquidaciones" }));
+    expect(screen.getByText(/No hay liquidaciones compartidas contigo/)).toBeInTheDocument();
+    expect(uiApi.state.shares).toEqual([]);
   });
 });
