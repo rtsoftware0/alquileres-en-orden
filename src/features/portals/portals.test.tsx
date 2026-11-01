@@ -221,3 +221,88 @@ describe("access panel UI", () => {
     expect(screen.getByText(/se recibe el presupuesto/)).toBeInTheDocument();
   });
 });
+
+// ---- Settlement sharing (tanda 1) ----
+import { act } from "react";
+import type { Settlement, State as SState, Version } from "@/features/settlements/types";
+import { SettlementProvider, useSettlements } from "@/features/settlements/SettlementContext";
+import { initialSharing } from "./data/demo-portal-sharing";
+import { PortalShareProvider, usePortalSharing } from "./PortalShareContext";
+import { restoreGrant, revokeGrant, shareVersion, sharedSettlementsFor, withdrawShare } from "./settlement-projection";
+
+const ver = (number: number, status: Version["status"], resultCents: number, model: Version["rules"]["model"] = "renta_fija"): Version => ({
+  number, status, reason: "motivo interno secreto", actor: "Gestor interno", date: "2026-10-20",
+  rules: { model, feeKind: "fijo", feeValue: 0, fixedCents: 90000, priorCents: 0, adjustmentCents: 0, adjustmentReason: "ajuste interno", participants: [{ id: "con-010", name: "Propietaria Casa Azahar · CON-010", basisPoints: 10000 }] },
+  source: { contextId: "azahar", month: "2026-10", lines: [], accrualCents: 0, cashCents: 0, costCents: 0, paidCostCents: 0, invalid: [] },
+  calculation: { incomeCents: 240000, feeCents: 0, deductibleCents: 0, operatingCents: 0, marginCents: 150000, resultCents, payableCents: Math.max(0, resultCents), shares: [{ id: "con-010", name: "x", cents: Math.max(0, resultCents) }], excluded: [], income: [], deductions: [] },
+});
+const sst = (settlements: Settlement[]): SState => ({ settlements, payments: [], closings: {}, closingLog: [], history: [], operations: {}, nextId: 1 });
+const azahar = (versions: Version[]): Settlement => ({ id: "liq-1", contextId: "azahar", month: "2026-10", versions });
+const T = { companyId: "cartera", contactId: "con-010", settlementId: "liq-1" };
+const own = c("propietario", "con-010");
+
+describe("settlement sharing rules", () => {
+  it("denies drafts, propio, didactic, empty company, other owners and con-011", () => {
+    const deps = { data, settlements: sst([azahar([ver(1, "borrador", 90000)]), { id: "liq-2", contextId: "olivo", month: "2026-10", versions: [ver(1, "aprobado", 1, "propio")] }, { id: "liq-3", contextId: "a16", month: "2026-10", versions: [ver(1, "aprobado", 1)] }]) };
+    const s0 = initialSharing();
+    expect(shareVersion(s0, { ...T, version: 1 }, deps).ok).toBe(false);
+    expect(shareVersion(s0, { ...T, settlementId: "liq-2", contactId: "con-009", version: 1 }, deps).ok).toBe(false);
+    expect(shareVersion(s0, { ...T, settlementId: "liq-3", version: 1 }, deps).ok).toBe(false);
+    const ok = { data, settlements: sst([azahar([ver(1, "aprobado", 90000)])]) };
+    expect(shareVersion(s0, { ...T, companyId: "empresa-vacia", version: 1 }, ok).ok).toBe(false);
+    expect(shareVersion(s0, { ...T, contactId: "con-009", version: 1 }, ok).ok).toBe(false);
+    expect(shareVersion(s0, { ...T, contactId: "con-011", version: 1 }, ok).ok).toBe(false);
+    expect(shareVersion(s0, { ...T, version: 1 }, ok).ok).toBe(true);
+    expect(sharedSettlementsFor(s0, c("inquilino", "con-010"), ok)).toEqual([]);
+  });
+
+  it("v2 approval does not replace until shared; sharing v2 replaces keeping history; repeat does not duplicate", () => {
+    let deps = { data, settlements: sst([azahar([ver(1, "aprobado", 90000)])]) };
+    const r1 = shareVersion(initialSharing(), { ...T, version: 1 }, deps); if (!r1.ok) throw new Error();
+    const again = shareVersion(r1.state, { ...T, version: 1 }, deps); if (!again.ok) throw new Error();
+    expect(again.changed).toBe(false); expect(again.state.shares).toHaveLength(1);
+    deps = { data, settlements: sst([azahar([ver(1, "aprobado", 90000), ver(2, "aprobado", 0)])]) };
+    expect(sharedSettlementsFor(r1.state, own, deps).map((p) => p.version)).toEqual([1]);
+    const r2 = shareVersion(r1.state, { ...T, version: 2 }, deps); if (!r2.ok) throw new Error();
+    expect(r2.state.shares).toHaveLength(2);
+    expect(r2.state.shares[0]).toMatchObject({ active: false, endedReason: "reemplazada" });
+    const p = sharedSettlementsFor(r2.state, own, deps);
+    expect(p.map((x) => x.version)).toEqual([2]);
+    expect(p[0]!.resultCents).toBe(0); expect(p[0]!.recipientPayableCents).toBe(0);
+  });
+
+  it("withdraw and revoke/restore never revive old shares", () => {
+    const deps = { data, settlements: sst([azahar([ver(1, "aprobado", 90000)])]) };
+    const r = shareVersion(initialSharing(), { ...T, version: 1 }, deps); if (!r.ok) throw new Error();
+    expect(sharedSettlementsFor(withdrawShare(r.state, T), own, deps)).toEqual([]);
+    const revoked = revokeGrant(r.state, "pg-own-010");
+    expect(sharedSettlementsFor(revoked, own, deps)).toEqual([]);
+    expect(shareVersion(revoked, { ...T, version: 1 }, deps).ok).toBe(false);
+    const restored = restoreGrant(revoked, "pg-own-010");
+    expect(sharedSettlementsFor(restored, own, deps)).toEqual([]);
+    const again = shareVersion(restored, { ...T, version: 1 }, deps); if (!again.ok) throw new Error();
+    expect(sharedSettlementsFor(again.state, own, deps)).toHaveLength(1);
+  });
+
+  it("projection is minimal with generic labels", () => {
+    const deps = { data, settlements: sst([azahar([ver(1, "aprobado", 90000)])]) };
+    const r = shareVersion(initialSharing(), { ...T, version: 1 }, deps); if (!r.ok) throw new Error();
+    const [p] = sharedSettlementsFor(r.state, own, deps);
+    expect(p!.lines.map((l) => l.label)).toEqual(["Obligación fija", "Saldo anterior", "Ajuste"]);
+    expect(p).toMatchObject({ propertyName: "Casa Azahar", month: "2026-10", versionDate: "2026-10-20", recipientPayableCents: 90000 });
+    const json = JSON.stringify(p);
+    for (const t of ["interno", "Gestor", "marginCents", "150000", "240000", "payments", "ct-ej-", "con-0"]) expect(json).not.toContain(t);
+  });
+
+  it("settlement scenario reset clears shares and revocations", () => {
+    let api!: ReturnType<typeof usePortalSharing>; let set!: ReturnType<typeof useSettlements>;
+    function Probe() { api = usePortalSharing(); set = useSettlements(); return null; }
+    render(<SettlementProvider><PortalShareProvider><Probe /></PortalShareProvider></SettlementProvider>);
+    act(() => set.setState(sst([azahar([ver(1, "aprobado", 90000)])])));
+    act(() => { api.share({ ...T, version: 1 }); });
+    act(() => api.revoke("pg-ten-001"));
+    expect(api.listFor(own)).toHaveLength(1); expect(api.state.revokedGrants).toEqual(["pg-ten-001"]);
+    act(() => set.reset());
+    expect(api.state.shares).toEqual([]); expect(api.state.revokedGrants).toEqual([]);
+  });
+});
