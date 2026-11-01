@@ -1,4 +1,8 @@
 # Bloque visual 09
+- [x] Recuperación01/11: diez reemplazos comprobados por huella y siete regresiones de pantalla; suite190/190
+- [x] Navegador escritorio/móvil y teclado: cálculos, pago noviembre, edición, ajustes y dos cierres; Portales intacto
+- [x] Lectura nativa y huellas comprobadas en revisión automática946cdee; compilación automática OK
+- [ ] Lectura por conector externo/read_file: no disponible desde estas herramientas; estado remoto aún refiere00f543b
 - [x] Proyecciones económicas, cálculos, versiones, pagos y cierre temporal con pruebas
 - [x] Liquidaciones, preparación, detalle/versiones, informes y cierre mensual
 - [x] Integración, navegador escritorio/móvil, capturas y regresión: 152 pruebas, 12 archivos; compilación automática OK

@@ -1,7 +1,7 @@
-import type { Calculation, CloseReview, Context, OwnerPayment, Rules, Settlement, Source, State, Version } from './types';
+import type { Calculation, CloseReview, Context, HistoryEvent, OwnerPayment, Rules, Scope, Settlement, Source, State, Version } from './types';
 import { contexts } from './data/examples';
 import {validCivilDate} from './adapters';
-export const initialSettlements=():State=>({settlements:[],payments:[],closings:{},history:[],operations:{},nextId:1});
+export const initialSettlements=():State=>({settlements:[],payments:[],closings:{},closingLog:[],history:[],operations:{},nextId:1});
 export function defaultRules(c:Context):Rules{return {model:c.model,feeKind:c.id==='copropiedad'?'fijo':'porcentaje',feeValue:c.id==='copropiedad'?10000:1000,fixedCents:c.fixedCents,priorCents:0,adjustmentCents:0,adjustmentReason:'',participants:c.participants.map(p=>({...p}))};}
 const cents=(n:number)=>Number.isSafeInteger(n);
 export function rulesErrors(source:Source,r:Rules):Record<string,string> {
@@ -41,17 +41,23 @@ export function calculate(source:Source,r:Rules):Calculation {
 }
 const clone=<T,>(x:T):T=>JSON.parse(JSON.stringify(x));
 export const latest=(x:Settlement)=>x.versions.at(-1);
-export const isClosed=(s:State,month:string)=>Boolean(s.closings[month]?.closed);
-function guard(s:State,month:string){if(isClosed(s,month))throw new Error('Este mes está cerrado en el escenario09. Reabre con motivo antes de editar o recalcular.');}
-function event(s:State,action:string,reason:string):State{return {...s,history:[...s.history,{action,reason,actor:'Administrador de demostración',date:'2026-10-21'}]};}
+export const scopeOf=(contextId:string):Scope=>contexts.find(c=>c.id===contextId)?.scope??'didactico';
+export const closingKey=(scope:Scope,month:string)=>`${scope}:${month}`;
+export const isClosed=(s:State,month:string,scope:Scope='cartera')=>Boolean(s.closings[closingKey(scope,month)]?.closed);
+function guard(s:State,month:string,contextId:string){if(isClosed(s,month,scopeOf(contextId)))throw new Error('Este mes está cerrado en el escenario09 para este ámbito. Reabre con motivo antes de editar o recalcular.');}
+type Ref=Omit<HistoryEvent,'action'|'reason'|'date'|'actor'>;
+function event(s:State,action:string,reason:string,ref:Ref={}):State{return {...s,history:[...s.history,{action,reason,actor:'Administrador de demostración',date:'2026-10-21',...ref}]};}
+const refOf=(item:{id:string;contextId:string;month:string},version:number):Ref=>({settlementId:item.id,contextId:item.contextId,version,scope:scopeOf(item.contextId),month:item.month});
+/** Owner payments whose own date falls in month, for any settlement of the context (cash view). */
+export function ownerPaymentsInMonth(s:State,contextId:string,month:string){const ids=new Set(s.settlements.filter(x=>x.contextId===contextId).map(x=>x.id));return s.payments.filter(p=>ids.has(p.settlementId)&&p.date.slice(0,7)===month);}
 export function prepare(s:State,source:Source,rules:Rules):{state:State;id:string} {
- guard(s,source.month);calculate(source,rules);
+ guard(s,source.month,source.contextId);calculate(source,rules);
  const existing=s.settlements.find(x=>x.contextId===source.contextId&&x.month===source.month);if(existing)return {state:s,id:existing.id};
  if(!contexts.some(c=>c.id===source.contextId))throw new Error('Activo desconocido.');
  const id=`liq-${s.nextId}`;const version:Version={number:1,status:'borrador',rules:clone(rules),source:clone(source),calculation:calculate(source,rules),reason:'Preparación temporal',actor:'Administrador de demostración',date:'2026-10-21'};
- return {state:event({...s,nextId:s.nextId+1,settlements:[...s.settlements,{id,contextId:source.contextId,month:source.month,versions:[clone(version)]}]},'Borrador temporal preparado',id),id};
+ return {state:event({...s,nextId:s.nextId+1,settlements:[...s.settlements,{id,contextId:source.contextId,month:source.month,versions:[clone(version)]}]},'Borrador temporal preparado',id,refOf({id,contextId:source.contextId,month:source.month},1)),id};
 }
-function find(s:State,id:string){const item=s.settlements.find(x=>x.id===id);const v=item&&latest(item);if(!item||!v)throw new Error('Liquidación no disponible.');guard(s,item.month);return {item,v};}
+function find(s:State,id:string){const item=s.settlements.find(x=>x.id===id);const v=item&&latest(item);if(!item||!v)throw new Error('Liquidación no disponible.');guard(s,item.month,item.contextId);return {item,v};}
 function replace(s:State,item:Settlement):State {return {...s,settlements:s.settlements.map(x=>x.id===item.id?item:x)};}
 export function edit(s:State,id:string,source:Source,rules:Rules,reason:string):State {
  const {item,v}=find(s,id);if(source.contextId!==item.contextId||source.month!==item.month)throw new Error('La corrección debe mantener activo y mes.');
@@ -59,13 +65,13 @@ export function edit(s:State,id:string,source:Source,rules:Rules,reason:string):
  // Beneficiary identities remain stable so versions cannot evade previous payments.
  if([...rules.participants].map(p=>p.id).sort().join('|')!==[...v.rules.participants].map(p=>p.id).sort().join('|'))throw new Error('Conserva los beneficiarios del grupo; cambia solo participaciones.');
  const next:Version={number:v.status==='aprobado'?v.number+1:v.number,status:'borrador',source:clone(source),rules:clone(rules),calculation:calculate(source,rules),reason:reason.trim()||'Edición temporal; revisión invalidada',actor:'Administrador de demostración',date:'2026-10-21'};
- return event(replace(s,{...item,versions:v.status==='aprobado'?[...item.versions,next]:[...item.versions.slice(0,-1),next]}),'Edición de liquidación',next.reason);
+ return event(replace(s,{...item,versions:v.status==='aprobado'?[...item.versions,next]:[...item.versions.slice(0,-1),next]}),'Edición de liquidación · vuelve a borrador',next.reason,refOf(item,next.number));
 }
 export function transition(s:State,id:string,status:'revisado'|'aprobado'):State {
  const {item,v}=find(s,id);if(v.status===status)return s;
  if(status==='revisado'&&v.status!=='borrador'||status==='aprobado'&&v.status!=='revisado')throw new Error('Revisa la versión vigente antes de aprobar.');
  calculate(v.source,v.rules);
- return event(replace(s,{...item,versions:[...item.versions.slice(0,-1),clone({...v,status})]}),status==='aprobado'?'Versión aprobada (simulada)':'Versión revisada (simulada)',`Versión ${v.number} · autoaprobación de administrador único`);
+ return event(replace(s,{...item,versions:[...item.versions.slice(0,-1),clone({...v,status})]}),status==='aprobado'?'Versión aprobada (simulada)':'Versión revisada (simulada)',`Versión ${v.number} · autoaprobación de administrador único`,refOf(item,v.number));
 }
 export function balances(s:State,item:Settlement,v=latest(item)) {
  if(!v)return [];
@@ -80,14 +86,15 @@ export function pay(s:State,id:string,beneficiaryId:string,amount:number,date:st
  const parsed=new Date(`${date}T00:00:00Z`);if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(parsed.getTime())||parsed.toISOString().slice(0,10)!==date||!reference.trim())throw new Error('Fecha civil válida y referencia ficticia obligatorias.');
  if(s.payments.some(p=>p.settlementId===id&&p.reference===reference.trim()))throw new Error('Referencia de pago ya utilizada.');
  const p:OwnerPayment={id:`liq-pay-${s.payments.length+1}`,operationId,settlementId:id,beneficiaryId,cents:amount,date,reference:reference.trim()};
- return event({...s,payments:[...s.payments,p],operations:{...s.operations,[operationId]:fp}},'Pago externo simulado',`${reference} · no cambia Banco ni caja`);
+ return event({...s,payments:[...s.payments,p],operations:{...s.operations,[operationId]:fp}},'Pago externo simulado',`${reference} · ${beneficiaryId} · fecha ${date} · no cambia Banco ni caja`,refOf(item,v.number));
 }
 export function differences(a:Version,b:Version){return {result:b.calculation.resultCents-a.calculation.resultCents,fee:b.calculation.feeCents-a.calculation.feeCents,deductions:b.calculation.deductibleCents-a.calculation.deductibleCents,rulesChanged:JSON.stringify(a.rules)!==JSON.stringify(b.rules),linesChanged:JSON.stringify(a.source)!==JSON.stringify(b.source)};}
 export function close(s:State,review:CloseReview,fresh:CloseReview,acknowledged:boolean):State {
- if(isClosed(s,review.month))return s;
- if(review.month!==fresh.month||review.fingerprint!==fresh.fingerprint)throw new Error('La revisión está obsoleta. Revisa de nuevo las fuentes.');
+ if(isClosed(s,review.month,review.scope))return s;
+ if(review.scope!==fresh.scope||review.month!==fresh.month||review.fingerprint!==fresh.fingerprint)throw new Error('La revisión está obsoleta. Revisa de nuevo las fuentes.');
  if(fresh.invalid.length)throw new Error('Hay datos inválidos; no se puede cerrar.');
  if(fresh.issues.length&&!acknowledged)throw new Error('Reconoce expresamente todos los pendientes antes del cierre simulado.');
- return event({...s,closings:{...s.closings,[fresh.month]:{review:clone(fresh),closed:true,actor:'Administrador de demostración',date:'2026-10-21'}}},'Cierre mensual simulado',`${fresh.month} · pendientes reconocidos; solo bloquea escenario09`);
+ const key=closingKey(fresh.scope,fresh.month);const id=`cierre-${s.closingLog.length+1}`;const actor='Administrador de demostración',date='2026-10-21';
+ return event({...s,closings:{...s.closings,[key]:{id,scope:fresh.scope,month:fresh.month,review:clone(fresh),closed:true,actor,date}},closingLog:[...s.closingLog,{id,scope:fresh.scope,month:fresh.month,action:'cierre',reason:'Pendientes reconocidos',actor,date,snapshotId:id,review:clone(fresh)}]},'Cierre mensual simulado',`${id} · ${fresh.scope} · ${fresh.month} · solo bloquea escenario09`,{scope:fresh.scope,month:fresh.month});
 }
-export function reopen(s:State,month:string,reason:string):State {if(!reason.trim())throw new Error('La reapertura exige motivo.');const closing=s.closings[month];if(!closing?.closed)return s;return event({...s,closings:{...s.closings,[month]:{...closing,closed:false}}},'Reapertura simulada',reason);}
+export function reopen(s:State,month:string,reason:string,scope:Scope='cartera'):State {if(!reason.trim())throw new Error('La reapertura exige motivo.');const key=closingKey(scope,month);const closing=s.closings[key];if(!closing?.closed)return s;return event({...s,closings:{...s.closings,[key]:{...closing,closed:false}},closingLog:[...s.closingLog,{id:`reapertura-${s.closingLog.length+1}`,scope,month,action:'reapertura',reason:reason.trim(),actor:'Administrador de demostración',date:'2026-10-21',snapshotId:closing.id,review:clone(closing.review)}]},'Reapertura simulada',`${closing.id} · ${scope} · ${month} · ${reason.trim()}`,{scope,month});}
