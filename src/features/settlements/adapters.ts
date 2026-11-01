@@ -36,27 +36,29 @@ export function sourceFor(d:PortfolioDataset,contextId:string,month:string):Sour
  const paid=d.expensePayments.filter(p=>p.date.slice(0,7)===month&&d.expenses.some(e=>e.id===p.expenseId&&e.propertyId===context.propertyId));
  return {contextId,month,lines,accrualCents:sum(charges.map(c=>c.amountCents)),cashCents:sum(cash.map(p=>p.amountCents)),costCents:sum(expenses.map(e=>e.amountCents)),paidCostCents:sum(paid.map(p=>p.amountCents)),invalid};
 }
-export function closeReview(d:PortfolioDataset,bank:BankState,s:State,month:string):CloseReview {
- const sources=contexts.filter(c=>c.scope==='cartera').map(c=>sourceFor(d,c.id,month));
- const rows=bank.movements.filter(m=>m.scope==='base'&&m.accountId==='cuenta-demo'&&m.date.slice(0,7)===month&&!m.discarded);
- const pendingCents=sum(d.charges.filter(c=>c.period<=month).map(c=>chargeBalance(d,c).outstandingCents));
- const bankPendingCents=sum(rows.map(m=>movementRemaining(bank,m)));const unallocatedCents=moneySummary(d,{period:month}).unallocatedCents;
- const current=s.settlements.filter(x=>x.month===month);const issues:string[]=[];
+export function closeReview(d:PortfolioDataset,bank:BankState,s:State,month:string,scope:'cartera'|'didactico'='cartera'):CloseReview {
+ const portfolio=scope==='cartera';
+ const sources=contexts.filter(c=>c.scope===scope).map(c=>sourceFor(d,c.id,month));
+ const rows=bank.movements.filter(m=>portfolio&&m.scope==='base'&&m.accountId==='cuenta-demo'&&m.date.slice(0,7)===month&&!m.discarded);
+ const pendingCents=!portfolio?0:sum(d.charges.filter(c=>c.period<=month).map(c=>chargeBalance(d,c).outstandingCents));
+ const bankPendingCents=sum(rows.map(m=>movementRemaining(bank,m)));const unallocatedCents=portfolio?moneySummary(d,{period:month}).unallocatedCents:0;
+ const current=s.settlements.filter(x=>x.month===month&&contexts.find(c=>c.id===x.contextId)?.scope===scope);const issues:string[]=[];
  if(pendingCents)issues.push(`Deuda acumulada hasta ${month} pendiente de cobro`);
  if(bankPendingCents)issues.push('Movimientos de cuenta de cartera sin conciliar completamente');
  if(unallocatedCents)issues.push('Cobros del mes con dinero sin asignar');
- if(sources.some(x=>x.lines.some(l=>l.kind==='gasto'&&!l.approved)))issues.push('Gastos de cartera sin aprobación registrada; no deducidos en agencia');
+ if(sources.some(x=>x.lines.some(l=>l.kind==='gasto'&&!l.approved)))issues.push((portfolio?'Gastos de cartera':'Gastos didácticos')+' sin aprobación registrada; no deducidos en agencia');
  if(current.some(x=>x.versions.at(-1)?.status!=='aprobado'))issues.push('Hay liquidaciones temporales sin aprobar');
  if(!current.length)issues.push('No hay liquidaciones preparadas para este mes');
  const invalid=[...new Set(sources.flatMap(x=>x.invalid))];
- for(const m of bank.movements.filter(m=>m.scope==='base'&&m.accountId==='cuenta-demo'))if(!validCivilDate(m.date))invalid.push(`Movimiento bancario inválido ${m.id}`);
+ for(const m of bank.movements.filter(m=>portfolio&&m.scope==='base'&&m.accountId==='cuenta-demo'))if(!validCivilDate(m.date))invalid.push(`Movimiento bancario inválido ${m.id}`);
  for(const m of rows){if(!validCivilDate(m.date)||!Number.isSafeInteger(m.cents)||m.currency!=='EUR'||movementRemaining(bank,m)<0)invalid.push(`Movimiento bancario inválido ${m.id}`);}
  for(const l of bank.links.filter(l=>l.active&&rows.some(m=>m.id===l.movementId))){const m=rows.find(m=>m.id===l.movementId);const r=bank.records.find(r=>r.id===l.recordId);if(!m||!r||!Number.isSafeInteger(l.cents)||l.cents<=0||m.accountId!==r.accountId||m.scope!==r.scope||m.kind!==r.kind||Math.sign(m.cents)!==Math.sign(r.cents)||bank.links.filter(x=>x.active&&x.recordId===r.id).reduce((n,x)=>n+x.cents,0)>Math.abs(r.cents))invalid.push(`Vínculo bancario inválido ${l.id}`);}
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))invalid.push('Mes inválido');
  for(const source of sources)for(const l of source.lines)if(!Number.isSafeInteger(l.cents)||l.cents<0||!validCivilDate(l.date))invalid.push(`Línea inválida ${l.id}`);
  const scopedLinks=bank.links.filter(l=>rows.some(m=>m.id===l.movementId));
- const adjustmentsCents=sum(current.map(x=>x.versions.at(-1)?.rules.adjustmentCents??0));
- if(adjustmentsCents)issues.push('Ajustes manuales de liquidaciones a reconocer');
- const fingerprint=JSON.stringify({month,sources,rows,scopedLinks,current,payments:s.payments.filter(p=>current.some(x=>x.id===p.settlementId)),pendingCents,unallocatedCents});
- return {month,fingerprint,issues,invalid,pendingCents,bankPendingCents,unallocatedCents,adjustmentsCents,accountLabel:'Cuenta de cartera · cuenta-demo; excluye cuenta didáctica'};
+ const adjustments=current.flatMap(x=>{const v=x.versions.at(-1);return v&&v.rules.adjustmentCents!==0?[{settlementId:x.id,contextId:x.contextId,version:v.number,cents:v.rules.adjustmentCents,reason:v.rules.adjustmentReason}]:[];});
+ const adjustmentsCents=sum(adjustments.map(a=>a.cents));
+ if(adjustments.length)issues.push(`Ajustes manuales a reconocer: ${adjustments.length} (neto ${adjustmentsCents/100} €)`);
+ const fingerprint=JSON.stringify({scope,month,sources,rows,scopedLinks,current,payments:s.payments.filter(p=>current.some(x=>x.id===p.settlementId)),pendingCents,unallocatedCents});
+ return {scope,month,adjustments,fingerprint,issues,invalid,pendingCents,bankPendingCents,unallocatedCents,adjustmentsCents,accountLabel:portfolio?'Cuenta de cartera · cuenta-demo; excluye cuenta didáctica':'Ejemplos didácticos · sin cuenta bancaria ni deuda de cartera'};
 }

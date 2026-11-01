@@ -8,6 +8,10 @@ export interface Calculation { incomeCents:number; feeCents:number; deductibleCe
 export interface Version { number:number; status:'borrador'|'revisado'|'aprobado'; rules:Rules; source:Source; calculation:Calculation; reason:string; actor:string; date:string }
 export interface Settlement { id:string; contextId:string; month:string; versions:Version[] }
 export interface OwnerPayment { id:string; operationId:string; settlementId:string; beneficiaryId:string; cents:number; date:string; reference:string }
-export interface CloseReview { month:string; fingerprint:string; issues:string[]; invalid:string[]; pendingCents:number; bankPendingCents:number; unallocatedCents:number; adjustmentsCents:number; accountLabel:string }
-export interface Closing { review:CloseReview; closed:boolean; actor:string; date:string }
-export interface State { settlements:Settlement[]; payments:OwnerPayment[]; closings:Record<string,Closing>; history:{action:string;reason:string;date:string;actor:string}[]; operations:Record<string,string>; nextId:number }
+export type Scope='cartera'|'didactico';
+export interface AdjustmentRow { settlementId:string; contextId:string; version:number; cents:number; reason:string }
+export interface CloseReview { scope:Scope; month:string; adjustments:AdjustmentRow[]; fingerprint:string; issues:string[]; invalid:string[]; pendingCents:number; bankPendingCents:number; unallocatedCents:number; adjustmentsCents:number; accountLabel:string }
+export interface Closing { id:string; scope:Scope; month:string; review:CloseReview; closed:boolean; actor:string; date:string }
+export interface ClosingEvent { id:string; scope:Scope; month:string; action:'cierre'|'reapertura'; reason:string; actor:string; date:string; snapshotId:string; review:CloseReview }
+export interface HistoryEvent { action:string; reason:string; date:string; actor:string; settlementId?:string; contextId?:string; version?:number; scope?:Scope; month?:string }
+export interface State { settlements:Settlement[]; payments:OwnerPayment[]; closings:Record<string,Closing>; closingLog:ClosingEvent[]; history:HistoryEvent[]; operations:Record<string,string>; nextId:number }
