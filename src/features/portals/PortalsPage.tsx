@@ -159,6 +159,7 @@ function AccessPanel({ revoked, history, log, onRevoke, onRestore, onExit }: {
       <InviteForm log={log} />
       <RevokeForm revoked={revoked} log={log} onRevoke={onRevoke} />
       <SharePreview revoked={revoked} />
+      <SettlementSharePanel />
       <Panel title="Historial temporal (simulación)">
         {history.length === 0 ? <p className="text-sm text-muted-foreground">Sin acciones simuladas.</p> : (
           <ol className="list-decimal space-y-1 pl-5 text-sm">{history.map((h) => <li key={h.id}>{h.text}</li>)}</ol>
