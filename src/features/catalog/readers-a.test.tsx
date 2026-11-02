@@ -78,23 +78,9 @@ describe("descriptive readers use the temporary catalog", () => {
   });
 
   it("a new property filter shows zero movements, never the whole portfolio", () => {
-    wrap(null);
-    let id = "";
-    act(() => { const r = newProperty(); if (r.ok) id = r.id; });
-    cleanup();
-    render(<CatalogProvider><Probe /></CatalogProvider>);
-    act(() => { const r = newProperty(); if (r.ok) id = r.id; });
-    const { rerender } = render(<></>);
-    rerender(<></>);
-    cleanup();
-    // Render the screens inside a provider that already holds the new property.
-    function Screens() {
-      const a = useCatalog();
-      probe.api = a;
-      return a.data.properties.some((p) => p.id === id) ? <><ContractsPage search={{ inmueble: id }} /><DepositsPage search={{ inmueble: id }} /></> : null;
-    }
-    render(<CatalogProvider><Screens /></CatalogProvider>);
+    wrap(<><ContractsPage search={{ inmueble: "cat-inm-1" }} /><DepositsPage search={{ inmueble: "cat-inm-1" }} /></>);
     act(() => { newProperty(); });
+    expect(api().data.properties.some((p) => p.id === "cat-inm-1")).toBe(true);
     expect(screen.getByText(/No hay contratos que coincidan/)).toBeInTheDocument();
     expect(screen.getByText(/0 contratos con fianza/)).toBeInTheDocument();
     expect(screen.queryByText(/Inmueble no encontrado/)).toBeNull();
