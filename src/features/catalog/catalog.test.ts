@@ -214,3 +214,67 @@ describe("catalog tanda 2 engine support", () => {
     }
   });
 });
+
+describe("clearing optional fields (absent = keep, null = clear)", () => {
+  const prop = base.properties[0]!;
+  const room = base.rooms[0]!;
+  const viewProp = (o: CatalogOverlay, id: string) => mergeCatalog(base, o).properties.find((p) => p.id === id)!;
+  const viewRoom = (o: CatalogOverlay, id: string) => mergeCatalog(base, o).rooms.find((r) => r.id === id)!;
+
+  it("base property: set kind → clear → later edit of another field keeps it empty", () => {
+    let o = ok(editProperty(base, emptyOverlay(), prop.id, { kind: "edificio" }));
+    expect(viewProp(o, prop.id).kind).toBe("edificio");
+    o = ok(editProperty(base, o, prop.id, { kind: null }));
+    expect("kind" in viewProp(o, prop.id)).toBe(false);
+    o = ok(editProperty(base, o, prop.id, { portfolioLabel: "Cartera B" }));
+    expect("kind" in viewProp(o, prop.id)).toBe(false);
+    expect(viewProp(o, prop.id).portfolioLabel).toBe("Cartera B");
+    expect(viewProp(o, prop.id).ownerId).toBe(prop.ownerId);
+  });
+
+  it("added property born with kind: clear survives later edits; omitting keeps; reassign restores", () => {
+    const { o: o0, propertyId } = chain();
+    let o = ok(editProperty(base, o0, propertyId, { portfolioLabel: "X" }));
+    expect(viewProp(o, propertyId).kind).toBe("vivienda");
+    o = ok(editProperty(base, o, propertyId, { kind: null }));
+    o = ok(editProperty(base, o, propertyId, { managerName: "Gestora Ejemplo" }));
+    expect("kind" in viewProp(o, propertyId)).toBe(false);
+    o = ok(editProperty(base, o, propertyId, { kind: "local" }));
+    expect(viewProp(o, propertyId).kind).toBe("local");
+  });
+
+  it("base room: set capacity and unitKind → clear → later edit keeps both empty", () => {
+    let o = ok(editRoom(base, emptyOverlay(), room.id, { capacity: 2, unitKind: "estudio" }));
+    o = ok(editRoom(base, o, room.id, { capacity: null }));
+    expect("capacity" in viewRoom(o, room.id)).toBe(false);
+    expect(viewRoom(o, room.id).unitKind).toBe("estudio");
+    o = ok(editRoom(base, o, room.id, { unitKind: null }));
+    o = ok(editRoom(base, o, room.id, { features: ["Luz natural"] }));
+    const v = viewRoom(o, room.id);
+    expect("capacity" in v || "unitKind" in v).toBe(false);
+    expect([v.code, v.propertyId, v.status]).toEqual([room.code, room.propertyId, room.status]);
+  });
+
+  it("added room born with capacity: clear persists; reassign restores", () => {
+    const { o: o0, roomId } = chain();
+    let o = ok(editRoom(base, o0, roomId, { capacity: null }));
+    o = ok(editRoom(base, o, roomId, { monthlyRent: 410 }));
+    expect("capacity" in viewRoom(o, roomId)).toBe(false);
+    o = ok(editRoom(base, o, roomId, { capacity: 3 }));
+    expect(viewRoom(o, roomId).capacity).toBe(3);
+  });
+
+  it("a clear combined with an invalid field is rejected as a whole", () => {
+    const o = ok(editRoom(base, emptyOverlay(), room.id, { unitKind: "estudio", capacity: 2 }));
+    const r = editRoom(base, o, room.id, { unitKind: null, capacity: 0 });
+    expect(r.ok).toBe(false);
+    const p = editProperty(base, ok(editProperty(base, emptyOverlay(), prop.id, { kind: "local" })), prop.id, { kind: null, name: "" });
+    expect(p.ok).toBe(false);
+    expect(viewRoom(o, room.id).unitKind).toBe("estudio");
+  });
+
+  it("clearing never unlocks protected fields", () => {
+    const r = editProperty(base, emptyOverlay(), prop.id, { kind: null, ownerId: "con-001-otro" });
+    if (prop.ownerId !== "con-001-otro") expect(r.ok).toBe(false);
+  });
+});
