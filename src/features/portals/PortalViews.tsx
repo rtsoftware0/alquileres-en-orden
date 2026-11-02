@@ -52,7 +52,9 @@ export function usePortalLabels() {
     const i = data.incidents.find((x) => x.id === id);
     return { propertyName: property(i?.propertyId, fallback.propertyName), location: i?.roomId ? room(i.roomId, fallback.location) : fallback.location };
   };
-  return { property, room, contact, settlementProperty, contract, incident };
+  const contactLine = (id: string, fallback: { code: string; name: string }, sep = " · ") => { const c = contact(id, fallback); return `${c.code}${sep}${c.name}`; };
+  const contextName = (contextId: string) => { const c = settlementContexts.find((x) => x.id === contextId); return c ? property(c.propertyId, c.name) : contextId; };
+  return { property, room, contact, contactLine, contextName, settlementProperty, contract, incident };
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
