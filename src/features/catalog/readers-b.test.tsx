@@ -51,11 +51,6 @@ describe("incidents and documents read current catalog names", () => {
   });
 
   it("a new property filter shows zero incidents without the unknown notice", () => {
-    const { rerender } = wrap(<IncidentsPage search={{}} />);
-    const id = addNewProperty();
-    rerender(<CatalogProvider><Probe /><IncidentsPage search={{ inmueble: id }} /></CatalogProvider>);
-    // rerender replaces the provider; check against a fresh provider with the same add.
-    cleanup();
     wrap(<IncidentsPage search={{ inmueble: "cat-inm-1" }} />);
     expect(screen.getByRole("status")).toHaveTextContent(/no existe/);
     const created = addNewProperty();
