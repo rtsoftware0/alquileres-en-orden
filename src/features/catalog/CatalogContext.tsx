@@ -88,7 +88,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   return <Context.Provider value={api}>{children}</Context.Provider>;
 }
 
-const fallback = buildApi(emptyOverlay(), () => {});
+const fallbackOverlay = emptyOverlay();
+const fallback = buildApi(fallbackOverlay, { read: () => fallbackOverlay, write: () => {} });
 
 /** Catalog API; outside the provider (isolated tests) it exposes the untouched base view. */
 export function useCatalog(): CatalogApi {
