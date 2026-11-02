@@ -9,11 +9,10 @@ import {
   ctxKey, isRevoked, permissionsFor, selectableContacts, validRelations, visibleDocuments, visibleThreadMessages,
   type PortalContext,
 } from "./selectors";
-import { OwnerPortal, ProviderPortal, SettlementSummary, TenantPortal, btn, btnPrimary, monthLabel } from "./PortalViews";
+import { OwnerPortal, ProviderPortal, SettlementSummary, TenantPortal, btn, btnPrimary, monthLabel, usePortalLabels } from "./PortalViews";
 import { usePortalSharing } from "./PortalShareContext";
 import { shareEligibility, shareVersion, sharedSettlementsFor, type ShareDeps, type ShareTarget } from "./settlement-projection";
 import { useSettlements } from "@/features/settlements/SettlementContext";
-import { contexts as settlementContexts } from "@/features/settlements/data/examples";
 
 // Portal demo center. Everything is React memory: no accounts, no links,
 // no emails, nothing persisted. Revocations and settlement shares live in
@@ -97,6 +96,7 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
   ctx: PortalContext; setCtx: (c: PortalContext) => void; revoked: ReadonlySet<string>; onExit: () => void; onRestore: () => void; onRevokeCurrent?: () => void;
 }) {
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const L = usePortalLabels();
   const contacts = selectableContacts(data, ctx.companyId, ctx.profile);
   const contact = contacts.find((c) => c.id === ctx.contactId);
   const company = PORTAL_COMPANIES.find((c) => c.id === ctx.companyId)!;
@@ -123,18 +123,18 @@ export function PortalPreview({ ctx, setCtx, revoked, onExit, onRestore, onRevok
         <label className="block flex-1 text-sm"><span className="font-medium">Contacto</span>
           <select className={fieldClass} value={ctx.contactId} disabled={contacts.length === 0} onChange={(e) => change({ contactId: e.target.value })}>
             {contacts.length === 0 && <option value="">Sin contactos relacionados</option>}
-            {contacts.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+            {contacts.map((c) => <option key={c.id} value={c.id}>{L.contactLine(c.id, c)}</option>)}
           </select></label>
         <button type="button" className={btn} onClick={onExit}>Volver a gestión</button>
       </div>
       <p className="mb-4 text-sm text-foreground" aria-live="polite">
-        Viendo como: <strong>{profileLabel[ctx.profile]}</strong> · {contact ? `${contact.code} ${contact.name}` : "sin contacto"} · {company.name}
+        Viendo como: <strong>{profileLabel[ctx.profile]}</strong> · {contact ? L.contactLine(contact.id, contact, " ") : "sin contacto"} · {company.name}
       </p>
       {contact && !blocked && onRevokeCurrent && demoPortalGrants.some((g) => g.companyId === ctx.companyId && g.profile === ctx.profile && g.contactId === ctx.contactId) && (
         <div className="mb-4 text-sm">
           {confirmRevoke ? (
             <div className="rounded-md border border-border bg-muted/40 p-3" role="region" aria-label="Vista previa de revocación">
-              <p>Contacto: <strong>{contact.code} {contact.name}</strong> · Perfil: {profileLabel[ctx.profile]} · Empresa: {company.name}</p>
+              <p>Contacto: <strong>{L.contactLine(contact.id, contact, " ")}</strong> · Perfil: {profileLabel[ctx.profile]} · Empresa: {company.name}</p>
               <p className="mt-1">Se bloquearía esta vista de demostración; el expediente interno se conserva.</p>
               <div className="mt-2 flex gap-2"><button type="button" className={btnPrimary} onClick={() => { setConfirmRevoke(false); onRevokeCurrent(); }}>Aplicar en la demostración</button><button type="button" className={btn} onClick={() => setConfirmRevoke(false)}>Cancelar</button></div>
             </div>
@@ -181,6 +181,7 @@ function AccessPanel({ revoked, history, log, onRevoke, onRestore, onExit }: {
 const portalContacts = (profile: PortalProfile) => data.contacts.filter((c) => c.roles.includes(profile));
 
 function InviteForm({ log }: { log: (t: string) => void }) {
+  const L = usePortalLabels();
   const [profile, setProfile] = useState<PortalProfile | "">("");
   const [contactId, setContactId] = useState("");
   const [relId, setRelId] = useState("");
@@ -200,7 +201,7 @@ function InviteForm({ log }: { log: (t: string) => void }) {
           </select></label>
         <label className="block text-sm"><span className="font-medium">Contacto</span>
           <select className={fieldClass} value={contactId} disabled={!profile} onChange={(e) => { setContactId(e.target.value); setRelId(""); reset(); }}>
-            <option value="">Elige…</option>{contacts.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+            <option value="">Elige…</option>{contacts.map((c) => <option key={c.id} value={c.id}>{L.contactLine(c.id, c)}</option>)}
           </select></label>
         <label className="block text-sm"><span className="font-medium">Relación</span>
           <select className={fieldClass} value={relId} disabled={relations.length === 0} onChange={(e) => { setRelId(e.target.value); reset(); }}>
@@ -212,7 +213,7 @@ function InviteForm({ log }: { log: (t: string) => void }) {
       <button type="button" className={`${btnPrimary} mt-3`} disabled={!rel} onClick={() => setSummary(true)}>Ver resumen</button>
       {summary && rel && contact && profile && (
         <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Resumen de la invitación">
-          <p>Destinatario ficticio: <strong>{contact.name}</strong> ({contact.email ?? "sin correo"})</p>
+          <p>Destinatario ficticio: <strong>{L.contact(contact.id, contact).name}</strong> ({contact.email ?? "sin correo"})</p>
           <p>Perfil: {profileLabel[profile]} · Relación: {rel.label} · Empresa: Cartera de ejemplo</p>
           <ul className="mt-2 list-disc pl-5">{permissionsFor[profile].map((p) => <li key={p}>{p}</li>)}</ul>
           <p className="mt-2 text-muted-foreground">No se envía ningún correo ni se genera ningún enlace.</p>
@@ -225,6 +226,7 @@ function InviteForm({ log }: { log: (t: string) => void }) {
 }
 
 function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; log: (t: string) => void; onRevoke: (ids: string[]) => void }) {
+  const L = usePortalLabels();
   const options = [...new Map(demoPortalGrants.map((g) => [`${g.profile}|${g.contactId}`, g])).values()];
   const [key, setKey] = useState("");
   const [preview, setPreview] = useState(false);
@@ -237,12 +239,12 @@ function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; 
       <label className="block text-sm sm:max-w-md"><span className="font-medium">Acceso de ejemplo</span>
         <select className={fieldClass} value={key} onChange={(e) => { setKey(e.target.value); setPreview(false); }}>
           <option value="">Elige…</option>
-          {options.map((g) => { const ct = data.contacts.find((x) => x.id === g.contactId)!; return <option key={g.id} value={`${g.profile}|${g.contactId}`}>{ct.code} · {ct.name} · {profileLabel[g.profile]}</option>; })}
+          {options.map((g) => { const ct = data.contacts.find((x) => x.id === g.contactId)!; return <option key={g.id} value={`${g.profile}|${g.contactId}`}>{L.contactLine(ct.id, ct)} · {profileLabel[g.profile]}</option>; })}
         </select></label>
       <button type="button" className={`${btn} mt-3`} disabled={!sel || already} onClick={() => setPreview(true)}>{already ? "Ya revocado" : "Vista previa de revocación"}</button>
       {preview && sel && c && !already && (
         <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Vista previa de revocación">
-          <p>Se bloquearía la vista de <strong>{c.name}</strong> como {profileLabel[sel.profile].toLowerCase()}. El expediente (contratos, documentos, incidencias) se conserva.</p>
+          <p>Se bloquearía la vista de <strong>{L.contact(c.id, c).name}</strong> como {profileLabel[sel.profile].toLowerCase()}. El expediente (contratos, documentos, incidencias) se conserva.</p>
           <button type="button" className={`${btnPrimary} mt-3`} onClick={() => { onRevoke(ids); log(`acceso de ${c.code} como ${profileLabel[sel.profile].toLowerCase()} revocado en memoria; expediente conservado.`); setPreview(false); }}>Aplicar en la demostración</button>
         </div>
       )}
@@ -251,6 +253,7 @@ function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; 
 }
 
 function SharePreview({ revoked }: { revoked: ReadonlySet<string> }) {
+  const L = usePortalLabels();
   const [item, setItem] = useState("");
   const [recipientKey, setRecipientKey] = useState("");
   const recipients = [...new Map(demoPortalGrants.map((g) => [`${g.profile}|${g.contactId}`, g])).values()];
@@ -279,12 +282,12 @@ function SharePreview({ revoked }: { revoked: ReadonlySet<string> }) {
         <label className="block text-sm"><span className="font-medium">Destinatario</span>
           <select className={fieldClass} value={recipientKey} onChange={(e) => setRecipientKey(e.target.value)}>
             <option value="">Elige…</option>
-            {recipients.map((g) => { const ct = data.contacts.find((x) => x.id === g.contactId)!; return <option key={g.id} value={`${g.profile}|${g.contactId}`}>{ct.code} · {ct.name} · {profileLabel[g.profile]}</option>; })}
+            {recipients.map((g) => { const ct = data.contacts.find((x) => x.id === g.contactId)!; return <option key={g.id} value={`${g.profile}|${g.contactId}`}>{L.contactLine(ct.id, ct)} · {profileLabel[g.profile]}</option>; })}
           </select></label>
       </div>
       {(doc || thread) && r && contact && (
         <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Vista previa externa">
-          <p>Destinatario: <strong>{contact.name}</strong> · Perfil: {profileLabel[r.profile]} · Contexto: Cartera de ejemplo</p>
+          <p>Destinatario: <strong>{L.contact(contact.id, contact).name}</strong> · Perfil: {profileLabel[r.profile]} · Contexto: Cartera de ejemplo</p>
           {doc && (
             <>
               <p className="mt-1">Documento: {doc.title} · versión {currentVersion(doc).version}</p>
@@ -331,13 +334,15 @@ const actionLabel: Record<string, string> = {
   revocar_acceso: "Acceso revocado", restaurar_acceso: "Acceso restaurado",
 };
 const endLabel: Record<string, string> = { reemplazada: "Sustituida", retirada: "Retirada", revocada: "Inactiva por revocación" };
-const contactLabel = (id: string) => { const ct = data.contacts.find((x) => x.id === id); return ct ? `${ct.code} · ${ct.name}` : id; };
 
 function SettlementSharePanel() {
   const sharing = usePortalSharing();
   const { state: settlements } = useSettlements();
   const deps: ShareDeps = { data, settlements };
-  const ctxName = (id: string) => settlementContexts.find((c) => c.id === id)?.name ?? id;
+  const L = usePortalLabels();
+  // Display only: current names by ID; sharing targets, stamps and projections stay base.
+  const contactLabel = (id: string) => { const ct = data.contacts.find((x) => x.id === id); return ct ? L.contactLine(id, ct) : id; };
+  const ctxName = (id: string) => L.contextName(id);
   const labelOf = (settlementId: string) => {
     const s = settlements.settlements.find((x) => x.id === settlementId);
     return s ? `${ctxName(s.contextId)} · ${monthLabel(s.month)}` : settlementId;
@@ -413,7 +418,7 @@ function SettlementSharePanel() {
           {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
           {previewValid && target && candidate && (
             <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm" role="region" aria-label="Vista previa de liquidación compartida">
-              <p className="mb-2">Destinatario: <strong>{contactLabel(target.contactId)}</strong> · Inmueble: {candidate.propertyName} · Mes: {monthLabel(candidate.month)} · Versión: {candidate.version}</p>
+              <p className="mb-2">Destinatario: <strong>{contactLabel(target.contactId)}</strong> · Inmueble: {L.settlementProperty(candidate)} · Mes: {monthLabel(candidate.month)} · Versión: {candidate.version}</p>
               <SettlementSummary p={candidate} />
               <p className="mt-2 text-muted-foreground">Vista previa: aún no se ha compartido. Nada se envía ni se publica.</p>
               <div className="mt-3 flex flex-wrap gap-2">

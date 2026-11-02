@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { DemoDocument } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { currentVersion, docLinkKindLabel, docLinkLabel, getVersion, visibilityLabel } from "./selectors";
@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 function DocLink({ doc }: { doc: DemoDocument }) {
+  const data = useCatalogData();
   const label = docLinkLabel(data, doc);
   switch (doc.link.kind) {
     case "contrato": return <Link to="/contratos/$contractId" params={{ contractId: doc.link.id }} className={linkClass}>{label}</Link>;
@@ -22,6 +23,7 @@ function DocLink({ doc }: { doc: DemoDocument }) {
 }
 
 export function DocPage({ doc }: { doc: DemoDocument }) {
+  const data = useCatalogData();
   const [shown, setShown] = useState(currentVersion(doc).version);
   const version = getVersion(doc, shown) ?? currentVersion(doc);
   const property = data.properties.find((p) => p.id === doc.propertyId);

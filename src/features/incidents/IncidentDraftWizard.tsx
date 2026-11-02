@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
-import { contactsWithRole, getContact } from "@/features/contacts/selectors";
+import { useCatalogLabels } from "@/features/catalog/CatalogContext";
+import { contactsWithRole } from "@/features/contacts/selectors";
 import { emptyIncidentDraft, validateIncidentFollowUp, validateIncidentPlace, type IncidentDraftErrors, type IncidentDraftValues } from "./draft";
 import { INCIDENT_PRIORITIES, incidentPriorityLabel } from "./selectors";
 import { INCIDENT_CATEGORIES } from "./data/demo-incidents";
@@ -32,6 +33,7 @@ export function IncidentDraftWizard() {
   const [values, setValues] = useState<IncidentDraftValues>(emptyIncidentDraft);
   const [errors, setErrors] = useState<IncidentDraftErrors>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const labels = useCatalogLabels();
   const firstStep = useRef(true);
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function IncidentDraftWizard() {
             <Field id="propertyId" label="Inmueble" error={errors.propertyId}>
               <select {...aria("propertyId")} value={values.propertyId} onChange={(e) => set({ propertyId: e.target.value })} className={fieldClass}>
                 <option value="">Elige un inmueble</option>
-                {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {data.properties.map((p) => <option key={p.id} value={p.id}>{labels.propertyName(p.id)}</option>)}
               </select>
             </Field>
             <Field id="roomId" label="Unidad (opcional)" hint="Déjalo vacío si afecta a zonas comunes." error={errors.roomId}>
@@ -142,7 +144,7 @@ export function IncidentDraftWizard() {
             <Field id="contactId" label="Contacto relacionado (opcional)" error={errors.contactId}>
               <select {...aria("contactId")} value={values.contactId} onChange={(e) => set({ contactId: e.target.value })} className={fieldClass}>
                 <option value="">Sin contacto</option>
-                {data.contacts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {data.contacts.map((c) => <option key={c.id} value={c.id}>{labels.contactName(c.id)}</option>)}
               </select>
             </Field>
           </div>
@@ -159,7 +161,7 @@ export function IncidentDraftWizard() {
             <Field id="providerId" label="Proveedor (opcional)" hint="Un contacto con rol proveedor; no es una cuenta de acceso." error={errors.providerId}>
               <select {...aria("providerId", true)} value={values.providerId} onChange={(e) => set({ providerId: e.target.value })} className={fieldClass}>
                 <option value="">Sin proveedor</option>
-                {providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {providers.map((p) => <option key={p.id} value={p.id}>{labels.contactName(p.id)}</option>)}
               </select>
             </Field>
           </div>
@@ -169,17 +171,17 @@ export function IncidentDraftWizard() {
           <div>
             <p className="mb-4 text-sm text-muted-foreground">Resumen de ejemplo. No se ha creado ninguna incidencia ni ha cambiado ningún indicador.</p>
             <dl className="tabular grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">
-              <dt className="text-muted-foreground">Inmueble</dt><dd>{property.name}</dd>
+              <dt className="text-muted-foreground">Inmueble</dt><dd>{labels.propertyName(property.id)}</dd>
               <dt className="text-muted-foreground">Unidad</dt><dd>{room ? room.code : "Zonas comunes"}</dd>
               <dt className="text-muted-foreground">Categoría</dt><dd>{values.category}</dd>
               <dt className="text-muted-foreground">Título</dt><dd>{values.title}</dd>
               <dt className="text-muted-foreground">Descripción</dt><dd>{values.description}</dd>
               <dt className="text-muted-foreground">Prioridad</dt><dd>{incidentPriorityLabel[values.priority as keyof typeof incidentPriorityLabel]}</dd>
-              <dt className="text-muted-foreground">Contacto</dt><dd>{values.contactId ? getContact(data, values.contactId)?.name : "Sin contacto"}</dd>
+              <dt className="text-muted-foreground">Contacto</dt><dd>{values.contactId ? labels.contactName(values.contactId) : "Sin contacto"}</dd>
               <dt className="text-muted-foreground">Fecha de registro</dt><dd>{formatDate(values.openedOn)}</dd>
               <dt className="text-muted-foreground">Responsable</dt><dd>{values.assigneeName}</dd>
               <dt className="text-muted-foreground">Fecha objetivo</dt><dd>{formatDate(values.targetDate)}</dd>
-              <dt className="text-muted-foreground">Proveedor</dt><dd>{values.providerId ? getContact(data, values.providerId)?.name : "Sin proveedor"}</dd>
+              <dt className="text-muted-foreground">Proveedor</dt><dd>{values.providerId ? labels.contactName(values.providerId) : "Sin proveedor"}</dd>
             </dl>
           </div>
         )}

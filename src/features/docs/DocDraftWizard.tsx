@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogLabels } from "@/features/catalog/CatalogContext";
 import type { DocLinkKind, DocVisibility } from "@/features/portfolio/data/types";
-import { getContact } from "@/features/contacts/selectors";
 import { DOC_EXAMPLES, docLinkOptions, docDraftProperty, emptyDocDraft, validateDocDraftData, validateDocDraftVisibility, type DocDraftErrors, type DocDraftValues } from "./draft";
 import { docCategories, docLinkKindLabel, docRecipients } from "./selectors";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
@@ -30,6 +30,7 @@ export function DocDraftWizard() {
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<DocDraftValues>(emptyDocDraft);
   const [errors, setErrors] = useState<DocDraftErrors>({});
+  const labels = useCatalogLabels();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(true);
 
@@ -139,7 +140,7 @@ export function DocDraftWizard() {
               </select>
             </Field>
             {property && (
-              <p className="self-end text-sm text-muted-foreground">Inmueble derivado: <strong className="text-foreground">{property.name}</strong></p>
+              <p className="self-end text-sm text-muted-foreground">Inmueble derivado: <strong className="text-foreground">{labels.propertyName(property.id)}</strong></p>
             )}
           </div>
         )}
@@ -191,7 +192,7 @@ export function DocDraftWizard() {
                           type="checkbox" checked={values.recipientIds.includes(c.id)} onChange={() => toggleRecipient(c.id)}
                           className="h-4 w-4 accent-primary" aria-invalid={errors.recipients ? true : undefined}
                         />
-                        <span>{c.name}</span>
+                        <span>{labels.contactName(c.id)}</span>
                       </label>
                     ))}
                   </div>
@@ -212,13 +213,13 @@ export function DocDraftWizard() {
               <dt className="text-muted-foreground">Contenido</dt><dd>{example?.label}</dd>
               <dt className="text-muted-foreground">Relacionado con</dt>
               <dd>{values.linkKind && docLinkKindLabel[values.linkKind]}: {linkOpts.find((o) => o.id === values.linkId)?.label}</dd>
-              <dt className="text-muted-foreground">Inmueble</dt><dd>{property?.name}</dd>
+              <dt className="text-muted-foreground">Inmueble</dt><dd>{property ? labels.propertyName(property.id) : undefined}</dd>
               <dt className="text-muted-foreground">Visibilidad</dt>
               <dd>{values.visibility === "interna" ? "Interna" : "Compartida (ejemplo)"}<span className="block text-xs text-muted-foreground">Visibilidad de ejemplo; no concede acceso.</span></dd>
               {values.visibility === "compartida" && (
                 <>
                   <dt className="text-muted-foreground">Destinatarios</dt>
-                  <dd>{values.recipientIds.map((id) => getContact(data, id)?.name ?? id).join(", ")}</dd>
+                  <dd>{values.recipientIds.map((id) => labels.contactName(id)).join(", ")}</dd>
                 </>
               )}
             </dl>

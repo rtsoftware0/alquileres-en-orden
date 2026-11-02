@@ -1,5 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalog } from "@/features/catalog/CatalogContext";
+import { useSettlements } from "@/features/settlements/SettlementContext";
+import { contexts as settlementContexts } from "@/features/settlements/data/examples";
 import { incidentStatusLabel } from "@/features/incidents/selectors";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import { fieldClass, chipClass } from "@/features/layout/ui";
@@ -21,6 +24,38 @@ const chargeStatus: Record<string, string> = { pendiente: "Pendiente", parcial: 
 const btn = "inline-flex h-9 items-center justify-center rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring";
 const btnPrimary = "inline-flex h-9 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring";
 export { btn, btnPrimary };
+
+/**
+ * Current catalog labels for records already authorized by the base views.
+ * Views, details, eligibility and projections are always computed first from
+ * the base dataset; this only renames them afterwards by ID. IDs absent from the
+ * catalog keep the projected label.
+ */
+export function usePortalLabels() {
+  const cat = useCatalog();
+  const { state: settlements } = useSettlements();
+  const hasProperty = (id: string | undefined): id is string => Boolean(id && cat.data.properties.some((p) => p.id === id));
+  const property = (id: string | undefined, fallback: string) => (hasProperty(id) ? cat.labels.propertyName(id) : fallback);
+  const room = (id: string | undefined, fallback: string) => (id && cat.data.rooms.some((r) => r.id === id) ? cat.labels.roomCode(id) : fallback);
+  const contact = (id: string, fallback: { code: string; name: string }) =>
+    cat.data.contacts.some((c) => c.id === id) ? { code: cat.labels.contactCode(id), name: cat.labels.contactName(id) } : fallback;
+  // Shared settlement: settlementId -> contextId -> propertyId. The projection itself is untouched.
+  const settlementProperty = (p: { settlementId: string; propertyName: string }) => {
+    const contextId = settlements.settlements.find((x) => x.id === p.settlementId)?.contextId;
+    return property(settlementContexts.find((c) => c.id === contextId)?.propertyId, p.propertyName);
+  };
+  const contract = (id: string, fallback: { propertyName: string; roomCode: string }) => {
+    const c = data.contracts.find((x) => x.id === id);
+    return { propertyName: property(c?.propertyId, fallback.propertyName), roomCode: room(c?.roomId, fallback.roomCode) };
+  };
+  const incident = (id: string, fallback: { propertyName: string; location: string }) => {
+    const i = data.incidents.find((x) => x.id === id);
+    return { propertyName: property(i?.propertyId, fallback.propertyName), location: i?.roomId ? room(i.roomId, fallback.location) : fallback.location };
+  };
+  const contactLine = (id: string, fallback: { code: string; name: string }, sep = " · ") => { const c = contact(id, fallback); return `${c.code}${sep}${c.name}`; };
+  const contextName = (contextId: string) => { const c = settlementContexts.find((x) => x.id === contextId); return c ? property(c.propertyId, c.name) : contextId; };
+  return { property, room, contact, contactLine, contextName, settlementProperty, contract, incident };
+}
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -91,9 +126,10 @@ const bpLabel = (bp: number) => `${(bp / 100).toLocaleString("es-ES", { maximumF
 
 /** Renders only a SettlementProjection: generic lines, signed result and recipient amount. */
 export function SettlementSummary({ p }: { p: SettlementProjection }) {
+  const labels = usePortalLabels();
   return (
     <div className="text-sm">
-      <p className="font-semibold text-foreground">{p.propertyName} · {monthLabel(p.month)} · versión {p.version}</p>
+      <p className="font-semibold text-foreground">{labels.settlementProperty(p)} · {monthLabel(p.month)} · versión {p.version}</p>
       <p className="text-muted-foreground">Fecha ficticia de la versión: {formatDate(p.versionDate)} · Participación: {bpLabel(p.shareBasisPoints)}</p>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[280px] text-sm">
@@ -114,6 +150,7 @@ export function SettlementSummary({ p }: { p: SettlementProjection }) {
 
 function OwnerSettlements({ ctx }: { ctx: PortalContext }) {
   const sharing = usePortalSharing();
+  const labels = usePortalLabels();
   const list = sharing.listFor(ctx);
   // Only the open share id is kept; the detail is revalidated on every render.
   const [openShareId, setOpenShareId] = useState<string | null>(null);
@@ -127,8 +164,8 @@ function OwnerSettlements({ ctx }: { ctx: PortalContext }) {
       <ul className="divide-y divide-border">
         {list.map((p) => (
           <li key={p.shareId} className="flex flex-wrap items-center justify-between gap-2 py-2">
-            <span className="text-sm"><span className="font-medium text-foreground">{p.propertyName} · {monthLabel(p.month)}</span> <span className="text-muted-foreground">· versión {p.version} · {formatMoney(p.recipientPayableCents)}</span></span>
-            <button type="button" className={btn} onClick={() => setOpenShareId(p.shareId)} aria-label={`Ver liquidación ${p.propertyName} ${monthLabel(p.month)}`}>Ver</button>
+            <span className="text-sm"><span className="font-medium text-foreground">{labels.settlementProperty(p)} · {monthLabel(p.month)}</span> <span className="text-muted-foreground">· versión {p.version} · {formatMoney(p.recipientPayableCents)}</span></span>
+            <button type="button" className={btn} onClick={() => setOpenShareId(p.shareId)} aria-label={`Ver liquidación ${labels.settlementProperty(p)} ${monthLabel(p.month)}`}>Ver</button>
           </li>
         ))}
       </ul>
@@ -146,6 +183,7 @@ function OwnerSettlements({ ctx }: { ctx: PortalContext }) {
 
 export function OwnerPortal({ ctx }: { ctx: PortalContext }) {
   const v = ownerView(data, ctx);
+  const labels = usePortalLabels();
   const [tab, setTab] = useState<"inmuebles" | "documentos" | "incidencias" | "liquidaciones">("inmuebles");
   return (
     <div>
@@ -155,13 +193,13 @@ export function OwnerPortal({ ctx }: { ctx: PortalContext }) {
         <Section title="Inmuebles vinculados">
           {v.properties.length === 0 ? <Empty>Este contacto no tiene inmuebles vinculados como propietario.</Empty> : v.properties.map((p) => (
             <div key={p.id} className="mb-4 last:mb-0">
-              <p className="font-medium text-foreground">{p.name}</p>
+              <p className="font-medium text-foreground">{labels.property(p.id, p.name)}</p>
               <p className="text-sm text-muted-foreground">{p.address}</p>
               <p className="mt-2 text-sm text-foreground">
                 Ocupación a {formatDate(v.referenceDate)}: <strong>{p.occupancy.occupied} de {p.occupancy.rentable}</strong> habitaciones habilitadas ({formatPercent(p.occupancy.rate)}); {p.occupancy.total} gestionadas, {p.occupancy.blocked} bloqueada(s).
               </p>
-              <ul className="mt-2 flex flex-wrap gap-2" aria-label={`Habitaciones de ${p.name}`}>
-                {p.rooms.map((r) => <li key={r.id} className={chipClass}>{r.code} · {roomStatus[r.status]}</li>)}
+              <ul className="mt-2 flex flex-wrap gap-2" aria-label={`Habitaciones de ${labels.property(p.id, p.name)}`}>
+                {p.rooms.map((r) => <li key={r.id} className={chipClass}>{labels.room(r.id, r.code)} · {roomStatus[r.status]}</li>)}
               </ul>
               <p className="mt-2 text-xs text-muted-foreground">No se muestran datos personales, contratos ni saldos de los inquilinos.</p>
             </div>
@@ -204,6 +242,7 @@ function IncidentList({ ctx, items }: { ctx: PortalContext; items: { id: string;
 
 export function TenantPortal({ ctx }: { ctx: PortalContext }) {
   const v = tenantView(data, ctx);
+  const labels = usePortalLabels();
   const [tab, setTab] = useState<"contratos" | "documentos" | "incidencias" | "preparar">("contratos");
   const all = [...v.current, ...v.history];
   return (
@@ -214,7 +253,7 @@ export function TenantPortal({ ctx }: { ctx: PortalContext }) {
         <div className="space-y-4">
           {all.length === 0 && <Section title="Contratos"><Empty>No hay contratos autorizados para este contacto.</Empty></Section>}
           {all.map((a) => (
-            <Section key={a.contract.id} title={`${a.contract.reference} · ${a.contract.propertyName} ${a.contract.roomCode}`}>
+            <Section key={a.contract.id} title={(({ propertyName, roomCode }) => `${a.contract.reference} · ${propertyName} ${roomCode}`)(labels.contract(a.contract.id, a.contract))}>
               <p className="text-sm text-foreground">{contractStatus[a.contract.status] ?? a.contract.status} · del {formatDate(a.contract.startDate)} al {formatDate(a.contract.endDate)} (salida no incluida) · renta {formatMoney(a.contract.rentCents)} · vence el día {a.contract.dueDay}</p>
               <p className="mt-2 text-sm">Saldo pendiente de este contrato: <strong>{formatMoney(a.pendingCents)}</strong></p>
               {a.charges.length > 0 ? (
@@ -284,6 +323,7 @@ function TenantDraftForm() {
 
 export function ProviderPortal({ ctx }: { ctx: PortalContext }) {
   const v = providerView(data, ctx);
+  const labels = usePortalLabels();
   const [tab, setTab] = useState<"trabajos" | "documentos" | "preparar">("trabajos");
   return (
     <div>
@@ -293,7 +333,7 @@ export function ProviderPortal({ ctx }: { ctx: PortalContext }) {
         <div className="space-y-4">
           {v.assignments.length === 0 && <Section title="Trabajos asignados"><Empty>Este proveedor no tiene trabajos asignados en los datos de ejemplo.</Empty></Section>}
           {v.assignments.map((a) => (
-            <Section key={a.id} title={`${a.title} · ${a.propertyName} ${a.location}`}>
+            <Section key={a.id} title={(({ propertyName, location }) => `${a.title} · ${propertyName} ${location}`)(labels.incident(a.id, a))}>
               <p className="text-sm text-foreground">{a.description}</p>
               <p className="text-sm text-muted-foreground">Estado: {incidentStatusLabel[a.status]} · objetivo {formatDate(a.targetDate)}</p>
               {a.budget && <p className="mt-2 text-sm">Tu presupuesto: {formatMoney(a.budget.amountCents)} · versión {a.budget.version} · {a.budget.status}. La aprobación corresponde a la gestión.</p>}

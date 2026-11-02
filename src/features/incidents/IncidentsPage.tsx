@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { demoPortfolio as base } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { IncidentPriority, IncidentStatus } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { INCIDENT_PRIORITIES, INCIDENT_STATUSES, filterIncidents, incidentAssignees, incidentPriorityLabel, incidentStatusLabel, isOverdue } from "./selectors";
@@ -21,21 +22,23 @@ export interface IncidentsSearch {
   retrasadas?: "si" | undefined;
 }
 
+// Syntactically valid IDs are kept (new or unknown); existence is resolved against the current catalog in the page.
+const isId = (v: unknown): v is string => typeof v === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(v);
+
 export function validateIncidentsSearch(input: Record<string, unknown>): IncidentsSearch {
-  const propertyId = input["inmueble"] as string;
-  const roomId = input["unidad"] as string;
   return {
     q: typeof input["q"] === "string" && input["q"] ? input["q"].slice(0, 80) : undefined,
-    inmueble: data.properties.some((p) => p.id === propertyId) ? propertyId : undefined,
-    unidad: data.rooms.some((r) => r.id === roomId) ? roomId : undefined,
+    inmueble: isId(input["inmueble"]) ? input["inmueble"] : undefined,
+    unidad: isId(input["unidad"]) ? input["unidad"] : undefined,
     prioridad: INCIDENT_PRIORITIES.includes(input["prioridad"] as IncidentPriority) ? (input["prioridad"] as IncidentPriority) : undefined,
     estado: INCIDENT_STATUSES.includes(input["estado"] as IncidentStatus) ? (input["estado"] as IncidentStatus) : undefined,
-    responsable: incidentAssignees(data).includes(input["responsable"] as string) ? (input["responsable"] as string) : undefined,
+    responsable: incidentAssignees(base).includes(input["responsable"] as string) ? (input["responsable"] as string) : undefined,
     retrasadas: input["retrasadas"] === "si" ? "si" : undefined,
   };
 }
 
 export function IncidentsPage({ search }: { search: IncidentsSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/incidencias/" });
   const update = (patch: IncidentsSearch) => navigate({ search: (prev: IncidentsSearch) => ({ ...prev, ...patch }), replace: true });
   const q = search.q ?? "";
@@ -50,6 +53,8 @@ export function IncidentsPage({ search }: { search: IncidentsSearch }) {
     overdueOnly: Boolean(search.retrasadas),
   });
   const active = Boolean(q || search.inmueble || search.unidad || search.prioridad || search.estado || search.responsable || search.retrasadas);
+  const unknownProperty = Boolean(search.inmueble && !data.properties.some((p) => p.id === search.inmueble));
+  const unknownRoom = Boolean(search.unidad && !data.rooms.some((r) => r.id === search.unidad));
   const overdueCount = data.incidents.filter((i) => isOverdue(data, i)).length;
 
   return (
@@ -73,6 +78,7 @@ export function IncidentsPage({ search }: { search: IncidentsSearch }) {
             <span className="mb-1 block font-medium">Inmueble</span>
             <select value={search.inmueble ?? "todos"} onChange={(e) => update({ inmueble: e.target.value === "todos" ? undefined : e.target.value, unidad: undefined })} className={fieldClass}>
               <option value="todos">Todos</option>
+              {unknownProperty && <option value={search.inmueble}>Inmueble no encontrado</option>}
               {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
@@ -80,6 +86,7 @@ export function IncidentsPage({ search }: { search: IncidentsSearch }) {
             <span className="mb-1 block font-medium">Unidad</span>
             <select value={search.unidad ?? "todos"} onChange={(e) => update({ unidad: e.target.value === "todos" ? undefined : e.target.value })} className={fieldClass}>
               <option value="todos">Todas (incluye zonas comunes)</option>
+              {unknownRoom && <option value={search.unidad}>Unidad no encontrada</option>}
               {rooms.map((r) => <option key={r.id} value={r.id}>{r.code}</option>)}
             </select>
           </label>
@@ -117,6 +124,11 @@ export function IncidentsPage({ search }: { search: IncidentsSearch }) {
         </p>
       </div>
 
+      {(unknownProperty || unknownRoom) && (
+        <p role="status" className="mb-3 rounded-md border border-border bg-card px-3 py-2 text-sm">
+          {unknownProperty ? "El inmueble del filtro no existe en la cartera actual" : "La unidad del filtro no existe en la cartera actual"}; no se muestran resultados. Restablece los filtros para ver todas las incidencias.
+        </p>
+      )}
       <p className="mb-3 text-sm text-muted-foreground" aria-live="polite">
         Mostrando <strong className="tabular text-foreground">{list.length}</strong> de {data.incidents.length} incidencias
       </p>
