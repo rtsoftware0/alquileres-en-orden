@@ -43,11 +43,11 @@ export function RoomForm({ roomId, initialPropertyId, onSaved, onCancel }: { roo
     const p: RoomPatch = {
       monthlyRent: parseDecimal(draft.monthlyRent),
       areaM2: draft.areaM2.trim() ? parseDecimal(draft.areaM2) : 0,
-      capacity: draft.capacity.trim() ? parseDecimal(draft.capacity) : undefined,
-      unitKind: draft.unitKind || undefined,
       features: draft.features.split(",").map((f) => f.trim()).filter(Boolean),
-      statusNote: draft.statusNote.trim() || undefined,
+      statusNote: draft.statusNote.trim(),
     };
+    if (draft.capacity.trim()) p.capacity = parseDecimal(draft.capacity);
+    if (draft.unitKind) p.unitKind = draft.unitKind;
     if (!codeLocked) p.code = draft.code.trim();
     if (!propertyLocked) p.propertyId = draft.propertyId;
     return p;

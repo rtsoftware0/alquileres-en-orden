@@ -83,7 +83,6 @@ export function useCatalogSubmit(order: FieldName[]) {
 
 interface Draft { type: "persona" | "empresa"; code: string; name: string; roles: ContactRole[]; email: string; phone: string; address: string; note: string }
 const ORDER: FieldName[] = ["type", "code", "name", "roles", "email", "phone", "address", "note"];
-const opt = (s: string) => (s.trim() ? s.trim() : undefined);
 
 export function ContactForm({ contactId, onSaved, onCancel }: { contactId?: string; onSaved: (id: string) => void; onCancel: () => void }) {
   const api = useCatalog();
@@ -102,7 +101,8 @@ export function ContactForm({ contactId, onSaved, onCancel }: { contactId?: stri
 
   const payload = (): ContactPatch => ({
     type: draft.type, code: draft.code.trim(), name: draft.name.trim(), roles: draft.roles,
-    email: opt(draft.email), phone: opt(draft.phone), address: opt(draft.address), note: opt(draft.note),
+    // Cleared optional fields become "" (never undefined) so edits can remove them.
+    email: draft.email.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim(),
   });
   const run = (confirmed: boolean) => {
     const p = payload();

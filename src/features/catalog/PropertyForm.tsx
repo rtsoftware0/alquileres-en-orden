@@ -12,7 +12,6 @@ import { DuplicateConfirm, Field, ProtectedHint, aria, useCatalogSubmit } from "
 
 interface Draft { code: string; name: string; address: string; ownerId: string; kind: PropertyKind | ""; portfolioLabel: string; companyLabel: string; managerName: string }
 const ORDER: FieldName[] = ["code", "name", "address", "ownerId", "kind"];
-const opt = (s: string) => (s.trim() ? s.trim() : undefined);
 
 export function PropertyForm({ propertyId, onSaved, onCancel }: { propertyId?: string; onSaved: (id: string) => void; onCancel: () => void }) {
   const api = useCatalog();
@@ -30,9 +29,10 @@ export function PropertyForm({ propertyId, onSaved, onCancel }: { propertyId?: s
 
   const payload = (): PropertyPatch => {
     const p: PropertyPatch = {
-      name: draft.name.trim(), address: draft.address.trim(), kind: draft.kind || undefined,
-      portfolioLabel: opt(draft.portfolioLabel), companyLabel: opt(draft.companyLabel), managerName: opt(draft.managerName),
+      name: draft.name.trim(), address: draft.address.trim(),
+      portfolioLabel: draft.portfolioLabel.trim(), companyLabel: draft.companyLabel.trim(), managerName: draft.managerName.trim(),
     };
+    if (draft.kind) p.kind = draft.kind;
     if (!locked.includes("code")) p.code = draft.code.trim();
     if (!locked.includes("ownerId")) p.ownerId = draft.ownerId;
     return p;
