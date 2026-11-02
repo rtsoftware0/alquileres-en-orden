@@ -13,7 +13,6 @@ import { OwnerPortal, ProviderPortal, SettlementSummary, TenantPortal, btn, btnP
 import { usePortalSharing } from "./PortalShareContext";
 import { shareEligibility, shareVersion, sharedSettlementsFor, type ShareDeps, type ShareTarget } from "./settlement-projection";
 import { useSettlements } from "@/features/settlements/SettlementContext";
-import { contexts as settlementContexts } from "@/features/settlements/data/examples";
 
 // Portal demo center. Everything is React memory: no accounts, no links,
 // no emails, nothing persisted. Revocations and settlement shares live in
@@ -182,6 +181,7 @@ function AccessPanel({ revoked, history, log, onRevoke, onRestore, onExit }: {
 const portalContacts = (profile: PortalProfile) => data.contacts.filter((c) => c.roles.includes(profile));
 
 function InviteForm({ log }: { log: (t: string) => void }) {
+  const L = usePortalLabels();
   const [profile, setProfile] = useState<PortalProfile | "">("");
   const [contactId, setContactId] = useState("");
   const [relId, setRelId] = useState("");
@@ -226,6 +226,7 @@ function InviteForm({ log }: { log: (t: string) => void }) {
 }
 
 function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; log: (t: string) => void; onRevoke: (ids: string[]) => void }) {
+  const L = usePortalLabels();
   const options = [...new Map(demoPortalGrants.map((g) => [`${g.profile}|${g.contactId}`, g])).values()];
   const [key, setKey] = useState("");
   const [preview, setPreview] = useState(false);
@@ -252,6 +253,7 @@ function RevokeForm({ revoked, log, onRevoke }: { revoked: ReadonlySet<string>; 
 }
 
 function SharePreview({ revoked }: { revoked: ReadonlySet<string> }) {
+  const L = usePortalLabels();
   const [item, setItem] = useState("");
   const [recipientKey, setRecipientKey] = useState("");
   const recipients = [...new Map(demoPortalGrants.map((g) => [`${g.profile}|${g.contactId}`, g])).values()];
