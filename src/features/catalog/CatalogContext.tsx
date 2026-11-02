@@ -12,6 +12,7 @@ import {
   addContact, addProperty, addRoom, catalogLabels, editContact, editProperty, editRoom, emptyOverlay,
   isAddedRecord, isOverlayEmpty, mergeCatalog, protectedFields, requiredRoles, type NewContact, type NewProperty, type NewRoom,
 } from "./engine";
+import { commitImport, prepareImport, type ImportCommit, type ImportInput, type ImportReview } from "./csv/import-engine";
 
 interface CatalogApi {
   overlay: CatalogOverlay;
@@ -28,6 +29,10 @@ interface CatalogApi {
   editContact: (id: string, p: ContactPatch) => CatalogResult;
   editProperty: (id: string, p: PropertyPatch) => CatalogResult;
   editRoom: (id: string, p: RoomPatch) => CatalogResult;
+  /** Reviews a CSV batch against the latest accepted overlay (no write). */
+  prepareImport: (input: ImportInput) => ImportReview;
+  /** Confirms a review: one validation and at most one write; stale reviews are rejected. */
+  commitImport: (review: ImportReview, acceptWarnings: boolean) => ImportCommit;
   reset: () => void;
 }
 
@@ -66,6 +71,12 @@ function buildApi(overlay: CatalogOverlay, source: CatalogSource): CatalogApi {
     editContact: (id, p) => run((o) => editContact(base, o, id, p)),
     editProperty: (id, p) => run((o) => editProperty(base, o, id, p)),
     editRoom: (id, p) => run((o) => editRoom(base, o, id, p)),
+    prepareImport: (input) => prepareImport(base, source.read(), input),
+    commitImport: (review, accept) => {
+      const { result, next } = commitImport(base, source.read(), review, accept);
+      if (next) source.write(next);
+      return result;
+    },
     reset: () => source.write(emptyOverlay()),
   };
 }

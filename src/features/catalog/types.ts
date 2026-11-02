@@ -38,6 +38,24 @@ export interface CatalogOverlay {
   edits: { contacts: Record<string, ContactPatch>; properties: Record<string, PropertyPatch>; rooms: Record<string, RoomPatch> };
   /** Monotonic counter for stable IDs that never derive from editable names/codes. */
   seq: number;
+  /** CSV import receipts; absent in overlays created before imports existed. Reset clears them. */
+  imports?: CatalogImports;
+}
+
+/** One receipt per imported logical record (canonical fingerprint, not file position). */
+export interface ImportReceipt {
+  entity: CatalogKind;
+  id: string;
+  externalRef?: string;
+  batch: number;
+}
+
+export interface CatalogImports {
+  /** Keyed by "fp:" + canonical fingerprint (prefixed so special keys like __proto__ are inert). */
+  receipts: Record<string, ImportReceipt>;
+  /** Keyed by "ref:" + entity + ":" + external reference → fingerprint key. */
+  externalRefs: Record<string, string>;
+  batches: number;
 }
 
 /** Merged view: only contacts/properties/rooms differ from the base dataset. */
