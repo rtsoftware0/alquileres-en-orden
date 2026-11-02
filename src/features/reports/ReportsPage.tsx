@@ -34,10 +34,9 @@ export function ReportsPage({ search, onSearch }: { search: ReportsSearch; onSea
     ...d.payments.map((p) => p.receivedOn.slice(0, 7)), ...d.expensePayments.map((p) => p.date.slice(0, 7)),
   ])].sort();
   if (isMonth(search.mes) && !months.includes(search.mes)) months.push(search.mes);
-  const set = (patch: Partial<ReportsSearch>) => {
-    const next = { ...search, ...patch };
-    if (!next.inmueble) delete next.inmueble;
-    onSearch(next);
+  const set = (patch: { mes?: string; fecha?: string; inmueble?: string | undefined }) => {
+    const inmueble = "inmueble" in patch ? patch.inmueble : search.inmueble;
+    onSearch({ mes: patch.mes ?? search.mes, fecha: patch.fecha ?? search.fecha, ...(inmueble ? { inmueble } : {}) });
   };
   const exportCsv = () => {
     const text = reportCsv(d, search);
