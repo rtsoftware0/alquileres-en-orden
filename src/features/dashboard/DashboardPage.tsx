@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, CalendarDays } from "lucide-react";
-import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
+import { useCatalog, useCatalogData } from "@/features/catalog/CatalogContext";
 import { getProperty, getRoom, summarizeOccupancy, totalPending } from "@/features/portfolio/selectors";
 import { OccupancySummary } from "@/features/portfolio/components/OccupancySummary";
 import { PageHeader, Panel } from "@/features/layout/PageHeader";
@@ -13,11 +12,11 @@ const linkClass = "rounded-sm font-medium text-primary hover:underline";
 
 function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: string | undefined }) {
   const data = useCatalogData();
-  const property = getProperty(data, propertyId)!;
+  const property = getProperty(data, propertyId);
   const room = roomId ? getRoom(data, roomId) : undefined;
   return (
     <span className="text-sm">
-      <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId }} className={linkClass}>{property.name}</Link>
+      <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId }} className={linkClass}>{property?.name ?? propertyId}</Link>
       {room && (
         <>
           {" · "}
@@ -29,7 +28,8 @@ function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: strin
 }
 
 export function DashboardPage() {
-  const data = useCatalogData();
+  const { data, isAdded } = useCatalog();
+  const addedUnits = data.rooms.filter((r) => isAdded("room", r.id)).length;
   const occupancy = summarizeOccupancy(data.rooms);
   const pending = totalPending(data);
 
@@ -53,6 +53,11 @@ export function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Panel title="Ocupación">
           <OccupancySummary s={occupancy} />
+          {addedUnits > 0 && (
+            <p role="note" className="mt-3 text-xs text-muted-foreground">
+              Incluye {addedUnits} {addedUnits === 1 ? "alta temporal" : "altas temporales"} de unidad sin actividad: se pierden al recargar y no cambian el dinero.
+            </p>
+          )}
         </Panel>
 
         <Panel title="Pendiente de cobro (ejemplo)">
@@ -62,11 +67,11 @@ export function DashboardPage() {
           </p>
           <ul className="mt-4 divide-y divide-border">
             {pendingByRoom(data).map((b) => {
-              const room = getRoom(data, b.roomId)!;
+              const room = getRoom(data, b.roomId);
               return (
                 <li key={b.contractId} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
-                    <PlaceLinks propertyId={room.propertyId} roomId={room.id} />
+                    {room ? <PlaceLinks propertyId={room.propertyId} roomId={room.id} /> : <span className="text-sm">{b.roomId}</span>}
                     <p className="text-xs text-muted-foreground">{b.concept}</p>
                   </div>
                   <span className="tabular shrink-0 text-sm font-semibold">{formatCents(b.cents)}</span>
