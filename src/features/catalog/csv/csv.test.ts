@@ -189,3 +189,62 @@ describe("csv export", () => {
     expect(again.next).toBeUndefined();
   });
 });
+
+describe("csv regressions CSV01/CSV02", () => {
+  const H = "referencia_externa;codigo;nombre;tipo;roles\n";
+  const A = "refA;CON-801;Persona A Ejemplo;persona;candidato";
+  const B = "refB;CON-802;Persona B Ejemplo;persona;candidato";
+  const both = () => run(emptyOverlay(), input("contactos", `${H}${A}\n${B}\n`)).next!;
+
+  it.each([[";", ","], [",", "."]] as const)("contact template with '%s' reimports intact as 1 valid row", (d, dec) => {
+    const t = templateCsv("contactos", { delimiter: d, decimal: dec });
+    expect(t.protectedCells).toBe(0);
+    const r = run(emptyOverlay(), input("contactos", t.text.replace(/^\uFEFF/, ""), d, dec));
+    expect(r.review.ok).toBe(true);
+    expect(r.result.ok && r.result.created).toBe(1);
+  });
+  it("exporter still neutralizes formula-like text, also after spaces/controls", () => {
+    for (const v of ["=x", "+x", "-x", "@x", "  =x", "\t+x"]) expect(isDangerousText(v)).toBe(true);
+  });
+  it("content B with refA (bound to A) is a conflict, not omitted; overlay intact", () => {
+    const o = both();
+    const r = run(o, input("contactos", `${H}refA;CON-802;Persona B Ejemplo;persona;candidato\n`));
+    expect(r.review.ok).toBe(false);
+    expect(r.review.omitted).toBe(0);
+    expect(r.review.rows[0]?.status).toBe("error");
+    expect(r.review.rows[0]?.messages.join(" ")).toMatch(/refA/);
+    expect(r.next).toBeUndefined();
+  });
+  it("conflict mixed with a valid new row → 0 created, same overlay/seq/receipts", () => {
+    const o = both();
+    const before = JSON.stringify(o);
+    const r = run(o, input("contactos", `${H}refA;CON-802;Persona B Ejemplo;persona;candidato\nrefC;CON-803;Persona C Ejemplo;persona;candidato\n`));
+    expect(r.result.ok).toBe(false);
+    expect(r.review.created).toBe(0);
+    expect(r.next).toBeUndefined();
+    expect(JSON.stringify(o)).toBe(before);
+  });
+  it("same refs and contents again → all omitted, no write", () => {
+    const o = both();
+    const r = run(o, input("contactos", `${H}${B}\n${A}\n`));
+    expect(r.review.omitted).toBe(2);
+    expect(r.next).toBeUndefined();
+  });
+  it("known content with a new ref keeps current omission without new association", () => {
+    const o = both();
+    const r = run(o, input("contactos", `${H}refZ;CON-801;Persona A Ejemplo;persona;candidato\n`));
+    expect(r.review.omitted).toBe(1);
+    expect(r.next).toBeUndefined();
+    expect(Object.keys(o.imports!.externalRefs)).not.toContain("ref:contact:refZ");
+  });
+  it("original A/refA after manual edit stays omitted, edit kept", () => {
+    const first = run(emptyOverlay(), input("unidades", "referencia_externa;codigo;inmueble_codigo;renta_mensual\nrefA;NUE-01;OLI;500\n")).next!;
+    const id = mergeCatalog(base, first).rooms.find((r) => r.code === "NUE-01")!.id;
+    const edited = editRoom(base, first, id, { monthlyRent: 610 });
+    if (!edited.ok) throw new Error("edit");
+    const again = run(edited.overlay, input("unidades", "referencia_externa;codigo;inmueble_codigo;renta_mensual\nrefA;NUE-01;OLI;500\n"));
+    expect(again.review.omitted).toBe(1);
+    expect(again.next).toBeUndefined();
+    expect(mergeCatalog(base, edited.overlay).rooms.find((r) => r.id === id)?.monthlyRent).toBe(610);
+  });
+});

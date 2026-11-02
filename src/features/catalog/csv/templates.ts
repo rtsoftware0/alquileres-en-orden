@@ -64,7 +64,7 @@ export const TEMPLATE_FIELDS: Record<ImportEntity, TemplateField[]> = {
 
 /** Example rows written with the "," decimal format (values only, fictitious). */
 export const TEMPLATE_EXAMPLE: Record<ImportEntity, string[]> = {
-  contactos: ["MI-001", "CON-700", "Ejemplo Persona Ficticia", "persona", "propietario", "persona.ficticia@example.invalid", "+34 600 000 000", "Calle Ficticia 1", ""],
+  contactos: ["MI-001", "CON-700", "Ejemplo Persona Ficticia", "persona", "propietario", "persona.ficticia@example.invalid", "600 000 000", "Calle Ficticia 1", ""],
   inmuebles: ["MI-INM-1", "NUE", "Casa Nueva Ejemplo", "Calle Ficticia 9", "CON-700", "vivienda", "", "", ""],
   unidades: ["MI-UNI-1", "NUE-01", "NUE", "525,55", "habitacion", "1", "12,5", "Escritorio|Ventana", ""],
 };
