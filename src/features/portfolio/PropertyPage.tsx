@@ -46,7 +46,7 @@ export function PropertyPage({ property: prop }: { property: Property }) {
           <Panel title="Ocupación"><OccupancySummary s={summarizeOccupancy(rooms)} /></Panel>
           <Panel title="Datos del inmueble">
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
-              {details.map(([k, v]) => (<><dt key={`${k}-t`} className="text-muted-foreground">{k}</dt><dd key={`${k}-d`}>{v}</dd></>))}
+              {details.map(([k, v]) => (<div key={k} className="contents"><dt className="text-muted-foreground">{k}</dt><dd>{v}</dd></div>))}
             </dl>
           </Panel>
           <Panel title="Propietario">
@@ -84,6 +84,7 @@ export function PropertyPage({ property: prop }: { property: Property }) {
           )}
         </div>
         <Panel title={`Habitaciones (${rooms.length})`}>
+          {rooms.length === 0 && <p className="text-sm text-muted-foreground">Este inmueble todavía no tiene unidades.</p>}
           <ul className="divide-y divide-border">
             {rooms.map((r) => (
               <li key={r.id}>
