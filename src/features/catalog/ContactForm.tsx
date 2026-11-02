@@ -48,7 +48,7 @@ export function focusFirstError(root: HTMLElement | null, order: FieldName[], er
 /** Confirmation required before committing when the pure prevalidation warns. */
 export function DuplicateConfirm({ warnings, onConfirm, onReview }: { warnings: string[]; onConfirm: () => void; onReview: () => void }) {
   return (
-    <div role="alertdialog" aria-labelledby="dup-title" className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+    <div role="alertdialog" aria-labelledby="dup-title" className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
       <p id="dup-title" className="flex items-center gap-2 font-medium"><AlertTriangle className="h-4 w-4" aria-hidden="true" /> Revisa posibles duplicados antes de guardar</p>
       <ul className="mt-2 list-disc space-y-1 pl-5">{warnings.map((w) => <li key={w}>{w}</li>)}</ul>
       <div className="mt-3 flex flex-wrap gap-2">
