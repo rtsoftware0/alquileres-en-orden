@@ -5,7 +5,7 @@ import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { EXPENSE_STATUSES, type ExpenseStatus, expenseBalance, expenseCategoriesOf, expenseTotals, filterExpenses, providerAccountContacts } from "./expenses";
 import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag, PeriodPropertyFilters, expenseStatusMeta } from "./components/MoneyUi";
-import { MoneyHeader, validateMoneySearch } from "./MoneySummaryPage";
+import { MoneyHeader, searchId, validateMoneySearch } from "./MoneySummaryPage";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -25,8 +25,8 @@ export function validateExpensesSearch(input: Record<string, unknown>): Expenses
   return {
     ...validateMoneySearch(input),
     q: typeof input["q"] === "string" && input["q"] ? input["q"].slice(0, 80) : undefined,
-    proveedor: data.contacts.some((c) => c.id === input["proveedor"]) ? (input["proveedor"] as string) : undefined,
-    categoria: expenseCategoriesOf(data).includes(input["categoria"] as string) ? (input["categoria"] as string) : undefined,
+    proveedor: searchId(input["proveedor"]),
+    categoria: expenseCategoriesOf(baseData).includes(input["categoria"] as string) ? (input["categoria"] as string) : undefined,
     estado: EXPENSE_STATUSES.includes(input["estado"] as ExpenseStatus) ? (input["estado"] as ExpenseStatus) : undefined,
     vencido: input["vencido"] === "si" ? "si" : undefined,
   };

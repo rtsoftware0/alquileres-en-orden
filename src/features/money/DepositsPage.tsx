@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export interface DepositsSearch { inmueble?: string | undefined }
 export const validateDepositsSearch = (input: Record<string, unknown>): DepositsSearch => ({
-  inmueble: data.properties.some((p) => p.id === input["inmueble"]) ? (input["inmueble"] as string) : undefined,
+  inmueble: searchId(input["inmueble"]),
 });
 
 export function DepositsPage({ search }: { search: DepositsSearch }) {
