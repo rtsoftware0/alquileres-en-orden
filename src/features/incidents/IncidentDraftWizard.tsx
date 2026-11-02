@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { useCatalogLabels } from "@/features/catalog/CatalogContext";
-import { contactsWithRole, getContact } from "@/features/contacts/selectors";
+import { contactsWithRole } from "@/features/contacts/selectors";
 import { emptyIncidentDraft, validateIncidentFollowUp, validateIncidentPlace, type IncidentDraftErrors, type IncidentDraftValues } from "./draft";
 import { INCIDENT_PRIORITIES, incidentPriorityLabel } from "./selectors";
 import { INCIDENT_CATEGORIES } from "./data/demo-incidents";

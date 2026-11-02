@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { useCatalogLabels } from "@/features/catalog/CatalogContext";
 import type { DocLinkKind, DocVisibility } from "@/features/portfolio/data/types";
-import { getContact } from "@/features/contacts/selectors";
 import { DOC_EXAMPLES, docLinkOptions, docDraftProperty, emptyDocDraft, validateDocDraftData, validateDocDraftVisibility, type DocDraftErrors, type DocDraftValues } from "./draft";
 import { docCategories, docLinkKindLabel, docRecipients } from "./selectors";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";

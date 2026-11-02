@@ -4,7 +4,6 @@ import { ArrowLeft, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import { useCatalogLabels } from "@/features/catalog/CatalogContext";
 import type { DocVisibility, MessageThread } from "@/features/portfolio/data/types";
-import { getContact } from "@/features/contacts/selectors";
 import { threadMessages, threadRecipients } from "./selectors";
 import { VisibilityBadge } from "./components/DocsUi";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
