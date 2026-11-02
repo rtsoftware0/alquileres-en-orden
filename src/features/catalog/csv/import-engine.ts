@@ -314,6 +314,15 @@ export function prepareImport(base: PortfolioDataset, overlay: CatalogOverlay, i
       seenRef.set(built.ref, line);
     }
     const fk = fpKey(built.fp);
+    // An external reference already bound to a different fingerprint is a
+    // conflict, checked before omitting by known fingerprint.
+    if (built.ref) {
+      const rk = refKey(kind, built.ref);
+      if (own(imports.externalRefs, rk) && imports.externalRefs[rk] !== fk) {
+        messages.push(`Conflicto: la referencia externa ${built.ref} ya se importó con otros datos. No se actualiza ni se fusiona.`);
+        return;
+      }
+    }
     if (own(imports.receipts, fk)) {
       const r = imports.receipts[fk];
       report.status = "omitida";
