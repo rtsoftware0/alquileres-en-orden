@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { tenantAccount, tenantAccountContacts, tenantContracts } from "./selectors";
 import { Amounts, MoneyNav } from "./components/MoneyUi";
 import { MoneyHeader } from "./MoneySummaryPage";

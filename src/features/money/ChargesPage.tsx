@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, SearchX } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { CHARGE_STATUSES, type ChargeStatus, chargeBalance, chargeContract, filterCharges } from "./selectors";
 import { Amounts, ChargeStatusBadge, MoneyNav, OverdueTag, PeriodPropertyFilters, chargeStatusMeta } from "./components/MoneyUi";

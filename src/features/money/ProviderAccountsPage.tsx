@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
 import { expenseBalance, providerAccount, providerAccountContacts } from "./expenses";
 import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";

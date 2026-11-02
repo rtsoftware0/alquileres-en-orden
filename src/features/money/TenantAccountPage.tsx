@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
 import { allocationsOfPayment, chargeBalance, getCharge, guarantorOnlyContracts, paymentUnallocatedCents, tenantAccount, tenantContracts } from "./selectors";
 import { ChargeStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";

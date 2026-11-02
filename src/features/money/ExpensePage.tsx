@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Expense } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { bearerLabel, expenseBalance, paymentsOfExpense, sharesOfExpense } from "./expenses";

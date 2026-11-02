@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { chargeBalance, getCharge, pendingCents, tenantAccountContacts } from "./selectors";
 import { eligibleCharges, parseSimulatedAmount, simulateCollection, type SimulationResult } from "./simulator";
