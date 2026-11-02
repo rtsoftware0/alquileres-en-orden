@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { contactsWithRole, getContact } from "@/features/contacts/selectors";
 import { parseEuroToCents } from "@/features/contracts/draft";
 import {
@@ -30,7 +31,10 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
   );
 }
 
+const current = <T extends { id: string }>(list: readonly T[], x: T): T => list.find((y) => y.id === x.id) ?? x;
+
 export function ExpenseDraftWizard() {
+  const data = useCatalogData();
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<ExpenseDraftValues>(emptyExpenseDraft);
   const [errors, setErrors] = useState<ExpenseDraftErrors>({});
@@ -66,7 +70,7 @@ export function ExpenseDraftWizard() {
   });
 
   const next = () => {
-    const e = step === 0 ? validateExpenseData(values, data) : validateExpenseSplit(values, data);
+    const e = step === 0 ? validateExpenseData(values, baseData) : validateExpenseSplit(values, baseData);
     setErrors(e);
     if (Object.keys(e).length) {
       const first = step === 0 ? STEP0_ORDER.find((k) => e[k]) : (e.bearer ? "bearer" : "split");
@@ -78,9 +82,11 @@ export function ExpenseDraftWizard() {
   const back = () => { setErrors({}); setStep((s) => s - 1); };
   const restart = () => { setValues(emptyExpenseDraft); setErrors({}); setStep(0); };
 
-  const providers = contactsWithRole(data, ["proveedor"]);
-  const property = data.properties.find((p) => p.id === values.propertyId);
-  const rooms = property ? data.rooms.filter((r) => r.propertyId === property.id) : [];
+  // Current catalog labels; selectable options and validation keep the base records and roles.
+  const providers = contactsWithRole(baseData, ["proveedor"]).map((c) => current(data.contacts, c));
+  const baseProperty = baseData.properties.find((p) => p.id === values.propertyId);
+  const property = baseProperty ? current(data.properties, baseProperty) : undefined;
+  const rooms = baseProperty ? baseData.rooms.filter((r) => r.propertyId === baseProperty.id).map((r) => current(data.rooms, r)) : [];
   const amountCents = parseEuroToCents(values.amount) ?? 0;
   const split =
     step === 2 && amountCents > 0 && values.splitMode === "igualitario" ? splitEqual(amountCents, values.roomIds)
@@ -135,7 +141,7 @@ export function ExpenseDraftWizard() {
             <Field id="propertyId" label="Inmueble" error={errors.propertyId}>
               <select {...aria("propertyId")} value={values.propertyId} onChange={(e) => set({ propertyId: e.target.value })} className={fieldClass}>
                 <option value="">Elige un inmueble</option>
-                {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {baseData.properties.map((p) => <option key={p.id} value={p.id}>{current(data.properties, p).name}</option>)}
               </select>
             </Field>
             <Field id="date" label="Fecha del gasto" error={errors.date}>
