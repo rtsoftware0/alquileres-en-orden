@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FilePlus2, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { DocLinkKind } from "@/features/portfolio/data/types";
 import { currentVersion, docCategories, docLinkKindLabel, docLinkLabel, filterDocuments, visibilityLabel } from "./selectors";
 import { PageHeader } from "@/features/layout/PageHeader";
@@ -16,16 +16,20 @@ export interface DocsSearch {
   tipo?: DocLinkKind | undefined;
 }
 
+// Syntactically valid property IDs are kept (new or unknown); existence is resolved in the page.
+const isId = (v: unknown): v is string => typeof v === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(v);
+
 export function validateDocsSearch(input: Record<string, unknown>): DocsSearch {
   return {
     q: typeof input["q"] === "string" && input["q"] ? input["q"].slice(0, 80) : undefined,
     categoria: typeof input["categoria"] === "string" && docCategories.includes(input["categoria"]) ? input["categoria"] : undefined,
-    inmueble: typeof input["inmueble"] === "string" && data.properties.some((p) => p.id === input["inmueble"]) ? input["inmueble"] : undefined,
+    inmueble: isId(input["inmueble"]) ? input["inmueble"] : undefined,
     tipo: ["contrato", "incidencia", "gasto", "inmueble"].includes(input["tipo"] as string) ? (input["tipo"] as DocLinkKind) : undefined,
   };
 }
 
 export function DocsPage({ search }: { search: DocsSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/documentos/" });
   const update = (patch: DocsSearch) => navigate({ search: (prev: DocsSearch) => ({ ...prev, ...patch }), replace: true });
   const q = search.q ?? "";
@@ -35,6 +39,7 @@ export function DocsPage({ search }: { search: DocsSearch }) {
     propertyId: search.inmueble ?? "todos",
     linkKind: search.tipo ?? "todos",
   });
+  const unknownProperty = Boolean(search.inmueble && !data.properties.some((p) => p.id === search.inmueble));
   const active = Boolean(q || search.categoria || search.inmueble || search.tipo);
 
   return (
@@ -65,6 +70,7 @@ export function DocsPage({ search }: { search: DocsSearch }) {
             <span className="mb-1 block font-medium">Inmueble</span>
             <select value={search.inmueble ?? "todos"} onChange={(e) => update({ inmueble: e.target.value === "todos" ? undefined : e.target.value })} className={fieldClass}>
               <option value="todos">Todos</option>
+              {unknownProperty && <option value={search.inmueble}>Inmueble no encontrado</option>}
               {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
@@ -79,6 +85,11 @@ export function DocsPage({ search }: { search: DocsSearch }) {
         </div>
       </div>
 
+      {unknownProperty && (
+        <p role="status" className="mb-3 rounded-md border border-border bg-card px-3 py-2 text-sm">
+          El inmueble del filtro no existe en la cartera actual; no se muestran resultados. Restablece los filtros para ver todos los documentos.
+        </p>
+      )}
       <p className="mb-3 text-sm text-muted-foreground" aria-live="polite">
         Mostrando <strong className="tabular text-foreground">{list.length}</strong> de {data.documents.length} documentos
       </p>
