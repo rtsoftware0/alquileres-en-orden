@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Expense } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { bearerLabel, expenseBalance, paymentsOfExpense, sharesOfExpense } from "./expenses";
@@ -12,6 +13,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
 
 export function ExpensePage({ expense }: { expense: Expense }) {
+  const data = useCatalogData();
   const b = expenseBalance(data, expense);
   const provider = getContact(data, expense.providerId);
   const property = data.properties.find((p) => p.id === expense.propertyId)!;

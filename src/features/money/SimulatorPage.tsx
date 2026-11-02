@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { chargeBalance, getCharge, pendingCents, tenantAccountContacts } from "./selectors";
 import { eligibleCharges, parseSimulatedAmount, simulateCollection, type SimulationResult } from "./simulator";
@@ -42,6 +43,7 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 }
 
 export function SimulatorPage() {
+  const data = useCatalogData();
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [result, setResult] = useState<Extract<SimulationResult, { ok: true }> | null>(null);

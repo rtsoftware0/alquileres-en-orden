@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Charge } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { allocationsOfCharge, capitalize, chargeBalance, chargeContract, getPayment, paymentUnallocatedCents, periodLabel } from "./selectors";
@@ -16,6 +17,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function ChargePage({ charge: c }: { charge: Charge }) {
+  const data = useCatalogData();
   const b = chargeBalance(data, c);
   const ct = chargeContract(data, c);
   const room = data.rooms.find((r) => r.id === ct.roomId)!;

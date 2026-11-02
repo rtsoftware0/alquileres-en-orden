@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
 import { allocationsOfPayment, chargeBalance, getCharge, guarantorOnlyContracts, paymentUnallocatedCents, tenantAccount, tenantContracts } from "./selectors";
 import { ChargeStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";
@@ -17,6 +18,7 @@ export const validateAccountSearch = (input: Record<string, unknown>): AccountSe
 });
 
 export function TenantAccountPage({ contact, search }: { contact: Contact; search: AccountSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/inquilinos/$contactId" });
   const contracts = tenantContracts(data, contact.id);
   const contractId = contracts.some((c) => c.id === search.contrato) ? search.contrato : undefined;

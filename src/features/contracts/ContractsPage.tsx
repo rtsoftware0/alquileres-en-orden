@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FilePlus2, RotateCcw, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { ContractStatus } from "@/features/portfolio/data/types";
 import { CONTRACT_STATUSES, filterContracts, tenantNames } from "./selectors";
 import { ContractStatusBadge, contractStatusMeta } from "./components/ContractStatusBadge";
@@ -26,6 +27,7 @@ export function validateContractsSearch(input: Record<string, unknown>): Contrac
 }
 
 export function ContractsPage({ search }: { search: ContractsSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/contratos/" });
   const q = search.q ?? "";
   const propertyId = search.inmueble ?? "todos";

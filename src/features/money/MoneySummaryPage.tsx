@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { capitalize, moneySummary, paymentPropertyId, paymentUnallocatedCents, paymentsMatching, pendingByRoom, periodLabel, periodsOf } from "./selectors";
 import { Figure, MoneyNav, PeriodPropertyFilters } from "./components/MoneyUi";
@@ -21,6 +22,7 @@ export function validateMoneySearch(input: Record<string, unknown>): MoneySearch
 }
 
 export function MoneyHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const data = useCatalogData();
   return (
     <PageHeader
       title={title}
@@ -35,6 +37,7 @@ export function MoneyHeader({ title, subtitle }: { title: string; subtitle?: str
 }
 
 export function MoneySummaryPage({ search }: { search: MoneySearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/" });
   const f = { period: search.periodo, propertyId: search.inmueble };
   const s = moneySummary(data, f);

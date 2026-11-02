@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Ban, CheckCircle2, CircleDashed, CircleDot, FlaskConical, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { ChargeStatus, DepositStatus } from "../selectors";
 import type { ExpenseStatus } from "../expenses";
 import { capitalize, periodLabel, periodsOf } from "../selectors";
@@ -113,6 +114,7 @@ export function SimulationNotice() {
 }
 
 export function PeriodPropertyFilters({
+  const data = useCatalogData();
   period, propertyId, onChange, onReset, children, periodHelp = true, hasOther = false,
 }: {
   period: string | undefined;

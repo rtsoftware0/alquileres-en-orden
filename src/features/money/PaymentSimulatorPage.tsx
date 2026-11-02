@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FlaskConical, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { expenseBalance, expenseTotals, providerAccountContacts } from "./expenses";
 import { simulateProviderPayment, type PaymentSimulation } from "./expense-simulator";
@@ -34,6 +35,7 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 }
 
 export function PaymentSimulatorPage() {
+  const data = useCatalogData();
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [result, setResult] = useState<Extract<PaymentSimulation, { ok: true }> | null>(null);

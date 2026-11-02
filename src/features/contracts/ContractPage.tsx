@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contract } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { ContractStatusBadge } from "./components/ContractStatusBadge";
@@ -13,6 +14,7 @@ import { addDays, formatCents, formatDate, formatMoney } from "@/lib/format";
 import { depositContracts, depositOf, tenantAccount } from "@/features/money/selectors";
 
 function ContactLink({ id }: { id: string }) {
+  const data = useCatalogData();
   const c = getContact(data, id);
   if (!c) return <span>{id}</span>;
   return <Link to="/contactos/$contactId" params={{ contactId: c.id }} className={linkClass}>{c.name}</Link>;
@@ -23,6 +25,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function ContractPage({ contract: c }: { contract: Contract }) {
+  const data = useCatalogData();
   const room = data.rooms.find((r) => r.id === c.roomId)!;
   const property = data.properties.find((p) => p.id === c.propertyId)!;
   const isOwnerLandlord = property.ownerId === c.landlordId;

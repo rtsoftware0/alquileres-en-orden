@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { depositTotals } from "./selectors";
 import { Amounts, DepositStatusBadge, Figure, MoneyNav } from "./components/MoneyUi";
@@ -15,6 +16,7 @@ export const validateDepositsSearch = (input: Record<string, unknown>): Deposits
 });
 
 export function DepositsPage({ search }: { search: DepositsSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/fianzas/" });
   const t = depositTotals(data, search.inmueble);
   return (

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contract } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { depositOf } from "./selectors";
@@ -17,6 +18,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function DepositPage({ contract: c }: { contract: Contract }) {
+  const data = useCatalogData();
   const d = depositOf(data, c);
   const tenant = getContact(data, c.tenantIds[0]!)!;
   const landlord = getContact(data, c.landlordId)!;

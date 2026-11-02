@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
 import { expenseBalance, providerAccount, providerAccountContacts } from "./expenses";
 import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";
@@ -12,6 +13,7 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function ProviderAccountsPage() {
+  const data = useCatalogData();
   const providers = providerAccountContacts(data);
   return (
     <>
@@ -39,6 +41,7 @@ export function ProviderAccountsPage() {
 }
 
 export function ProviderAccountPage({ contact }: { contact: Contact }) {
+  const data = useCatalogData();
   const a = providerAccount(data, contact.id);
   return (
     <>

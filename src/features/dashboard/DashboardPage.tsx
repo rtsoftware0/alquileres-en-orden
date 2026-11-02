@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, CalendarDays } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getProperty, getRoom, summarizeOccupancy, totalPending } from "@/features/portfolio/selectors";
 import { OccupancySummary } from "@/features/portfolio/components/OccupancySummary";
 import { PageHeader, Panel } from "@/features/layout/PageHeader";
@@ -11,6 +12,7 @@ import { pendingByRoom } from "@/features/money/selectors";
 const linkClass = "rounded-sm font-medium text-primary hover:underline";
 
 function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: string | undefined }) {
+  const data = useCatalogData();
   const property = getProperty(data, propertyId)!;
   const room = roomId ? getRoom(data, roomId) : undefined;
   return (
@@ -27,6 +29,7 @@ function PlaceLinks({ propertyId, roomId }: { propertyId: string; roomId?: strin
 }
 
 export function DashboardPage() {
+  const data = useCatalogData();
   const occupancy = summarizeOccupancy(data.rooms);
   const pending = totalPending(data);
 
