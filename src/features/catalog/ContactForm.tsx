@@ -1,8 +1,8 @@
 // Catalog form for contacts (create + descriptive edit). Prevalidates with the
 // pure engine before committing, asks for confirmation on duplicate warnings
 // and only then calls the catalog API. Memory-only; grants no access.
-import { useId, useRef, useState, type ReactNode } from "react";
-import { AlertTriangle, Lock } from "lucide-react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { AlertTriangle, Lock, Pencil } from "lucide-react";
 import { demoPortfolio } from "@/features/portfolio/data/demo-data";
 import type { ContactRole } from "@/features/portfolio/data/types";
 import { Button } from "@/components/ui/button";
@@ -176,5 +176,35 @@ export function ContactForm({ contactId, onSaved, onCancel }: { contactId?: stri
       </div>
       <p className="text-xs text-muted-foreground">Cambio temporal: se pierde al recargar y no crea contratos, dinero ni accesos.</p>
     </form>
+  );
+}
+
+/**
+ * Edit toggle + panel for a record sheet. Opening is tied to the record ID, so
+ * switching sheets closes it and reopening mounts a fresh draft; closing
+ * (cancel or save) returns focus to the toggle button.
+ */
+export function CatalogEditPanel({ recordId, title, children }: { recordId: string; title: string; children: (close: () => void) => ReactNode }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const open = openId === recordId;
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const restore = useRef(false);
+  const panelId = useId();
+  useEffect(() => {
+    if (!open && restore.current) { restore.current = false; buttonRef.current?.focus(); }
+  }, [open]);
+  const close = () => { restore.current = true; setOpenId(null); };
+  return (
+    <div className="mb-4">
+      <Button ref={buttonRef} type="button" variant="outline" aria-expanded={open} aria-controls={panelId} onClick={() => (open ? close() : setOpenId(recordId))}>
+        <Pencil className="h-4 w-4" aria-hidden="true" /> {open ? "Cerrar edición" : "Editar datos"}
+      </Button>
+      {open && (
+        <section id={panelId} aria-label={title} className="mt-3 rounded-lg border border-border bg-card p-4">
+          <h2 className="mb-3 text-base font-semibold">{title}</h2>
+          <div key={recordId}>{children(close)}</div>
+        </section>
+      )}
+    </div>
   );
 }
