@@ -22,7 +22,7 @@ interface LoadedFile { name: string; size: number; text: string }
 function readArrayBuffer(file: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => (r.result instanceof ArrayBuffer ? resolve(r.result) : reject(new Error("read")));
+    r.onload = () => (r.result !== null && typeof r.result !== "string" ? resolve(r.result) : reject(new Error("read")));
     r.onerror = () => reject(new Error("read"));
     r.readAsArrayBuffer(file);
   });
