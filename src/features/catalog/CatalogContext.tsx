@@ -1,7 +1,7 @@
 // Root memory-only catalog overlay. Mounted outside Planning/Settlement
 // providers so it survives navigation and the settlements reset. A reload
 // loses it (no storage, no network); the browser warns while it is not empty.
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RotateCcw } from "lucide-react";
 import { demoPortfolio } from "@/features/portfolio/data/demo-data";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,22 @@ interface CatalogApi {
 const Context = createContext<CatalogApi | null>(null);
 const base = demoPortfolio;
 
-function buildApi(overlay: CatalogOverlay, setOverlay: (o: CatalogOverlay) => void): CatalogApi {
+interface CatalogSource {
+  /** Latest accepted overlay used as the input of every command. */
+  read: () => CatalogOverlay;
+  /** Records an accepted overlay synchronously and schedules a render. */
+  write: (o: CatalogOverlay) => void;
+}
+
+function buildApi(overlay: CatalogOverlay, source: CatalogSource): CatalogApi {
   const data = mergeCatalog(base, overlay);
-  const commit = (r: CatalogResult) => { if (r.ok) setOverlay(r.overlay); return r; };
+  // Commands read the latest accepted overlay (not the render snapshot) so
+  // consecutive calls in one event compose; rejected results change nothing.
+  const run = (op: (current: CatalogOverlay) => CatalogResult): CatalogResult => {
+    const r = op(source.read());
+    if (r.ok) source.write(r.overlay);
+    return r;
+  };
   const editsOf = (kind: CatalogKind) => (kind === "contact" ? overlay.edits.contacts : kind === "property" ? overlay.edits.properties : overlay.edits.rooms);
   return {
     overlay,
@@ -47,19 +60,25 @@ function buildApi(overlay: CatalogOverlay, setOverlay: (o: CatalogOverlay) => vo
     isEdited: (kind, id) => id in editsOf(kind),
     protectedFields: (kind, id) => protectedFields(base, kind, id),
     requiredRoles: (id) => requiredRoles(data, id),
-    addContact: (i) => commit(addContact(base, overlay, i)),
-    addProperty: (i) => commit(addProperty(base, overlay, i)),
-    addRoom: (i) => commit(addRoom(base, overlay, i)),
-    editContact: (id, p) => commit(editContact(base, overlay, id, p)),
-    editProperty: (id, p) => commit(editProperty(base, overlay, id, p)),
-    editRoom: (id, p) => commit(editRoom(base, overlay, id, p)),
-    reset: () => setOverlay(emptyOverlay()),
+    addContact: (i) => run((o) => addContact(base, o, i)),
+    addProperty: (i) => run((o) => addProperty(base, o, i)),
+    addRoom: (i) => run((o) => addRoom(base, o, i)),
+    editContact: (id, p) => run((o) => editContact(base, o, id, p)),
+    editProperty: (id, p) => run((o) => editProperty(base, o, id, p)),
+    editRoom: (id, p) => run((o) => editRoom(base, o, id, p)),
+    reset: () => source.write(emptyOverlay()),
   };
 }
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [overlay, setOverlay] = useState<CatalogOverlay>(emptyOverlay);
-  const api = useMemo(() => buildApi(overlay, setOverlay), [overlay]);
+  const latest = useRef<CatalogOverlay>(overlay);
+  // Stable per provider; only written from accepted commands and reset, never during render.
+  const source = useMemo<CatalogSource>(() => ({
+    read: () => latest.current,
+    write: (o) => { latest.current = o; setOverlay(o); },
+  }), []);
+  const api = useMemo(() => buildApi(overlay, source), [overlay, source]);
   useEffect(() => {
     if (api.isEmpty) return;
     const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
@@ -69,7 +88,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   return <Context.Provider value={api}>{children}</Context.Provider>;
 }
 
-const fallback = buildApi(emptyOverlay(), () => {});
+const fallbackOverlay = emptyOverlay();
+const fallback = buildApi(fallbackOverlay, { read: () => fallbackOverlay, write: () => {} });
 
 /** Catalog API; outside the provider (isolated tests) it exposes the untouched base view. */
 export function useCatalog(): CatalogApi {

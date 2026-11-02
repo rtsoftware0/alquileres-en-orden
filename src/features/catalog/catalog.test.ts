@@ -134,3 +134,48 @@ describe("catalog overlay", () => {
     expect(o.seq).toBe(0);
   });
 });
+
+describe("catalog regressions (tanda 1 fixes)", () => {
+  it("chained additions get distinct IDs and a normalized duplicate is rejected without replacing the first", () => {
+    const a = addContact(base, emptyOverlay(), { code: "CAT-1", name: "Uno", type: "persona", roles: ["candidato"] });
+    const o1 = ok(a);
+    const b = addContact(base, o1, { code: "cat 1", name: "Dos", type: "persona", roles: ["candidato"] });
+    expect(b.ok).toBe(false);
+    const c = addContact(base, o1, { code: "CAT-2", name: "Tres", type: "persona", roles: ["candidato"] });
+    expect(a.ok && c.ok && a.id !== c.id).toBe(true);
+    expect(mergeCatalog(base, o1).contacts.find((x) => x.code === "CAT-1")?.name).toBe("Uno");
+    expect(o1.seq).toBe(1);
+  });
+
+  it("candidates con-013/con-014 accept a descriptive note and keep candidato without inquilino", () => {
+    for (const id of ["con-013", "con-014"]) {
+      const r = editContact(base, emptyOverlay(), id, { note: "Nota descriptiva" });
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        const c = mergeCatalog(base, r.overlay).contacts.find((x) => x.id === id)!;
+        expect(c.roles).toEqual(["candidato"]);
+        expect(c.note).toBe("Nota descriptiva");
+      }
+    }
+  });
+
+  it("still blocks removing a present, linked role", () => {
+    expect(editContact(base, emptyOverlay(), "con-013", { roles: ["avalista"] }).ok).toBe(false);
+    const { o, contactId } = chain();
+    const r = editContact(base, o, contactId, { roles: ["avalista"] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors["roles"]).toContain("Propietario");
+    expect(editContact(base, o, contactId, { note: "Solo nota" }).ok).toBe(true);
+  });
+
+  it("accepts two-decimal rents in add and edit; rejects 3 decimals, NaN, Infinity, negatives, zero and > 100000", () => {
+    for (const v of [525.55, 300.29]) {
+      expect(addRoom(base, emptyOverlay(), { code: `D-${v}`, propertyId: "casa-olivo", monthlyRent: v, features: [] }).ok).toBe(true);
+      expect(editRoom(base, emptyOverlay(), "oli-05", { monthlyRent: v }).ok).toBe(true);
+    }
+    for (const v of [525.555, Number.NaN, Number.POSITIVE_INFINITY, -1, 0, 100000.01]) {
+      expect(addRoom(base, emptyOverlay(), { code: "D-X", propertyId: "casa-olivo", monthlyRent: v, features: [] }).ok).toBe(false);
+      expect(editRoom(base, emptyOverlay(), "oli-05", { monthlyRent: v }).ok).toBe(false);
+    }
+  });
+});
