@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
 import { allocationsOfPayment, chargeBalance, getCharge, guarantorOnlyContracts, paymentUnallocatedCents, tenantAccount, tenantContracts } from "./selectors";
 import { ChargeStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";
@@ -13,11 +14,13 @@ import { formatDate, formatMoney } from "@/lib/format";
 export interface AccountSearch { contrato?: string | undefined }
 
 export const validateAccountSearch = (input: Record<string, unknown>): AccountSearch => ({
-  contrato: data.contracts.some((c) => c.id === input["contrato"]) ? (input["contrato"] as string) : undefined,
+  contrato: baseData.contracts.some((c) => c.id === input["contrato"]) ? (input["contrato"] as string) : undefined,
 });
 
-export function TenantAccountPage({ contact, search }: { contact: Contact; search: AccountSearch }) {
+export function TenantAccountPage({ contact: loaded, search }: { contact: Contact; search: AccountSearch }) {
   const data = useCatalogData();
+  // Current catalog record by ID (labels only); eligibility comes from contracts, checked by the route.
+  const contact = data.contacts.find((c) => c.id === loaded.id) ?? loaded;
   const navigate = useNavigate({ from: "/dinero/inquilinos/$contactId" });
   const contracts = tenantContracts(data, contact.id);
   const contractId = contracts.some((c) => c.id === search.contrato) ? search.contrato : undefined;

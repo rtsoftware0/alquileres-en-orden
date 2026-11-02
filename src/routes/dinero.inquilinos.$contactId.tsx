@@ -14,7 +14,8 @@ export const Route = createFileRoute("/dinero/inquilinos/$contactId")({
     return { contact };
   },
   head: ({ loaderData }) => {
-    const title = loaderData ? `Cuenta de ${loaderData.contact.code} · ${site.name}` : `Cuenta no encontrada · ${site.name}`;
+    // Neutral title: the current (possibly edited) name/code is shown by the page itself.
+    const title = loaderData ? `Cuenta de inquilino · ${site.name}` : `Cuenta no encontrada · ${site.name}`;
     const description = "Cuenta ficticia de un inquilino: cargos, cobros, asignaciones y saldo.";
     return {
       meta: [
