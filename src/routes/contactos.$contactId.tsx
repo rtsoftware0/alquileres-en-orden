@@ -1,18 +1,13 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { site } from "@/config/site";
-import { demoPortfolio } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { getContact } from "@/features/contacts/selectors";
 import { ContactPage } from "@/features/contacts/ContactPage";
 import { NotFoundMessage } from "@/features/layout/NotFound";
 
 export const Route = createFileRoute("/contactos/$contactId")({
-  loader: ({ params }) => {
-    const contact = getContact(demoPortfolio, params.contactId);
-    if (!contact) throw notFound();
-    return { contact };
-  },
-  head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.contact.name} · ${site.name}` : `Contacto no encontrado · ${site.name}`;
+  head: () => {
+    const title = `Ficha de contacto · ${site.name}`;
     const description = "Ficha de contacto ficticio de la cartera de ejemplo.";
     return {
       meta: [
@@ -27,5 +22,9 @@ export const Route = createFileRoute("/contactos/$contactId")({
 });
 
 function ContactRoute() {
-  return <ContactPage contact={Route.useLoaderData().contact} />;
+  const { contactId } = Route.useParams();
+  const data = useCatalogData();
+  const contact = getContact(data, contactId);
+  if (!contact) return <NotFoundMessage title="Contacto no encontrado" text="Este contacto no existe en la demostración." />;
+  return <ContactPage contact={contact} />;
 }

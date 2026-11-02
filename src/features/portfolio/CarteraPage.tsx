@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { RotateCcw, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "./data/demo-data";
+import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
 import type { RoomStatus } from "./data/types";
 import {
   ROOM_STATUSES, filterProperties, filterRooms, getProperty, roomsOf, summarizeOccupancy,
@@ -19,6 +19,7 @@ const linkClass = "rounded-sm font-medium text-primary hover:underline";
 
 export function CarteraPage({ search }: { search: CarteraSearch }) {
   const navigate = useNavigate({ from: "/cartera/" });
+  const data = useCatalogData();
   const vista = search.vista ?? "habitaciones";
   const q = search.q ?? "";
   const estado: RoomStatus | "todas" = search.estado ?? "todas";
@@ -40,6 +41,7 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
   return (
     <>
       <PageHeader title="Cartera" subtitle={`${data.companyName} · ${data.properties.length} inmuebles · ${data.rooms.length} habitaciones`} />
+      <CatalogNotice />
 
       <div role="tablist" aria-label="Vista" className="mb-4 inline-flex rounded-md border border-border bg-card p-1">
         {(["inmuebles", "habitaciones"] as const).map((v) => (
@@ -123,7 +125,7 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
               <li key={r.id}>
                 <Link to="/cartera/habitaciones/$roomId" params={{ roomId: r.id }} className="block rounded-lg border border-border bg-card p-4 hover:border-primary/40">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-foreground">{r.code}</span>
+                    <span className="flex items-center gap-2 font-semibold text-foreground">{r.code} <CatalogOriginBadge kind="room" id={r.id} /></span>
                     <StatusBadge status={r.status} />
                   </div>
                   <div className="mt-1 flex justify-between text-sm text-muted-foreground">
@@ -149,7 +151,7 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
                 {rooms.map((r) => (
                   <tr key={r.id} className="hover:bg-muted/40">
                     <td className="px-4 py-3">
-                      <Link to="/cartera/habitaciones/$roomId" params={{ roomId: r.id }} className={linkClass}>{r.code}</Link>
+                      <Link to="/cartera/habitaciones/$roomId" params={{ roomId: r.id }} className={linkClass}>{r.code}</Link>{" "}<CatalogOriginBadge kind="room" id={r.id} />
                     </td>
                     <td className="px-4 py-3">
                       <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: r.propertyId }} className="rounded-sm hover:underline">
@@ -172,7 +174,7 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
               <li key={p.id}>
                 <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: p.id }} className="block rounded-lg border border-border bg-card p-5 hover:border-primary/40">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-semibold text-foreground">{p.name}</span>
+                    <span className="flex flex-wrap items-center gap-2 font-semibold text-foreground">{p.name} <CatalogOriginBadge kind="property" id={p.id} /></span>
                     <span className="text-xs text-muted-foreground">{p.code}</span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{p.address}</p>

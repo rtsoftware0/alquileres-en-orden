@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
 import type { Contact } from "@/features/portfolio/data/types";
+import type { CatalogContact } from "@/features/catalog/types";
+import { CatalogNotice, CatalogOriginBadge, useCatalog, useCatalogData } from "@/features/catalog/CatalogContext";
 import { contractsOfContact, incidentsOfProvider, propertiesOwnedBy } from "./selectors";
 import { RoleChips, TypeLabel } from "./ContactsPage";
 import { ContractStatusBadge } from "@/features/contracts/components/ContractStatusBadge";
@@ -12,7 +13,11 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { hasTenantAccount, tenantAccount } from "@/features/money/selectors";
 import { hasProviderAccount, providerAccount } from "@/features/money/expenses";
 
-export function ContactPage({ contact }: { contact: Contact }) {
+export function ContactPage({ contact: contactProp }: { contact: Contact }) {
+  const data = useCatalogData();
+  const { isAdded } = useCatalog();
+  const contact: CatalogContact = contactProp;
+  const added = isAdded("contact", contact.id);
   const contracts = contractsOfContact(data, contact.id);
   const owned = propertiesOwnedBy(data, contact.id);
   const incidents = incidentsOfProvider(data, contact.id);
@@ -22,18 +27,22 @@ export function ContactPage({ contact }: { contact: Contact }) {
     <>
       <Breadcrumbs items={[{ label: "Contactos", link: <Link to="/contactos" className={crumbLinkClass}>Contactos</Link> }, { label: contact.name }]} />
       <PageHeader
-        title={contact.name}
+        title={<span className="flex flex-wrap items-center gap-3">{contact.name} <CatalogOriginBadge kind="contact" id={contact.id} /></span>}
         subtitle={<span className="flex flex-wrap items-center gap-2">{contact.code} · <TypeLabel type={contact.type} /></span>}
         actions={<Link to="/contactos" className={buttonVariants({ variant: "outline" })}><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a contactos</Link>}
       />
+      <CatalogNotice />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Panel title="Datos de ejemplo">
           <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">
             <dt className="text-muted-foreground">Roles</dt><dd><RoleChips roles={contact.roles} /></dd>
             <dt className="text-muted-foreground">Tipo</dt><dd>{contact.type === "empresa" ? "Empresa" : "Persona"}</dd>
             {contact.email && (<><dt className="text-muted-foreground">Email</dt><dd className="break-all">{contact.email} <span className="text-xs text-muted-foreground">(ficticio)</span></dd></>)}
+            {contact.phone && (<><dt className="text-muted-foreground">Teléfono</dt><dd>{contact.phone} <span className="text-xs text-muted-foreground">(ficticio)</span></dd></>)}
+            {contact.address && (<><dt className="text-muted-foreground">Dirección</dt><dd>{contact.address} <span className="text-xs text-muted-foreground">(ficticia)</span></dd></>)}
           </dl>
           {contact.note && <p className="mt-4 text-sm text-muted-foreground">{contact.note}</p>}
+          {added && <p className="mt-4 text-sm text-muted-foreground">Alta temporal: sin contratos, cobros ni gastos, y sin acceso a ningún portal.</p>}
         </Panel>
 
         <div className="space-y-4">

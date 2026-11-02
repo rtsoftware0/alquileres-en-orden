@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, FileText } from "lucide-react";
-import { demoPortfolio as data } from "./data/demo-data";
 import type { Room } from "./data/types";
+import type { CatalogRoom } from "@/features/catalog/types";
+import { NotFoundMessage } from "@/features/layout/NotFound";
+import { CatalogNotice, CatalogOriginBadge, useCatalog, useCatalogData } from "@/features/catalog/CatalogContext";
 import { getProperty, incidentsFor, pendingForRoom } from "./selectors";
 import { StatusBadge } from "./components/StatusBadge";
 import { Breadcrumbs, CarteraCrumb, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
@@ -16,8 +18,15 @@ const statusContextTitle = {
   bloqueada: "Fuera de alquiler",
 } as const;
 
-export function RoomPage({ room }: { room: Room }) {
-  const property = getProperty(data, room.propertyId)!;
+const unitKindLabel = { habitacion: "Habitación", vivienda_completa: "Vivienda completa", estudio: "Estudio" } as const;
+
+export function RoomPage({ room: roomProp }: { room: Room }) {
+  const data = useCatalogData();
+  const { isAdded } = useCatalog();
+  const room: CatalogRoom = roomProp;
+  const added = isAdded("room", room.id);
+  const property = getProperty(data, room.propertyId);
+  if (!property) return <NotFoundMessage title="Inmueble no encontrado" text="El inmueble de esta unidad no existe en la cartera de ejemplo." />;
   const pending = pendingForRoom(data, room.id);
   const incidents = incidentsFor(data, property.id, room.id);
   const active = activeContractForRoom(data, room.id);
@@ -32,7 +41,7 @@ export function RoomPage({ room }: { room: Room }) {
     <>
       <Breadcrumbs items={[{ label: "Cartera", link: <CarteraCrumb /> }, { label: property.name, link: propertyLink }, { label: room.code }]} />
       <PageHeader
-        title={<span className="flex flex-wrap items-center gap-3">Habitación {room.code} <StatusBadge status={room.status} /></span>}
+        title={<span className="flex flex-wrap items-center gap-3">{room.unitKind ? unitKindLabel[room.unitKind] : "Habitación"} {room.code} <StatusBadge status={room.status} /> <CatalogOriginBadge kind="room" id={room.id} /></span>}
         subtitle={<>En <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: property.id }} className="rounded-sm font-medium text-primary hover:underline">{property.name}</Link></>}
         actions={
           <Link to="/cartera/inmuebles/$propertyId" params={{ propertyId: property.id }} className={buttonVariants({ variant: "outline" })}>
@@ -41,15 +50,19 @@ export function RoomPage({ room }: { room: Room }) {
         }
       />
 
+      <CatalogNotice />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Datos de la habitación">
           <dl className="tabular grid grid-cols-2 gap-y-3 text-sm">
             <dt className="text-muted-foreground">Renta orientativa</dt>
             <dd className="font-semibold">{formatEUR(room.monthlyRent)}/mes</dd>
             <dt className="text-muted-foreground">Superficie</dt>
-            <dd>{room.areaM2} m²</dd>
+            <dd>{room.areaM2 ? `${room.areaM2} m²` : "Sin indicar"}</dd>
+            {room.unitKind && (<><dt className="text-muted-foreground">Tipo</dt><dd>{unitKindLabel[room.unitKind]}</dd></>)}
+            {room.capacity !== undefined && (<><dt className="text-muted-foreground">Capacidad</dt><dd>{room.capacity} {room.capacity === 1 ? "persona" : "personas"}</dd></>)}
           </dl>
           <h3 className="mt-5 mb-2 text-xs font-semibold text-muted-foreground uppercase">Características</h3>
+          {room.features.length === 0 && <p className="text-sm text-muted-foreground">Sin características indicadas.</p>}
           <ul className="grid gap-1.5 text-sm sm:grid-cols-2">
             {room.features.map((f) => (
               <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />{f}</li>
@@ -79,7 +92,7 @@ export function RoomPage({ room }: { room: Room }) {
         ) : (
           room.status !== "ocupada" && (
             <Panel title={statusContextTitle[room.status]}>
-              <p className="text-sm text-muted-foreground">{room.statusNote}</p>
+              <p className="text-sm text-muted-foreground">{room.statusNote ?? (added ? "Alta temporal disponible: sin contratos, reservas, cobros ni gastos. La renta orientativa no crea ni altera ningún contrato." : "")}</p>
               <p className="mt-2 text-sm text-muted-foreground">Sin contrato vigente a {formatDate(data.referenceDate)}.</p>
               {others.filter((c) => c.status === "pendiente" || c.status === "borrador").map((c) => (
                 <p key={c.id} className="mt-3 flex flex-wrap items-center gap-2 text-sm">
