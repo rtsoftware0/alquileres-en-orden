@@ -1,10 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useCatalogData } from "@/features/catalog/CatalogContext";
-import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { depositTotals } from "./selectors";
 import { Amounts, DepositStatusBadge, Figure, MoneyNav } from "./components/MoneyUi";
-import { MoneyHeader } from "./MoneySummaryPage";
+import { MoneyHeader, searchId } from "./MoneySummaryPage";
 import { ContractStatusBadge } from "@/features/contracts/components/ContractStatusBadge";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { formatMoney } from "@/lib/format";
@@ -19,6 +18,7 @@ export function DepositsPage({ search }: { search: DepositsSearch }) {
   const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/fianzas/" });
   const t = depositTotals(data, search.inmueble);
+  const unknownProperty = Boolean(search.inmueble) && !data.properties.some((p) => p.id === search.inmueble);
   return (
     <>
       <MoneyHeader title="Fianzas" subtitle="Registro aparte de la renta" />
@@ -31,9 +31,11 @@ export function DepositsPage({ search }: { search: DepositsSearch }) {
           <span className="mb-1 block font-medium">Inmueble</span>
           <select value={search.inmueble ?? "todos"} onChange={(e) => navigate({ search: { inmueble: e.target.value === "todos" ? undefined : e.target.value }, replace: true })} className={fieldClass}>
             <option value="todos">Todos los inmuebles</option>
+            {unknownProperty && <option value={search.inmueble}>Inmueble no encontrado</option>}
             {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
+        {unknownProperty && <p role="status" className="mt-3 text-sm font-medium text-foreground">Inmueble no encontrado: no hay resultados para este filtro. Elige «Todos los inmuebles» para ver toda la cartera.</p>}
       </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <Figure label="Prevista en contratos activos" value={formatMoney(t.expectedActiveCents)} help="Lo que dicen los contratos activos. No es dinero recibido." />
