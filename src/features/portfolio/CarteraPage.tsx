@@ -124,6 +124,12 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
       <p className="mb-3 text-sm text-muted-foreground" aria-live="polite">
         Mostrando <strong className="tabular text-foreground">{shown}</strong> de {total} {noun}
       </p>
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Button variant="outline" size="sm" disabled={shown === 0} onClick={exportVisible}>
+          <Download className="h-4 w-4" aria-hidden="true" /> Exportar CSV ({shown})
+        </Button>
+        <span>Exporta solo {shown === 1 ? "el registro visible" : `los ${shown} ${noun} visibles`} con los filtros actuales. Los textos que empiezan por =, +, - o @ se protegen con un apóstrofo para que la hoja de cálculo no los ejecute.</span>
+      </div>
 
       {shown === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
