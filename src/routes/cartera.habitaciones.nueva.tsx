@@ -8,7 +8,7 @@ interface NewRoomSearch { inmueble?: string | undefined }
 
 export const Route = createFileRoute("/cartera/habitaciones/nueva")({
   validateSearch: (input: Record<string, unknown>): NewRoomSearch => ({
-    inmueble: typeof input.inmueble === "string" && input.inmueble ? input.inmueble.slice(0, 80) : undefined,
+    inmueble: typeof input["inmueble"] === "string" && input["inmueble"] ? input["inmueble"].slice(0, 80) : undefined,
   }),
   head: () => {
     const title = `Nueva unidad temporal · ${site.name}`;

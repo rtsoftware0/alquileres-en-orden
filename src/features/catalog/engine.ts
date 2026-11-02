@@ -271,6 +271,6 @@ export function hasMoneyActivity(view: CatalogDataset, kind: "property" | "room"
 
 /** True when any base relation (contract, reservation, application, incident, task, expense) points at the unit. */
 export function roomHasRelations(view: CatalogDataset, id: string) {
-  const refs = (list: readonly unknown[]) => list.some((x) => (x as Record<string, unknown>).roomId === id);
+  const refs = (list: readonly unknown[]) => list.some((x) => (x as Record<string, unknown>)["roomId"] === id);
   return hasMoneyActivity(view, "room", id) || refs(view.reservations) || refs(view.applications) || refs(view.incidents) || refs(view.tasks) || refs(view.expenseShares);
 }
