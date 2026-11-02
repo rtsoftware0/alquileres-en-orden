@@ -31,12 +31,34 @@ const normalizeName = (s: string) =>
 
 const patch = <T extends object>(rec: T, p: object | undefined): T => (p ? { ...rec, ...p } : rec);
 
+/** Applies a property patch; only `kind` accepts null, which removes it (the record never holds null). */
+export function applyPropertyPatch(rec: CatalogProperty, p: PropertyPatch | undefined): CatalogProperty {
+  if (!p) return rec;
+  const { kind, ...rest } = p;
+  const next: CatalogProperty = { ...rec, ...rest };
+  if (kind === null) delete next.kind;
+  else if (kind !== undefined) next.kind = kind;
+  return next;
+}
+
+/** Applies a room patch; only `unitKind` and `capacity` accept null, which removes them. */
+export function applyRoomPatch(rec: CatalogRoom, p: RoomPatch | undefined): CatalogRoom {
+  if (!p) return rec;
+  const { unitKind, capacity, ...rest } = p;
+  const next: CatalogRoom = { ...rec, ...rest };
+  if (unitKind === null) delete next.unitKind;
+  else if (unitKind !== undefined) next.unitKind = unitKind;
+  if (capacity === null) delete next.capacity;
+  else if (capacity !== undefined) next.capacity = capacity;
+  return next;
+}
+
 export function mergeCatalog(base: PortfolioDataset, overlay: CatalogOverlay): CatalogDataset {
   return {
     ...base,
     contacts: [...base.contacts, ...overlay.added.contacts].map((c) => patch<CatalogContact>(c, overlay.edits.contacts[c.id])),
-    properties: [...base.properties, ...overlay.added.properties].map((p) => patch<CatalogProperty>(p, overlay.edits.properties[p.id])),
-    rooms: [...base.rooms, ...overlay.added.rooms].map((r) => patch<CatalogRoom>(r, overlay.edits.rooms[r.id])),
+    properties: [...base.properties, ...overlay.added.properties].map((p) => applyPropertyPatch(p, overlay.edits.properties[p.id])),
+    rooms: [...base.rooms, ...overlay.added.rooms].map((r) => applyRoomPatch(r, overlay.edits.rooms[r.id])),
   };
 }
 
@@ -229,7 +251,7 @@ export function editProperty(base: PortfolioDataset, overlay: CatalogOverlay, id
   if (!current) return { ok: false, errors: { id: "Inmueble no encontrado." }, warnings: [] };
   const prot = protectionErrors(base, "property", id, current, p);
   if (has(prot)) return { ok: false, errors: prot, warnings: [] };
-  const { errors, warnings } = validateProperty(view, { ...current, ...p, id });
+  const { errors, warnings } = validateProperty(view, { ...applyPropertyPatch(current, p), id });
   if (has(errors)) return { ok: false, errors, warnings };
   return { ok: true, id, warnings, overlay: { ...overlay, edits: { ...overlay.edits, properties: { ...overlay.edits.properties, [id]: { ...overlay.edits.properties[id], ...p } } } } };
 }
@@ -243,7 +265,7 @@ export function editRoom(base: PortfolioDataset, overlay: CatalogOverlay, id: st
     prot.propertyId = "Campo protegido: la unidad tiene relaciones (contratos, reservas, solicitudes, incidencias o gastos).";
   }
   if (has(prot)) return { ok: false, errors: prot, warnings: [] };
-  const { errors, warnings } = validateRoom(view, { ...current, ...p, id });
+  const { errors, warnings } = validateRoom(view, { ...applyRoomPatch(current, p), id });
   if (has(errors)) return { ok: false, errors, warnings };
   return { ok: true, id, warnings, overlay: { ...overlay, edits: { ...overlay.edits, rooms: { ...overlay.edits.rooms, [id]: { ...overlay.edits.rooms[id], ...p } } } } };
 }

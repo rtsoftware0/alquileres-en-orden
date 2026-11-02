@@ -6,7 +6,7 @@ import { demoPortfolio } from "@/features/portfolio/data/demo-data";
 import { Button } from "@/components/ui/button";
 import { fieldClass } from "@/features/layout/ui";
 import { useCatalog } from "./CatalogContext";
-import { addProperty, editProperty } from "./engine";
+import { addProperty, editProperty, type NewProperty } from "./engine";
 import type { FieldName, PropertyKind, PropertyPatch } from "./types";
 import { DuplicateConfirm, Field, ProtectedHint, aria, useCatalogSubmit } from "./ContactForm";
 
@@ -32,7 +32,9 @@ export function PropertyForm({ propertyId, onSaved, onCancel }: { propertyId?: s
       name: draft.name.trim(), address: draft.address.trim(),
       portfolioLabel: draft.portfolioLabel.trim(), companyLabel: draft.companyLabel.trim(), managerName: draft.managerName.trim(),
     };
+    // Editing sends an explicit clear; creation simply omits the empty field.
     if (draft.kind) p.kind = draft.kind;
+    else if (propertyId) p.kind = null;
     if (!locked.includes("code")) p.code = draft.code.trim();
     if (!locked.includes("ownerId")) p.ownerId = draft.ownerId;
     return p;
@@ -41,7 +43,8 @@ export function PropertyForm({ propertyId, onSaved, onCancel }: { propertyId?: s
     const p = payload();
     if (propertyId) submit(editProperty(demoPortfolio, api.overlay, propertyId, p), () => api.editProperty(propertyId, p), onSaved, confirmed);
     else {
-      const input = { ...p, code: p.code ?? "", name: p.name ?? "", address: p.address ?? "", ownerId: p.ownerId ?? "" };
+      const { kind, ...rest } = p;
+      const input: NewProperty = { ...rest, code: p.code ?? "", name: p.name ?? "", address: p.address ?? "", ownerId: p.ownerId ?? "", ...(kind ? { kind } : {}) };
       submit(addProperty(demoPortfolio, api.overlay, input), () => api.addProperty(input), onSaved, confirmed);
     }
   };

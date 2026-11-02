@@ -6,7 +6,7 @@ import { demoPortfolio } from "@/features/portfolio/data/demo-data";
 import { Button } from "@/components/ui/button";
 import { fieldClass } from "@/features/layout/ui";
 import { useCatalog } from "./CatalogContext";
-import { addRoom, editRoom, roomHasRelations } from "./engine";
+import { addRoom, editRoom, roomHasRelations, type NewRoom } from "./engine";
 import type { FieldName, RoomPatch, UnitKind } from "./types";
 import { DuplicateConfirm, Field, ProtectedHint, aria, textareaClass, useCatalogSubmit } from "./ContactForm";
 
@@ -46,8 +46,11 @@ export function RoomForm({ roomId, initialPropertyId, onSaved, onCancel }: { roo
       features: draft.features.split(",").map((f) => f.trim()).filter(Boolean),
     };
     if (draft.statusNote.trim() !== (current?.statusNote ?? "")) p.statusNote = draft.statusNote.trim();
+    // Editing sends an explicit clear; creation simply omits the empty field.
     if (draft.capacity.trim()) p.capacity = parseDecimal(draft.capacity);
+    else if (roomId) p.capacity = null;
     if (draft.unitKind) p.unitKind = draft.unitKind;
+    else if (roomId) p.unitKind = null;
     if (!codeLocked) p.code = draft.code.trim();
     if (!propertyLocked) p.propertyId = draft.propertyId;
     return p;
@@ -56,7 +59,11 @@ export function RoomForm({ roomId, initialPropertyId, onSaved, onCancel }: { roo
     const p = payload();
     if (roomId) submit(editRoom(demoPortfolio, api.overlay, roomId, p), () => api.editRoom(roomId, p), onSaved, confirmed);
     else {
-      const input = { ...p, code: p.code ?? "", propertyId: p.propertyId ?? "", monthlyRent: p.monthlyRent ?? Number.NaN, features: p.features ?? [] };
+      const { unitKind, capacity, ...rest } = p;
+      const input: NewRoom = {
+        ...rest, code: p.code ?? "", propertyId: p.propertyId ?? "", monthlyRent: p.monthlyRent ?? Number.NaN, features: p.features ?? [],
+        ...(unitKind ? { unitKind } : {}), ...(capacity !== null && capacity !== undefined ? { capacity } : {}),
+      };
       submit(addRoom(demoPortfolio, api.overlay, input), () => api.addRoom(input), onSaved, confirmed);
     }
   };

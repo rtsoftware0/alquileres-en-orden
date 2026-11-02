@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CatalogProvider, useCatalog } from "./CatalogContext";
@@ -192,5 +192,68 @@ describe("catalog forms", () => {
     expect(document.activeElement).toBe(screen.getByRole("button", { name: /Editar datos/ }));
     fireEvent.click(screen.getByRole("button", { name: /Editar datos/ }));
     expect(screen.getByLabelText(/^Nota/)).toHaveValue(contact.note ?? "");
+  });
+
+  describe("clearing optional fields through the forms", () => {
+    const prop = demoPortfolio.properties[0]!;
+    const room = demoPortfolio.rooms[0]!;
+    // Each save remounts the form (key), like closing and reopening the record.
+    function Reopen({ kind }: { kind: "property" | "room" }) {
+      const [k, setK] = useState(0);
+      return kind === "property"
+        ? <PropertyForm key={k} propertyId={prop.id} onSaved={() => setK((n) => n + 1)} onCancel={() => setK((n) => n + 1)} />
+        : <RoomForm key={k} roomId={room.id} onSaved={() => setK((n) => n + 1)} onCancel={() => setK((n) => n + 1)} />;
+    }
+    const save = () => submit(/Guardar cambios temporales/);
+
+    it("property kind → Sin indicar stays empty after reopening and editing another field", () => {
+      wrap(<Reopen kind="property" />);
+      type(/^Tipo/, "vivienda"); save();
+      expect(screen.getByLabelText(/^Tipo/)).toHaveValue("vivienda");
+      type(/^Tipo/, ""); save();
+      expect(api().data.properties.find((p) => p.id === prop.id)!.kind).toBeUndefined();
+      expect(screen.getByLabelText(/^Tipo/)).toHaveValue("");
+      type(/^Cartera/, "Cartera B"); save();
+      expect(screen.getByLabelText(/^Tipo/)).toHaveValue("");
+      expect(api().data.properties.find((p) => p.id === prop.id)!.kind).toBeUndefined();
+    });
+
+    it("emptying unit capacity stays empty after reopening and editing another field", () => {
+      wrap(<Reopen kind="room" />);
+      type(/Capacidad/, "2"); save();
+      expect(screen.getByLabelText(/Capacidad/)).toHaveValue("2");
+      type(/Capacidad/, ""); save();
+      expect(screen.getByLabelText(/Capacidad/)).toHaveValue("");
+      type(/Renta orientativa/, "500"); save();
+      expect(screen.getByLabelText(/Capacidad/)).toHaveValue("");
+      expect(api().data.rooms.find((r) => r.id === room.id)!.capacity).toBeUndefined();
+    });
+
+    it("unit kind → Sin indicar stays empty after reopening and editing another field", () => {
+      wrap(<Reopen kind="room" />);
+      type(/^Tipo/, "estudio"); save();
+      type(/^Tipo/, ""); save();
+      expect(screen.getByLabelText(/^Tipo/)).toHaveValue("");
+      type(/Renta orientativa/, "500"); save();
+      expect(screen.getByLabelText(/^Tipo/)).toHaveValue("");
+      expect(api().data.rooms.find((r) => r.id === room.id)!.unitKind).toBeUndefined();
+    });
+
+    it("cancel after emptying keeps the stored value", () => {
+      wrap(<Reopen kind="room" />);
+      type(/Capacidad/, "3"); save();
+      type(/Capacidad/, "");
+      fireEvent.click(screen.getByRole("button", { name: /Cancelar/ }));
+      expect(api().data.rooms.find((r) => r.id === room.id)!.capacity).toBe(3);
+      expect(screen.getByLabelText(/Capacidad/)).toHaveValue("3");
+    });
+
+    it("creating with empty optional fields omits them", () => {
+      wrap(<RoomForm initialPropertyId={prop.id} onSaved={() => {}} onCancel={() => {}} />);
+      type(/^Código/, "OLI-77"); type(/Renta orientativa/, "300");
+      submit(/Crear unidad temporal/);
+      const added = api().overlay.added.rooms.at(-1)!;
+      expect("capacity" in added || "unitKind" in added).toBe(false);
+    });
   });
 });
