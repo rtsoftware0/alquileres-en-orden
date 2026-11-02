@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck, Globe, BarChart3 } from "lucide-react";
+import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck, Globe, BarChart3, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/config/site";
-import { demoPortfolio } from "@/features/portfolio/data/demo-data";
+import { useAccount } from "@/features/account/AccountContext";
 
 const nav = [
   { to: "/", label: "Inicio", icon: Home, exact: true },
@@ -21,6 +21,7 @@ const nav = [
   { to: "/mensajes", label: "Mensajes", icon: MessageSquare, exact: false },
   { to: "/avisos", label: "Avisos", icon: Bell, exact: false },
   { to: "/portales", label: "Portales", icon: Globe, exact: false },
+  { to: "/configuracion", label: "Configuración", icon: Settings, exact: false },
 ] as const;
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -55,10 +56,16 @@ function Brand() {
 }
 
 function OrgInfo() {
+  const a = useAccount();
+  const s = a.state.session;
   return (
     <div className="rounded-md border border-border bg-muted/50 p-3 text-xs">
-      <p className="font-semibold text-foreground">{demoPortfolio.companyName}</p>
-      <p className="mt-0.5 text-muted-foreground">{site.demoUser}</p>
+      <p className="font-semibold text-foreground">{a.state.company.name}</p>
+      <p className="mt-0.5 text-muted-foreground">{a.profile?.name} · {s.status === "dentro" ? "sesión simulada" : "sesión simulada cerrada"}</p>
+      <p className="mt-1.5 flex gap-2">
+        <Link to="/acceso" className="font-medium text-primary hover:underline">Acceso</Link>
+        <Link to="/bienvenida" className="font-medium text-primary hover:underline">Bienvenida</Link>
+      </p>
     </div>
   );
 }

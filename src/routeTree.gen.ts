@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccesoRouteImport } from './routes/acceso'
+import { Route as BienvenidaRouteImport } from './routes/bienvenida'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as InformesRouteImport } from './routes/informes'
 import { Route as PortalesRouteImport } from './routes/portales'
 import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
@@ -70,9 +73,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccesoRoute = AccesoRouteImport.update({
+  id: '/acceso',
+  path: '/acceso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BienvenidaRoute = BienvenidaRouteImport.update({
+  id: '/bienvenida',
+  path: '/bienvenida',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracionRoute = ConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InformesRoute = InformesRouteImport.update({
@@ -356,7 +374,10 @@ const DineroBancoMovimientosMovementIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acceso': typeof AccesoRoute
+  '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
@@ -413,7 +434,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acceso': typeof AccesoRoute
+  '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
@@ -471,7 +495,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/acceso': typeof AccesoRoute
+  '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
@@ -530,7 +557,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/acceso'
+    | '/bienvenida'
     | '/calendario'
+    | '/configuracion'
     | '/informes'
     | '/portales'
     | '/cartera/importar'
@@ -587,7 +617,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/acceso'
+    | '/bienvenida'
     | '/calendario'
+    | '/configuracion'
     | '/informes'
     | '/portales'
     | '/cartera/importar'
@@ -644,7 +677,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/acceso'
+    | '/bienvenida'
     | '/calendario'
+    | '/configuracion'
     | '/informes'
     | '/portales'
     | '/cartera/importar'
@@ -702,7 +738,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccesoRoute: typeof AccesoRoute
+  BienvenidaRoute: typeof BienvenidaRoute
   CalendarioRoute: typeof CalendarioRoute
+  ConfiguracionRoute: typeof ConfiguracionRoute
   InformesRoute: typeof InformesRoute
   PortalesRoute: typeof PortalesRoute
   CarteraImportarRoute: typeof CarteraImportarRoute
@@ -767,11 +806,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/acceso': {
+      id: '/acceso'
+      path: '/acceso'
+      fullPath: '/acceso'
+      preLoaderRoute: typeof AccesoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bienvenida': {
+      id: '/bienvenida'
+      path: '/bienvenida'
+      fullPath: '/bienvenida'
+      preLoaderRoute: typeof BienvenidaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calendario': {
       id: '/calendario'
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracion': {
+      id: '/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof ConfiguracionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/informes': {
@@ -1150,7 +1210,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccesoRoute: AccesoRoute,
+  BienvenidaRoute: BienvenidaRoute,
   CalendarioRoute: CalendarioRoute,
+  ConfiguracionRoute: ConfiguracionRoute,
   InformesRoute: InformesRoute,
   PortalesRoute: PortalesRoute,
   CarteraImportarRoute: CarteraImportarRoute,
