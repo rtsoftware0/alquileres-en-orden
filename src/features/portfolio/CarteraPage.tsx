@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { RotateCcw, Search, SearchX } from "lucide-react";
+import { Plus, RotateCcw, Search, SearchX } from "lucide-react";
 import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
 import type { RoomStatus } from "./data/types";
 import {
@@ -9,7 +9,7 @@ import {
 import { propertySorts, roomSorts, type CarteraSearch } from "./search";
 import { StatusBadge, statusMeta } from "./components/StatusBadge";
 import { PageHeader } from "@/features/layout/PageHeader";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { formatEUR, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +40,16 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
 
   return (
     <>
-      <PageHeader title="Cartera" subtitle={`${data.companyName} · ${data.properties.length} inmuebles · ${data.rooms.length} habitaciones`} />
+      <PageHeader
+        title="Cartera"
+        subtitle={`${data.companyName} · ${data.properties.length} inmuebles · ${data.rooms.length} habitaciones`}
+        actions={
+          <span className="flex flex-wrap gap-2">
+            <Link to="/cartera/inmuebles/nuevo" className={buttonVariants({ variant: "default" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nuevo inmueble</Link>
+            <Link to="/cartera/habitaciones/nueva" search={{}} className={buttonVariants({ variant: "outline" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nueva unidad</Link>
+          </span>
+        }
+      />
       <CatalogNotice />
 
       <div role="tablist" aria-label="Vista" className="mb-4 inline-flex rounded-md border border-border bg-card p-1">

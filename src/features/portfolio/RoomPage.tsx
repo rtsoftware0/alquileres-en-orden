@@ -8,6 +8,8 @@ import { getProperty, incidentsFor, pendingForRoom } from "./selectors";
 import { StatusBadge } from "./components/StatusBadge";
 import { Breadcrumbs, CarteraCrumb, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
+import { CatalogEditPanel } from "@/features/catalog/ContactForm";
+import { RoomForm } from "@/features/catalog/RoomForm";
 import { addDays, formatCents, formatDate, formatEUR } from "@/lib/format";
 import { activeContractForRoom, contractsForRoom, tenantNames } from "@/features/contracts/selectors";
 import { ContractStatusBadge } from "@/features/contracts/components/ContractStatusBadge";
@@ -51,6 +53,9 @@ export function RoomPage({ room: roomProp }: { room: Room }) {
       />
 
       <CatalogNotice />
+      <CatalogEditPanel recordId={room.id} title="Editar unidad (temporal)">
+        {(close) => <RoomForm roomId={room.id} onSaved={close} onCancel={close} />}
+      </CatalogEditPanel>
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Datos de la habitación">
           <dl className="tabular grid grid-cols-2 gap-y-3 text-sm">

@@ -179,3 +179,38 @@ describe("catalog regressions (tanda 1 fixes)", () => {
     }
   });
 });
+
+describe("catalog tanda 2 engine support", () => {
+  it("warns on a matching email (case-insensitive) but not on empty or self", () => {
+    const mail = base.contacts.find((c) => c.email)!;
+    const r = addContact(base, emptyOverlay(), { code: "CON-980", name: "Otro", type: "persona", roles: ["candidato"], email: mail.email!.toUpperCase() });
+    expect(r.ok).toBe(true);
+    expect(r.warnings.some((w) => w.includes(mail.code))).toBe(true);
+    const empty = addContact(base, emptyOverlay(), { code: "CON-981", name: "Sin correo", type: "persona", roles: ["candidato"], email: "" });
+    expect(empty.warnings).toHaveLength(0);
+    const self = editContact(base, emptyOverlay(), mail.id, { note: "x" });
+    expect(self.ok && self.warnings.every((w) => !w.includes("correo"))).toBe(true);
+  });
+
+  it("an added unit without relations may move to another existing property; base units may not", () => {
+    const { o, roomId } = chain();
+    const moved = editRoom(base, o, roomId, { propertyId: "casa-olivo" });
+    expect(moved.ok).toBe(true);
+    if (moved.ok) expect(mergeCatalog(base, moved.overlay).rooms.find((r) => r.id === roomId)?.propertyId).toBe("casa-olivo");
+    expect(editRoom(base, o, roomId, { propertyId: "no-existe" }).ok).toBe(false);
+    expect(editRoom(base, emptyOverlay(), "oli-01", { propertyId: "casa-azahar" }).ok).toBe(false);
+    expect(protectedFields(base, "room", "oli-01")).toContain("propertyId");
+    expect(protectedFields(base, "room", roomId)).not.toContain("propertyId");
+    expect(protectedFields(base, "room", roomId)).toContain("status");
+  });
+
+  it("editing OLI-05 rent keeps contract cents and tenant debt", () => {
+    const r = editRoom(base, emptyOverlay(), "oli-05", { monthlyRent: 525.55 });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      const view = mergeCatalog(base, r.overlay);
+      expect(view.contracts.find((c) => c.roomId === "oli-05" && c.status === "borrador")?.rentCents).toBe(41000);
+      expect(pendingCents(view)).toBe(140000);
+    }
+  });
+});

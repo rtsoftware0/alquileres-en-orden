@@ -8,6 +8,7 @@ import { RoleChips, TypeLabel } from "./ContactsPage";
 import { ContractStatusBadge } from "@/features/contracts/components/ContractStatusBadge";
 import { Breadcrumbs, PageHeader, Panel, crumbLinkClass } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
+import { CatalogEditPanel, ContactForm } from "@/features/catalog/ContactForm";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
 import { hasTenantAccount, tenantAccount } from "@/features/money/selectors";
@@ -32,6 +33,9 @@ export function ContactPage({ contact: contactProp }: { contact: Contact }) {
         actions={<Link to="/contactos" className={buttonVariants({ variant: "outline" })}><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a contactos</Link>}
       />
       <CatalogNotice />
+      <CatalogEditPanel recordId={contact.id} title="Editar contacto (temporal)">
+        {(close) => <ContactForm contactId={contact.id} onSaved={close} onCancel={close} />}
+      </CatalogEditPanel>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Panel title="Datos de ejemplo">
           <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">

@@ -9,6 +9,9 @@ import { StatusBadge } from "./components/StatusBadge";
 import { OccupancySummary } from "./components/OccupancySummary";
 import { Breadcrumbs, CarteraCrumb, PageHeader, Panel } from "@/features/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
+import { CatalogEditPanel } from "@/features/catalog/ContactForm";
+import { PropertyForm } from "@/features/catalog/PropertyForm";
+import { Plus } from "lucide-react";
 import { formatDate, formatEUR, formatMoney } from "@/lib/format";
 import { pendingCents } from "@/features/money/selectors";
 
@@ -35,12 +38,20 @@ export function PropertyPage({ property: prop }: { property: Property }) {
         title={<span className="flex flex-wrap items-center gap-3">{property.name} <CatalogOriginBadge kind="property" id={property.id} /></span>}
         subtitle={<span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />{property.address}</span>}
         actions={
-          <Link to="/cartera" search={{ vista: "inmuebles" }} className={buttonVariants({ variant: "outline" })}>
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a cartera
-          </Link>
+          <span className="flex flex-wrap gap-2">
+            <Link to="/cartera/habitaciones/nueva" search={{ inmueble: property.id }} className={buttonVariants({ variant: "default" })}>
+              <Plus className="h-4 w-4" aria-hidden="true" /> Añadir unidad
+            </Link>
+            <Link to="/cartera" search={{ vista: "inmuebles" }} className={buttonVariants({ variant: "outline" })}>
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a cartera
+            </Link>
+          </span>
         }
       />
       <CatalogNotice />
+      <CatalogEditPanel recordId={property.id} title="Editar inmueble (temporal)">
+        {(close) => <PropertyForm propertyId={property.id} onSaved={close} onCancel={close} />}
+      </CatalogEditPanel>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="space-y-4">
           <Panel title="Ocupación"><OccupancySummary s={summarizeOccupancy(rooms)} /></Panel>
