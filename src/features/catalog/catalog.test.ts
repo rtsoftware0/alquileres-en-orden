@@ -117,7 +117,7 @@ describe("catalog overlay", () => {
     expect(requiredRoles(view, "con-009")).toContain("propietario");
     const owner = base.contacts.find((c) => c.id === "con-009")!;
     expect(editContact(base, emptyOverlay(), "con-009", { roles: owner.roles.filter((r) => r !== "propietario").concat(owner.roles.length === 1 ? (["avalista"] as const) : []) }).ok).toBe(false);
-    expect(editContact(base, emptyOverlay(), "con-009", { roles: [...owner.roles, "candidato"].filter((r, i, a) => a.indexOf(r) === i) }).ok).toBe(true);
+    expect(editContact(base, emptyOverlay(), "con-009", { roles: [...owner.roles, "candidato" as const].filter((r, i, a) => a.indexOf(r) === i) }).ok).toBe(true);
   });
 
   it("validates finite rent, integer capacity and optional area", () => {
