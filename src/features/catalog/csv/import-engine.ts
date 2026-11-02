@@ -383,13 +383,14 @@ export function commitImport(base: PortfolioDataset, current: CatalogOverlay, re
   return { result: { ok: true, created: fresh.created, omitted: fresh.omitted, ids: fresh.ids, batch: fresh.next.imports?.batches ?? null }, next: fresh.next };
 }
 
-/** External reference recorded for an imported record, if any. */
-export function externalRefOf(overlay: CatalogOverlay, kind: CatalogKind, id: string): string {
+/** Index of external references by record ID (kind:id), built once per export. */
+export function externalRefIndex(overlay: CatalogOverlay): Map<string, string> {
+  const out = new Map<string, string>();
   const rec = overlay.imports?.receipts;
-  if (!rec) return "";
+  if (!rec) return out;
   for (const k of Object.keys(rec)) {
     const r = rec[k];
-    if (r && r.entity === kind && r.id === id) return r.externalRef ?? "";
+    if (r?.externalRef) out.set(`${r.entity}:${r.id}`, r.externalRef);
   }
-  return "";
+  return out;
 }
