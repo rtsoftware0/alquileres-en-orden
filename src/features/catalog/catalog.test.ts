@@ -274,7 +274,8 @@ describe("clearing optional fields (absent = keep, null = clear)", () => {
   });
 
   it("clearing never unlocks protected fields", () => {
-    const r = editProperty(base, emptyOverlay(), prop.id, { kind: null, ownerId: "con-001-otro" });
-    if (prop.ownerId !== "con-001-otro") expect(r.ok).toBe(false);
+    const r = editProperty(base, emptyOverlay(), prop.id, { kind: null, ownerId: `${prop.ownerId}-otro` });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.ownerId).toBeDefined();
   });
 });
