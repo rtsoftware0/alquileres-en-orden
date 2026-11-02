@@ -44,8 +44,8 @@ export function RoomForm({ roomId, initialPropertyId, onSaved, onCancel }: { roo
       monthlyRent: parseDecimal(draft.monthlyRent),
       areaM2: draft.areaM2.trim() ? parseDecimal(draft.areaM2) : 0,
       features: draft.features.split(",").map((f) => f.trim()).filter(Boolean),
-      statusNote: draft.statusNote.trim(),
     };
+    if (draft.statusNote.trim() !== (current?.statusNote ?? "")) p.statusNote = draft.statusNote.trim();
     if (draft.capacity.trim()) p.capacity = parseDecimal(draft.capacity);
     if (draft.unitKind) p.unitKind = draft.unitKind;
     if (!codeLocked) p.code = draft.code.trim();
