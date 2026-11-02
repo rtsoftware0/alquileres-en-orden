@@ -4,7 +4,7 @@
 // Accrual (devengo), cash (caja) and current debt are kept as separate concepts.
 import type { PortfolioDataset } from "@/features/portfolio/data/types";
 import {
-  chargeBalance, chargePropertyId, chargesMatching, paymentPropertyId, paymentUnallocatedCents, paymentsMatching,
+  chargeBalance, chargesMatching, paymentPropertyId, paymentUnallocatedCents, paymentsMatching,
 } from "@/features/money/selectors";
 import { expenseTotals } from "@/features/money/expenses";
 import { contexts } from "@/features/settlements/data/examples";
@@ -251,4 +251,3 @@ export function reportCsv(d: PortfolioDataset, s: ReportsSearch): string | null 
 export const reportFileName = (s: ReportsSearch) =>
   `informe-${(s.mes || "mes").replace(/[^a-z0-9-]/gi, "")}-${(s.inmueble ?? "cartera").replace(/[^a-z0-9-]/gi, "")}.csv`;
 
-export { chargePropertyId };
