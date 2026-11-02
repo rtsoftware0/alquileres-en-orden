@@ -103,7 +103,10 @@ export function validateContact(view: CatalogDataset, c: CatalogContact, isBase:
   else if (roles.some((r) => !CATALOG_ROLES.includes(r))) errors.roles = "Rol no válido.";
   else if (new Set(roles).size !== roles.length) errors.roles = "Hay roles repetidos.";
   else if (original) {
-    const missing = requiredRoles(view, c.id).filter((r) => !roles.includes(r));
+    // Only roles the contact already has AND that existing relations depend on
+    // are protected; a descriptive edit never forces a retrospective role.
+    const current = original.roles ?? [];
+    const missing = requiredRoles(view, c.id).filter((r) => current.includes(r) && !roles.includes(r));
     if (missing.length) errors.roles = `No se puede quitar ${missing.map((r) => roleLabels[r]).join(", ")}: tiene relaciones existentes.`;
   }
   if (c.email !== undefined && text(c.email)) {
@@ -145,8 +148,8 @@ export function validateRoom(view: CatalogDataset, r: CatalogRoom) {
   else if (!normalizeCode(code)) errors.code = "El código debe contener letras o números.";
   else if (codeTaken(view.rooms, code, r.id)) errors.code = `El código ${code} ya existe en las unidades.`;
   if (!view.properties.some((p) => p.id === r.propertyId)) errors.propertyId = "Elige un inmueble existente.";
-  if (!Number.isFinite(r.monthlyRent) || r.monthlyRent <= 0 || r.monthlyRent > 100000) errors.monthlyRent = "La renta orientativa debe ser un importe mayor que 0.";
-  else if (Math.round(r.monthlyRent * 100) !== r.monthlyRent * 100) errors.monthlyRent = "Usa como máximo dos decimales.";
+  if (typeof r.monthlyRent !== "number" || !Number.isFinite(r.monthlyRent) || r.monthlyRent <= 0 || r.monthlyRent > 100000) errors.monthlyRent = "La renta orientativa debe ser un importe mayor que 0.";
+  else if (Math.round(r.monthlyRent * 100) / 100 !== r.monthlyRent) errors.monthlyRent = "Usa como máximo dos decimales.";
   if (r.areaM2 !== 0 && (!Number.isFinite(r.areaM2) || r.areaM2 < 0 || r.areaM2 > 10000)) errors.areaM2 = "Superficie no válida.";
   if (r.capacity !== undefined && (!Number.isInteger(r.capacity) || r.capacity < 1 || r.capacity > 50)) errors.capacity = "La capacidad debe ser un número entero de personas.";
   if (r.unitKind !== undefined && !UNIT_KINDS.includes(r.unitKind)) errors.unitKind = "Tipo de unidad no válido.";
