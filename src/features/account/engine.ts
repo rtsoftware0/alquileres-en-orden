@@ -176,10 +176,17 @@ export function simulateSignOut(s: AccountState): AccountResult {
   return commit(s, { ...s, session: { ...s.session, status: "fuera" } }, "Salida simulada", s.session.email);
 }
 
+/** Confirms a welcome step without editing. Repeating it is rejected (no duplicate history). */
+export function confirmReview(s: AccountState, what: "empresa" | "perfil"): AccountResult {
+  const action = what === "empresa" ? "Empresa revisada" : "Perfil revisado";
+  if (s.history.some((h) => h.action === action)) return fail({ review: "Paso ya revisado." });
+  return commit(s, s, action, what === "empresa" ? s.company.name : profileMember(s)?.name ?? "");
+}
+
 /** Welcome steps derived from state; the team step is optional. */
 export function welcomeSteps(s: AccountState) {
   const has = (a: string) => s.history.some((h) => h.action === a);
-  const company = has("Empresa actualizada");
-  const profile = has("Perfil actualizado");
+  const company = has("Empresa actualizada") || has("Empresa revisada");
+  const profile = has("Perfil actualizado") || has("Perfil revisado");
   return { company, profile, team: activeSeats(s) > 1, complete: company && profile && activeAdmins(s).length >= 1 };
 }

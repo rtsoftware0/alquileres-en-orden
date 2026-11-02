@@ -4,7 +4,7 @@
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { initialAccount } from "./data/demo-account";
 import {
-  acceptInvitation, activeAdmins, activeMembers, activeSeats, invite, profileMember, revokeInvitation, setMemberActive,
+  acceptInvitation, activeAdmins, confirmReview, activeMembers, activeSeats, invite, profileMember, revokeInvitation, setMemberActive,
   setMemberRoles, simulateRecovery, simulateSignIn, simulateSignOut, updateCompany, updateProfile,
   type AccountResult, type AccountRole, type AccountState, type CompanyInput, type InviteInput, type Member, type ProfileInput,
 } from "./engine";
@@ -26,6 +26,7 @@ export interface AccountApi {
   signIn: (email: string) => AccountResult;
   recover: (email: string) => AccountResult;
   signOut: () => AccountResult;
+  confirmReview: (what: "empresa" | "perfil") => AccountResult;
   reset: () => void;
 }
 
@@ -51,6 +52,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       signIn: (e: string) => run((s) => simulateSignIn(s, e)),
       recover: (e: string) => run((s) => simulateRecovery(s, e)),
       signOut: () => run((s) => simulateSignOut(s)),
+      confirmReview: (w: "empresa" | "perfil") => run((s) => confirmReview(s, w)),
       reset: () => { const s = initialAccount(); latest.current = s; setState(s); },
     };
   }, []);
