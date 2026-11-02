@@ -1,18 +1,13 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { site } from "@/config/site";
-import { demoPortfolio } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { getProperty } from "@/features/portfolio/selectors";
 import { PropertyPage } from "@/features/portfolio/PropertyPage";
 import { NotFoundMessage } from "@/features/layout/NotFound";
 
 export const Route = createFileRoute("/cartera/inmuebles/$propertyId")({
-  loader: ({ params }) => {
-    const property = getProperty(demoPortfolio, params.propertyId);
-    if (!property) throw notFound();
-    return { property };
-  },
-  head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.property.name} · ${site.name}` : `Inmueble no encontrado · ${site.name}`;
+  head: () => {
+    const title = `Ficha de inmueble · ${site.name}`;
     const description = "Ficha de inmueble de la cartera de ejemplo.";
     return {
       meta: [
@@ -30,5 +25,9 @@ export const Route = createFileRoute("/cartera/inmuebles/$propertyId")({
 });
 
 function PropertyRoute() {
-  return <PropertyPage property={Route.useLoaderData().property} />;
+  const { propertyId } = Route.useParams();
+  const data = useCatalogData();
+  const property = getProperty(data, propertyId);
+  if (!property) return <NotFoundMessage title="Inmueble no encontrado" text="Este inmueble no existe en la cartera de ejemplo." />;
+  return <PropertyPage property={property} />;
 }
