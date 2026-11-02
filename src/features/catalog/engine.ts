@@ -6,7 +6,7 @@
 import type { ContactRole, PortfolioDataset } from "@/features/portfolio/data/types";
 import type {
   CatalogContact, CatalogDataset, CatalogKind, CatalogLabels, CatalogOverlay, CatalogProperty, CatalogResult, CatalogRoom,
-  ContactPatch, FieldErrors, PropertyPatch, RoomPatch,
+  ContactPatch, FieldErrors, FieldName, PropertyPatch, RoomPatch,
 } from "./types";
 
 export const CATALOG_ROLES: ContactRole[] = ["inquilino", "propietario", "arrendador", "proveedor", "avalista", "candidato"];
@@ -82,7 +82,7 @@ function codeTaken(list: { id: string; code: string }[], code: string, selfId?: 
   const n = normalizeCode(code);
   return list.some((x) => x.id !== selfId && normalizeCode(x.code) === n);
 }
-function similarName(list: { id: string; name: string }[], name: string, selfId?: string) {
+function similarName<T extends { id: string; name: string; code: string }>(list: T[], name: string, selfId?: string) {
   const n = normalizeName(name);
   return n ? list.filter((x) => x.id !== selfId && normalizeName(x.name) === n) : [];
 }
@@ -160,7 +160,7 @@ function protectionErrors(base: PortfolioDataset, kind: CatalogKind, id: string,
   const errors: FieldErrors = {};
   const locked = protectedFields(base, kind, id);
   for (const [k, v] of Object.entries(p)) {
-    if (locked.includes(k) && (current as Record<string, unknown>)[k] !== v) errors[k] = "Campo protegido: vinculado a contratos, dinero, ocupación o titularidad.";
+    if (locked.includes(k) && (current as Record<string, unknown>)[k] !== v) errors[k as FieldName] = "Campo protegido: vinculado a contratos, dinero, ocupación o titularidad.";
   }
   return errors;
 }

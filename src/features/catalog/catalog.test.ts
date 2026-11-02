@@ -62,9 +62,9 @@ describe("catalog overlay", () => {
   it("rejects normalized duplicate codes and warns on similar names without merging", () => {
     const dup = addRoom(base, emptyOverlay(), { code: "oli 01", propertyId: "casa-olivo", monthlyRent: 300, features: [] });
     expect(dup.ok).toBe(false);
-    if (!dup.ok) expect(dup.errors.code).toBeTruthy();
+    if (!dup.ok) expect(dup.errors["code"]).toBeTruthy();
     expect(normalizeCode("Olí-01")).toBe(normalizeCode("OLI01"));
-    const similar = addContact(base, emptyOverlay(), { code: "CON-950", name: base.contacts[0].name.toUpperCase(), type: "persona", roles: ["candidato"] });
+    const similar = addContact(base, emptyOverlay(), { code: "CON-950", name: base.contacts[0]!.name.toUpperCase(), type: "persona", roles: ["candidato"] });
     expect(similar.ok).toBe(true);
     if (similar.ok) {
       expect(similar.warnings.length).toBe(1);
@@ -97,9 +97,9 @@ describe("catalog overlay", () => {
     if (r2.ok) o = r2.overlay;
     const view = mergeCatalog(base, o);
     expect(catalogLabels(view).propertyName("casa-olivo")).toBe("Casa Olivo Renovada");
-    expect(base.properties[0].name).toBe("Casa Olivo");
+    expect(base.properties[0]!.name).toBe("Casa Olivo");
     expect(pendingCents(view)).toBe(140000);
-    expect(view.contracts.every((c, i) => c.rentCents === base.contracts[i].rentCents)).toBe(true);
+    expect(view.contracts.every((c, i) => c.rentCents === base.contracts[i]!.rentCents)).toBe(true);
   });
 
   it("protects base codes, owner, unit relation/status and IDs", () => {
@@ -116,7 +116,7 @@ describe("catalog overlay", () => {
     const view = mergeCatalog(base, emptyOverlay());
     expect(requiredRoles(view, "con-009")).toContain("propietario");
     const owner = base.contacts.find((c) => c.id === "con-009")!;
-    expect(editContact(base, emptyOverlay(), "con-009", { roles: owner.roles.filter((r) => r !== "propietario").concat(owner.roles.length === 1 ? ["avalista"] : []) }).ok).toBe(false);
+    expect(editContact(base, emptyOverlay(), "con-009", { roles: owner.roles.filter((r) => r !== "propietario").concat(owner.roles.length === 1 ? (["avalista"] as const) : []) }).ok).toBe(false);
     expect(editContact(base, emptyOverlay(), "con-009", { roles: [...owner.roles, "candidato"].filter((r, i, a) => a.indexOf(r) === i) }).ok).toBe(true);
   });
 

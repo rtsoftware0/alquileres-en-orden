@@ -45,7 +45,8 @@ export type CatalogDataset = Omit<PortfolioDataset, "contacts" | "properties" | 
   rooms: CatalogRoom[];
 };
 
-export type FieldErrors = Record<string, string>;
+export type FieldName = "id" | "name" | "code" | "type" | "roles" | "email" | "phone" | "address" | "note" | "ownerId" | "kind" | "propertyId" | "monthlyRent" | "areaM2" | "capacity" | "unitKind" | "features" | "status";
+export type FieldErrors = Partial<Record<FieldName, string>>;
 
 export type CatalogResult =
   | { ok: true; overlay: CatalogOverlay; id: string; warnings: string[] }
