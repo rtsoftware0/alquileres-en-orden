@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Ban, CheckCircle2, CircleDashed, CircleDot, FlaskConical, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import type { ChargeStatus, DepositStatus } from "../selectors";
 import type { ExpenseStatus } from "../expenses";
 import { capitalize, periodLabel, periodsOf } from "../selectors";
@@ -123,7 +124,9 @@ export function PeriodPropertyFilters({
   periodHelp?: boolean;
   hasOther?: boolean;
 }) {
+  const data = useCatalogData();
   const active = Boolean(period || propertyId) || hasOther;
+  const unknownProperty = Boolean(propertyId) && !data.properties.some((p) => p.id === propertyId);
   return (
     <div className="mb-4 rounded-lg border border-border bg-card p-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">

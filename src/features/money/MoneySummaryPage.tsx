@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { capitalize, moneySummary, paymentPropertyId, paymentUnallocatedCents, paymentsMatching, pendingByRoom, periodLabel, periodsOf } from "./selectors";
 import { Figure, MoneyNav, PeriodPropertyFilters } from "./components/MoneyUi";
@@ -13,14 +14,20 @@ export interface MoneySearch {
   inmueble?: string | undefined;
 }
 
+/** Keeps any well-formed ID string; existence is checked by the screen with the catalog view. */
+export const searchId = (v: unknown): string | undefined =>
+  typeof v === "string" && v.trim() !== "" && v.length <= 80 ? v : undefined;
+
 export function validateMoneySearch(input: Record<string, unknown>): MoneySearch {
   return {
-    periodo: periodsOf(data).includes(input["periodo"] as string) ? (input["periodo"] as string) : undefined,
-    inmueble: data.properties.some((p) => p.id === input["inmueble"]) ? (input["inmueble"] as string) : undefined,
+    periodo: periodsOf(baseData).includes(input["periodo"] as string) ? (input["periodo"] as string) : undefined,
+    // Existence is resolved on screen against the current catalog: new IDs must not widen to all.
+    inmueble: searchId(input["inmueble"]),
   };
 }
 
 export function MoneyHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const data = useCatalogData();
   return (
     <PageHeader
       title={title}
@@ -35,14 +42,15 @@ export function MoneyHeader({ title, subtitle }: { title: string; subtitle?: str
 }
 
 export function MoneySummaryPage({ search }: { search: MoneySearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/" });
   const f = { period: search.periodo, propertyId: search.inmueble };
   const s = moneySummary(data, f);
   const rooms = pendingByRoom(data, f);
   const payments = paymentsMatching(data, f);
   const update = (patch: MoneySearch) => navigate({ search: (prev: MoneySearch) => ({ ...prev, ...patch }), replace: true });
-  const scope = [search.periodo ? capitalize(periodLabel(search.periodo)) : "Todos los periodos", search.inmueble ? data.properties.find((p) => p.id === search.inmueble)!.name : "todos los inmuebles"].join(" · ");
-  const roomCode = (id: string) => data.rooms.find((r) => r.id === id)!.code;
+  const scope = [search.periodo ? capitalize(periodLabel(search.periodo)) : "Todos los periodos", search.inmueble ? (data.properties.find((p) => p.id === search.inmueble)?.name ?? "inmueble no encontrado") : "todos los inmuebles"].join(" · ");
+  const roomCode = (id: string) => data.rooms.find((r) => r.id === id)?.code ?? id;
 
   return (
     <>

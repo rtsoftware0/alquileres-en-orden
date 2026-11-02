@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { Contact } from "@/features/portfolio/data/types";
 import { expenseBalance, providerAccount, providerAccountContacts } from "./expenses";
 import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag } from "./components/MoneyUi";
@@ -12,6 +12,7 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function ProviderAccountsPage() {
+  const data = useCatalogData();
   const providers = providerAccountContacts(data);
   return (
     <>
@@ -38,7 +39,10 @@ export function ProviderAccountsPage() {
   );
 }
 
-export function ProviderAccountPage({ contact }: { contact: Contact }) {
+export function ProviderAccountPage({ contact: loaded }: { contact: Contact }) {
+  const data = useCatalogData();
+  // Current catalog record by ID (labels only); eligibility comes from expenses, checked by the route.
+  const contact = data.contacts.find((c) => c.id === loaded.id) ?? loaded;
   const a = providerAccount(data, contact.id);
   return (
     <>
@@ -76,7 +80,7 @@ export function ProviderAccountPage({ contact }: { contact: Contact }) {
                   <span className="flex gap-1.5"><ExpenseStatusBadge status={b.status} />{b.overdue && <OverdueTag />}</span>
                 </div>
                 <p className="tabular text-xs text-muted-foreground">
-                  {data.properties.find((p) => p.id === e.propertyId)?.name} · vence {formatDate(e.dueDate)} · importe {formatMoney(b.amountCents)} · pagado {formatMoney(b.paidCents)} · pendiente <strong className="text-foreground">{formatMoney(b.outstandingCents)}</strong>
+                  {data.properties.find((p) => p.id === e.propertyId)?.name ?? e.propertyId} · vence {formatDate(e.dueDate)} · importe {formatMoney(b.amountCents)} · pagado {formatMoney(b.paidCents)} · pendiente <strong className="text-foreground">{formatMoney(b.outstandingCents)}</strong>
                 </p>
               </li>
             );

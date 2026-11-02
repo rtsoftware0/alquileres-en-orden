@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { tenantAccount, tenantAccountContacts, tenantContracts } from "./selectors";
 import { Amounts, MoneyNav } from "./components/MoneyUi";
 import { MoneyHeader } from "./MoneySummaryPage";
@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function TenantAccountsPage() {
+  const data = useCatalogData();
   const tenants = tenantAccountContacts(data);
   return (
     <>

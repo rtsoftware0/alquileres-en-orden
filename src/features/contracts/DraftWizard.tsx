@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowLeft, ArrowRight, Info, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { contactsWithRole, getContact } from "@/features/contacts/selectors";
 import { exampleOverlaps } from "./selectors";
 import {
@@ -29,6 +30,10 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
 }
 
 export function DraftWizard({ session }: { session?: { values: DraftValues; step: number; linked?: boolean; resetValues?: DraftValues; onChange: (values: DraftValues, step: number) => void } } = {}) {
+  // Current catalog labels; eligibility, validation and overlaps keep the base relations
+  // (catalog roles or new records never create a party, unit or link to a planning request).
+  const data = useCatalogData();
+  const current = <T extends { id: string }>(list: readonly T[], x: T): T => list.find((y) => y.id === x.id) ?? x;
   const [localStep, setLocalStep] = useState(0);
   const [localValues, setLocalValues] = useState<DraftValues>(emptyDraft);
   const step = session?.step ?? localStep;
@@ -62,7 +67,7 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
   });
 
   const next = () => {
-    const e = step === 0 ? validateParties(values, data) : validateTerms(values);
+    const e = step === 0 ? validateParties(values, baseData) : validateTerms(values);
     setErrors(e);
     const first = FIELD_ORDER.find((k) => e[k]);
     if (first) { document.getElementById(first)?.focus(); return; }
@@ -71,12 +76,13 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
   const back = () => { setErrors({}); setStep((s) => s - 1); };
   const restart = () => { if (session) session.onChange(session.resetValues ?? session.values, 0); else { setLocalValues(emptyDraft); setLocalStep(0); } setErrors({}); };
 
-  const landlords = contactsWithRole(data, ["propietario", "arrendador"]);
-  const tenants = contactsWithRole(data, ["inquilino", "candidato"]);
-  const guarantors = contactsWithRole(data, ["avalista"]);
-  const room = data.rooms.find((r) => r.id === values.roomId);
-  const property = room ? data.properties.find((p) => p.id === room.propertyId) : undefined;
-  const overlaps = step === 2 && room ? exampleOverlaps(data, room.id, values.startDate, values.endDate) : [];
+  const landlords = contactsWithRole(baseData, ["propietario", "arrendador"]).map((c) => current(data.contacts, c));
+  const tenants = contactsWithRole(baseData, ["inquilino", "candidato"]).map((c) => current(data.contacts, c));
+  const guarantors = contactsWithRole(baseData, ["avalista"]).map((c) => current(data.contacts, c));
+  const baseRoom = baseData.rooms.find((r) => r.id === values.roomId);
+  const room = baseRoom ? current(data.rooms, baseRoom) : undefined;
+  const property = baseRoom ? data.properties.find((p) => p.id === baseRoom.propertyId) : undefined;
+  const overlaps = step === 2 && baseRoom ? exampleOverlaps(baseData, baseRoom.id, values.startDate, values.endDate) : [];
 
   return (
     <>
@@ -105,9 +111,9 @@ export function DraftWizard({ session }: { session?: { values: DraftValues; step
             <Field id="roomId" label="Habitación" error={errors.roomId}>
               {session?.linked?<input {...aria('roomId')} readOnly value={room?.code ?? values.roomId} className={fieldClass}/>:<select {...aria("roomId")} value={values.roomId} onChange={set("roomId")} className={fieldClass}>
                 <option value="">Elige una habitación</option>
-                {data.properties.map((p) => (
-                  <optgroup key={p.id} label={p.name}>
-                    {data.rooms.filter((r) => r.propertyId === p.id).map((r) => <option key={r.id} value={r.id}>{r.code}</option>)}
+                {baseData.properties.map((p) => (
+                  <optgroup key={p.id} label={current(data.properties, p).name}>
+                    {baseData.rooms.filter((r) => r.propertyId === p.id).map((r) => <option key={r.id} value={r.id}>{current(data.rooms, r).code}</option>)}
                   </optgroup>
                 ))}
               </select>}

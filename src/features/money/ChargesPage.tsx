@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { getContact } from "@/features/contacts/selectors";
 import { CHARGE_STATUSES, type ChargeStatus, chargeBalance, chargeContract, filterCharges } from "./selectors";
 import { Amounts, ChargeStatusBadge, MoneyNav, OverdueTag, PeriodPropertyFilters, chargeStatusMeta } from "./components/MoneyUi";
@@ -29,6 +29,7 @@ export function validateChargesSearch(input: Record<string, unknown>): ChargesSe
 }
 
 export function ChargesPage({ search }: { search: ChargesSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/vencimientos/" });
   const update = (patch: ChargesSearch) => navigate({ search: (prev: ChargesSearch) => ({ ...prev, ...patch }), replace: true });
   const q = search.q ?? "";

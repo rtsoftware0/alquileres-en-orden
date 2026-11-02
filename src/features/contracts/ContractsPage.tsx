@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FilePlus2, RotateCcw, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { ContractStatus } from "@/features/portfolio/data/types";
 import { CONTRACT_STATUSES, filterContracts, tenantNames } from "./selectors";
 import { ContractStatusBadge, contractStatusMeta } from "./components/ContractStatusBadge";
@@ -20,12 +20,14 @@ export function validateContractsSearch(input: Record<string, unknown>): Contrac
   const raw = input as { q?: unknown; inmueble?: unknown; estado?: unknown };
   return {
     q: typeof raw.q === "string" && raw.q ? raw.q.slice(0, 80) : undefined,
-    inmueble: data.properties.some((p) => p.id === raw.inmueble) ? (raw.inmueble as string) : undefined,
+    // Existence is resolved on screen against the current catalog (new IDs never widen to all).
+    inmueble: typeof raw.inmueble === "string" && raw.inmueble.trim() !== "" && raw.inmueble.length <= 80 ? raw.inmueble : undefined,
     estado: CONTRACT_STATUSES.includes(raw.estado as ContractStatus) ? (raw.estado as ContractStatus) : undefined,
   };
 }
 
 export function ContractsPage({ search }: { search: ContractsSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/contratos/" });
   const q = search.q ?? "";
   const propertyId = search.inmueble ?? "todos";
@@ -34,8 +36,9 @@ export function ContractsPage({ search }: { search: ContractsSearch }) {
   const update = (patch: ContractsSearch) => navigate({ search: (prev: ContractsSearch) => ({ ...prev, ...patch }), replace: true });
   const reset = () => navigate({ search: {}, replace: true });
   const hasFilters = Boolean(q) || propertyId !== "todos" || status !== "todos";
-  const room = (id: string) => data.rooms.find((r) => r.id === id)!;
-  const prop = (id: string) => data.properties.find((p) => p.id === id)!;
+  const roomCode = (id: string) => data.rooms.find((r) => r.id === id)?.code ?? id;
+  const propName = (id: string) => data.properties.find((p) => p.id === id)?.name ?? id;
+  const unknownProperty = propertyId !== "todos" && !data.properties.some((p) => p.id === propertyId);
 
   return (
     <>
@@ -57,6 +60,7 @@ export function ContractsPage({ search }: { search: ContractsSearch }) {
           <span className="mb-1 block font-medium">Inmueble</span>
           <select value={propertyId} onChange={(e) => update({ inmueble: e.target.value === "todos" ? undefined : e.target.value })} className={fieldClass}>
             <option value="todos">Todos</option>
+            {unknownProperty && <option value={propertyId}>Inmueble no encontrado</option>}
             {data.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
@@ -77,8 +81,8 @@ export function ContractsPage({ search }: { search: ContractsSearch }) {
       {list.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
           <SearchX className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
-          <p className="mt-2 font-medium">No hay contratos que coincidan</p>
-          <p className="mt-1 text-sm text-muted-foreground">Prueba con otra búsqueda, inmueble o estado.</p>
+          <p className="mt-2 font-medium">{unknownProperty ? "Inmueble no encontrado" : "No hay contratos que coincidan"}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{unknownProperty ? "Este inmueble no existe en el catálogo actual; no se muestra ningún contrato." : "Prueba con otra búsqueda, inmueble o estado."}</p>
           <Button variant="outline" onClick={reset} className="mt-4"><RotateCcw className="h-4 w-4" aria-hidden="true" /> Restablecer filtros</Button>
         </div>
       ) : (
@@ -91,7 +95,7 @@ export function ContractsPage({ search }: { search: ContractsSearch }) {
                     <span className="font-semibold">{c.reference}</span>
                     <ContractStatusBadge status={c.status} />
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{prop(c.propertyId).name} · {room(c.roomId).code} · {tenantNames(data, c)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{propName(c.propertyId)} · {roomCode(c.roomId)} · {tenantNames(data, c)}</p>
                   <p className="tabular mt-1 text-sm">{formatDate(c.startDate)} – salida {formatDate(c.endDate)} · {formatCents(c.rentCents)}/mes</p>
                 </Link>
               </li>
@@ -113,7 +117,7 @@ export function ContractsPage({ search }: { search: ContractsSearch }) {
                 {list.map((c) => (
                   <tr key={c.id} className="hover:bg-muted/40">
                     <td className="px-4 py-3"><Link to="/contratos/$contractId" params={{ contractId: c.id }} className={linkClass}>{c.reference}</Link></td>
-                    <td className="px-4 py-3">{room(c.roomId).code} <span className="text-muted-foreground">· {prop(c.propertyId).name}</span></td>
+                    <td className="px-4 py-3">{roomCode(c.roomId)} <span className="text-muted-foreground">· {propName(c.propertyId)}</span></td>
                     <td className="px-4 py-3">{tenantNames(data, c)}</td>
                     <td className="tabular px-4 py-3 whitespace-nowrap">{formatDate(c.startDate)} – {formatDate(c.endDate)}</td>
                     <td className="tabular px-4 py-3 text-right">{formatCents(c.rentCents)}</td>

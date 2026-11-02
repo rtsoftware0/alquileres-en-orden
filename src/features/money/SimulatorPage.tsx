@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { getContact } from "@/features/contacts/selectors";
 import { chargeBalance, getCharge, pendingCents, tenantAccountContacts } from "./selectors";
 import { eligibleCharges, parseSimulatedAmount, simulateCollection, type SimulationResult } from "./simulator";
@@ -17,8 +17,6 @@ import { formatDate, formatMoney } from "@/lib/format";
 interface Form { payerId: string; contractId: string; chargeId: string; amount: string }
 const empty: Form = { payerId: "", contractId: "", chargeId: "", amount: "" };
 type Errors = Partial<Record<keyof Form, string>>;
-
-const payers = tenantAccountContacts(data).filter((c) => eligibleCharges(data, c.id).length > 0);
 
 function validate(f: Form): Errors {
   const e: Errors = {};
@@ -42,6 +40,9 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 }
 
 export function SimulatorPage() {
+  const data = useCatalogData();
+  // Derived in render for current labels; eligibility still follows contracts and charges only.
+  const payers = tenantAccountContacts(data).filter((c) => eligibleCharges(data, c.id).length > 0);
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [result, setResult] = useState<Extract<SimulationResult, { ok: true }> | null>(null);

@@ -9,6 +9,7 @@ const title = `Cuenta de proveedor · ${site.name}`;
 const description = "Gastos y pagos ficticios de un proveedor de ejemplo.";
 
 export const Route = createFileRoute("/dinero/proveedores/$contactId")({
+  // Eligibility follows expenses only (catalog roles never open an account); the page reads the current contact by ID.
   loader: ({ params }) => {
     const contact = getContact(data, params.contactId);
     if (!contact || !hasProviderAccount(data, contact.id)) throw notFound();

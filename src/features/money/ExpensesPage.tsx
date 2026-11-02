@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
+import { demoPortfolio as baseData } from "@/features/portfolio/data/demo-data";
 import { getContact } from "@/features/contacts/selectors";
 import { EXPENSE_STATUSES, type ExpenseStatus, expenseBalance, expenseCategoriesOf, expenseTotals, filterExpenses, providerAccountContacts } from "./expenses";
 import { Amounts, ExpenseStatusBadge, Figure, MoneyNav, OverdueTag, PeriodPropertyFilters, expenseStatusMeta } from "./components/MoneyUi";
-import { MoneyHeader, validateMoneySearch } from "./MoneySummaryPage";
+import { MoneyHeader, searchId, validateMoneySearch } from "./MoneySummaryPage";
 import { fieldClass, linkClass } from "@/features/layout/ui";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -24,14 +25,15 @@ export function validateExpensesSearch(input: Record<string, unknown>): Expenses
   return {
     ...validateMoneySearch(input),
     q: typeof input["q"] === "string" && input["q"] ? input["q"].slice(0, 80) : undefined,
-    proveedor: data.contacts.some((c) => c.id === input["proveedor"]) ? (input["proveedor"] as string) : undefined,
-    categoria: expenseCategoriesOf(data).includes(input["categoria"] as string) ? (input["categoria"] as string) : undefined,
+    proveedor: searchId(input["proveedor"]),
+    categoria: expenseCategoriesOf(baseData).includes(input["categoria"] as string) ? (input["categoria"] as string) : undefined,
     estado: EXPENSE_STATUSES.includes(input["estado"] as ExpenseStatus) ? (input["estado"] as ExpenseStatus) : undefined,
     vencido: input["vencido"] === "si" ? "si" : undefined,
   };
 }
 
 export function ExpensesPage({ search }: { search: ExpensesSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/dinero/gastos/" });
   const update = (patch: ExpensesSearch) => navigate({ search: (prev: ExpensesSearch) => ({ ...prev, ...patch }), replace: true });
   const q = search.q ?? "";
@@ -75,6 +77,9 @@ export function ExpensesPage({ search }: { search: ExpensesSearch }) {
             <span className="mb-1 block font-medium">Proveedor</span>
             <select value={search.proveedor ?? "todos"} onChange={(e) => update({ proveedor: e.target.value === "todos" ? undefined : e.target.value })} className={fieldClass}>
               <option value="todos">Todos</option>
+              {search.proveedor && !providers.some((p) => p.id === search.proveedor) && (
+                <option value={search.proveedor}>{data.contacts.some((c) => c.id === search.proveedor) ? `${getContact(data, search.proveedor)?.name} (sin gastos como proveedor)` : "Proveedor no encontrado"}</option>
+              )}
               {providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
