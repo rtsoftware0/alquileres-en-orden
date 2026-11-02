@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as InformesRouteImport } from './routes/informes'
 import { Route as PortalesRouteImport } from './routes/portales'
 import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
@@ -72,6 +73,11 @@ const IndexRoute = IndexRouteImport.update({
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InformesRoute = InformesRouteImport.update({
+  id: '/informes',
+  path: '/informes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalesRoute = PortalesRouteImport.update({
@@ -351,6 +357,7 @@ const DineroBancoMovimientosMovementIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -407,6 +414,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
+  '/informes': typeof InformesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -522,6 +531,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/calendario'
+    | '/informes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -578,6 +588,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendario'
+    | '/informes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -634,6 +645,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/calendario'
+    | '/informes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -691,6 +703,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarioRoute: typeof CalendarioRoute
+  InformesRoute: typeof InformesRoute
   PortalesRoute: typeof PortalesRoute
   CarteraImportarRoute: typeof CarteraImportarRoute
   ContactosContactIdRoute: typeof ContactosContactIdRoute
@@ -759,6 +772,13 @@ declare module '@tanstack/react-router' {
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/informes': {
+      id: '/informes'
+      path: '/informes'
+      fullPath: '/informes'
+      preLoaderRoute: typeof InformesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portales': {
@@ -1131,6 +1151,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarioRoute: CalendarioRoute,
+  InformesRoute: InformesRoute,
   PortalesRoute: PortalesRoute,
   CarteraImportarRoute: CarteraImportarRoute,
   ContactosContactIdRoute: ContactosContactIdRoute,
