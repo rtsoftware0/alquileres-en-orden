@@ -196,7 +196,7 @@ export function CatalogEditPanel({ recordId, title, children }: { recordId: stri
   const close = () => { restore.current = true; setOpenId(null); };
   return (
     <div className="mb-4">
-      <Button ref={buttonRef} type="button" variant="outline" aria-expanded={open} aria-controls={panelId} onClick={() => (open ? close() : setOpenId(recordId))}>
+      <Button ref={buttonRef} type="button" variant="outline" aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={() => (open ? close() : setOpenId(recordId))}>
         <Pencil className="h-4 w-4" aria-hidden="true" /> {open ? "Cerrar edición" : "Editar datos"}
       </Button>
       {open && (

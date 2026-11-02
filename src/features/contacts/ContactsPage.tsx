@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Building, RotateCcw, Search, SearchX, User } from "lucide-react";
+import { Building, Plus, RotateCcw, Search, SearchX, User } from "lucide-react";
 import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
 import type { ContactRole } from "@/features/portfolio/data/types";
 import { CONTACT_ROLES, contractsOfContact, filterContacts, roleLabel } from "./selectors";
 import { PageHeader } from "@/features/layout/PageHeader";
 import { chipClass, fieldClass, linkClass } from "@/features/layout/ui";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface ContactsSearch {
@@ -51,7 +51,7 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
 
   return (
     <>
-      <PageHeader title="Contactos" subtitle={`${data.contacts.length} contactos de ejemplo · personas y empresas`} />
+      <PageHeader title="Contactos" subtitle={`${data.contacts.length} contactos de ejemplo · personas y empresas`} actions={<Link to="/contactos/nuevo" className={buttonVariants({ variant: "default" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nuevo contacto</Link>} />
       <CatalogNotice />
 
       <div className="mb-4 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
