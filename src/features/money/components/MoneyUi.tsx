@@ -114,7 +114,6 @@ export function SimulationNotice() {
 }
 
 export function PeriodPropertyFilters({
-  const data = useCatalogData();
   period, propertyId, onChange, onReset, children, periodHelp = true, hasOther = false,
 }: {
   period: string | undefined;
@@ -125,7 +124,9 @@ export function PeriodPropertyFilters({
   periodHelp?: boolean;
   hasOther?: boolean;
 }) {
+  const data = useCatalogData();
   const active = Boolean(period || propertyId) || hasOther;
+  const unknownProperty = Boolean(propertyId) && !data.properties.some((p) => p.id === propertyId);
   return (
     <div className="mb-4 rounded-lg border border-border bg-card p-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
