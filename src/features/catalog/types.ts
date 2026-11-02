@@ -29,7 +29,8 @@ export type CatalogKind = "contact" | "property" | "room";
 /** Descriptive fields that may be patched (protection decides per record). */
 export type ContactPatch = Partial<Pick<CatalogContact, "name" | "code" | "type" | "roles" | "email" | "phone" | "address" | "note">>;
 export type PropertyPatch = Partial<Pick<CatalogProperty, "name" | "code" | "address" | "ownerId" | "kind" | "portfolioLabel" | "companyLabel" | "managerName">>;
-export type RoomPatch = Partial<Pick<CatalogRoom, "code" | "monthlyRent" | "areaM2" | "features" | "statusNote" | "unitKind" | "capacity">>;
+/** propertyId is only accepted for added units without relations; base units keep it protected. */
+export type RoomPatch = Partial<Pick<CatalogRoom, "code" | "propertyId" | "monthlyRent" | "areaM2" | "features" | "statusNote" | "unitKind" | "capacity">>;
 
 export interface CatalogOverlay {
   added: { contacts: CatalogContact[]; properties: CatalogProperty[]; rooms: CatalogRoom[] };

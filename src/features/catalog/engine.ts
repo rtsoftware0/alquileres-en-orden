@@ -51,7 +51,9 @@ export function isAddedRecord(overlay: CatalogOverlay, kind: CatalogKind, id: st
 
 /** Fields that cannot change for a record; IDs are always immutable. */
 export function protectedFields(base: PortfolioDataset, kind: CatalogKind, id: string): string[] {
-  if (!isBaseRecord(base, kind, id)) return kind === "room" ? ["id", "propertyId", "status"] : ["id"];
+  // Added units may move to another property only while they have no relations
+  // (checked in editRoom); their availability status stays derived.
+  if (!isBaseRecord(base, kind, id)) return kind === "room" ? ["id", "status"] : ["id"];
   if (kind === "property") return ["id", "code", "ownerId"];
   if (kind === "room") return ["id", "code", "propertyId", "status"];
   return ["id"];
@@ -118,6 +120,11 @@ export function validateContact(view: CatalogDataset, c: CatalogContact, isBase:
   if (!isBase && original && original.id !== c.id) errors.id = "El identificador no se puede cambiar.";
   const dup = similarName(view.contacts, name, c.id);
   if (dup.length) warnings.push(`Ya existe un contacto con un nombre parecido: ${dup.map((d) => d.code).join(", ")}. No se fusionan automáticamente.`);
+  const mail = text(c.email).toLowerCase();
+  if (mail) {
+    const same = view.contacts.filter((x) => x.id !== c.id && text(x.email).toLowerCase() === mail);
+    if (same.length) warnings.push(`El correo ${text(c.email)} ya figura en: ${same.map((d) => d.code).join(", ")}. No se fusionan automáticamente.`);
+  }
   return { errors, warnings };
 }
 
@@ -232,6 +239,9 @@ export function editRoom(base: PortfolioDataset, overlay: CatalogOverlay, id: st
   const current = view.rooms.find((x) => x.id === id);
   if (!current) return { ok: false, errors: { id: "Unidad no encontrada." }, warnings: [] };
   const prot = protectionErrors(base, "room", id, current, p);
+  if (p.propertyId !== undefined && p.propertyId !== current.propertyId && roomHasRelations(view, id)) {
+    prot.propertyId = "Campo protegido: la unidad tiene relaciones (contratos, reservas, solicitudes, incidencias o gastos).";
+  }
   if (has(prot)) return { ok: false, errors: prot, warnings: [] };
   const { errors, warnings } = validateRoom(view, { ...current, ...p, id });
   if (has(errors)) return { ok: false, errors, warnings };
@@ -257,4 +267,10 @@ export function catalogLabels(view: CatalogDataset): CatalogLabels {
 export function hasMoneyActivity(view: CatalogDataset, kind: "property" | "room", id: string) {
   const key = kind === "property" ? "propertyId" : "roomId";
   return view.contracts.some((ct) => ct[key] === id) || view.expenses.some((e) => (e as unknown as Record<string, unknown>)[key] === id);
+}
+
+/** True when any base relation (contract, reservation, application, incident, task, expense) points at the unit. */
+export function roomHasRelations(view: CatalogDataset, id: string) {
+  const refs = (list: readonly unknown[]) => list.some((x) => (x as Record<string, unknown>).roomId === id);
+  return hasMoneyActivity(view, "room", id) || refs(view.reservations) || refs(view.applications) || refs(view.incidents) || refs(view.tasks) || refs(view.expenseShares);
 }
