@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Building, Plus, RotateCcw, Search, SearchX, User } from "lucide-react";
-import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
+import { Building, Download, FileUp, Plus, RotateCcw, Search, SearchX, User } from "lucide-react";
+import { CatalogNotice, CatalogOriginBadge, useCatalog, useCatalogData } from "@/features/catalog/CatalogContext";
+import { catalogCsv, downloadCsv } from "@/features/catalog/csv/export";
 import type { ContactRole } from "@/features/portfolio/data/types";
 import { CONTACT_ROLES, contractsOfContact, filterContacts, roleLabel } from "./selectors";
 import { PageHeader } from "@/features/layout/PageHeader";
@@ -42,6 +43,7 @@ export function RoleChips({ roles }: { roles: ContactRole[] }) {
 export function ContactsPage({ search }: { search: ContactsSearch }) {
   const navigate = useNavigate({ from: "/contactos/" });
   const data = useCatalogData();
+  const { overlay } = useCatalog();
   const q = search.q ?? "";
   const role = search.rol ?? "todos";
   const list = filterContacts(data, { q, role });
@@ -51,7 +53,12 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
 
   return (
     <>
-      <PageHeader title="Contactos" subtitle={`${data.contacts.length} contactos de ejemplo · personas y empresas`} actions={<Link to="/contactos/nuevo" className={buttonVariants({ variant: "default" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nuevo contacto</Link>} />
+      <PageHeader title="Contactos" subtitle={`${data.contacts.length} contactos de ejemplo · personas y empresas`} actions={
+        <span className="flex flex-wrap gap-2">
+          <Link to="/contactos/nuevo" className={buttonVariants({ variant: "default" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nuevo contacto</Link>
+          <Link to="/cartera/importar" search={{ entidad: "contactos" }} className={buttonVariants({ variant: "outline" })}><FileUp className="h-4 w-4" aria-hidden="true" /> Importar CSV</Link>
+        </span>
+      } />
       <CatalogNotice />
 
       <div className="mb-4 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
@@ -77,6 +84,15 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
       <p className="mb-3 text-sm text-muted-foreground" aria-live="polite">
         Mostrando <strong className="tabular text-foreground">{list.length}</strong> de {data.contacts.length} contactos
       </p>
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Button variant="outline" size="sm" disabled={list.length === 0} onClick={() => {
+          const r = catalogCsv("contactos", list.map((c) => c.id), data, overlay);
+          downloadCsv("contactos-visibles.csv", r.text);
+        }}>
+          <Download className="h-4 w-4" aria-hidden="true" /> Exportar CSV ({list.length})
+        </Button>
+        <span>Exporta solo los {list.length} contactos visibles con los filtros actuales. Los textos que empiezan por =, +, - o @ se protegen con un apóstrofo para que la hoja de cálculo no los ejecute.</span>
+      </div>
 
       {list.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Plus, RotateCcw, Search, SearchX } from "lucide-react";
-import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
+import { Download, FileUp, Plus, RotateCcw, Search, SearchX } from "lucide-react";
+import { CatalogNotice, CatalogOriginBadge, useCatalog, useCatalogData } from "@/features/catalog/CatalogContext";
+import { catalogCsv, downloadCsv } from "@/features/catalog/csv/export";
 import type { RoomStatus } from "./data/types";
 import {
   ROOM_STATUSES, filterProperties, filterRooms, getProperty, roomsOf, summarizeOccupancy,
@@ -20,6 +21,7 @@ const linkClass = "rounded-sm font-medium text-primary hover:underline";
 export function CarteraPage({ search }: { search: CarteraSearch }) {
   const navigate = useNavigate({ from: "/cartera/" });
   const data = useCatalogData();
+  const { overlay } = useCatalog();
   const vista = search.vista ?? "habitaciones";
   const q = search.q ?? "";
   const estado: RoomStatus | "todas" = search.estado ?? "todas";
@@ -37,6 +39,11 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
   const shown = vista === "habitaciones" ? rooms.length : properties.length;
   const noun = vista === "habitaciones" ? "habitaciones" : "inmuebles";
   const hasFilters = Boolean(q) || estado !== "todas" || Boolean(search.orden);
+  const exportVisible = () => {
+    const entity = vista === "habitaciones" ? "unidades" : "inmuebles";
+    const ids = vista === "habitaciones" ? rooms.map((r) => r.id) : properties.map((p) => p.id);
+    downloadCsv(`${entity}-visibles.csv`, catalogCsv(entity, ids, data, overlay).text);
+  };
 
   return (
     <>
@@ -47,6 +54,7 @@ export function CarteraPage({ search }: { search: CarteraSearch }) {
           <span className="flex flex-wrap gap-2">
             <Link to="/cartera/inmuebles/nuevo" className={buttonVariants({ variant: "default" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nuevo inmueble</Link>
             <Link to="/cartera/habitaciones/nueva" search={{}} className={buttonVariants({ variant: "outline" })}><Plus className="h-4 w-4" aria-hidden="true" /> Nueva unidad</Link>
+            <Link to="/cartera/importar" search={{ entidad: vista === "habitaciones" ? "unidades" : "inmuebles" }} className={buttonVariants({ variant: "outline" })}><FileUp className="h-4 w-4" aria-hidden="true" /> Importar CSV</Link>
           </span>
         }
       />

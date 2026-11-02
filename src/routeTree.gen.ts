@@ -14,6 +14,7 @@ import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as PortalesRouteImport } from './routes/portales'
 import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
+import { Route as CarteraImportarRouteImport } from './routes/cartera.importar'
 import { Route as ContactosIndexRouteImport } from './routes/contactos.index'
 import { Route as ContactosContactIdRouteImport } from './routes/contactos.$contactId'
 import { Route as ContactosNuevoRouteImport } from './routes/contactos.nuevo'
@@ -86,6 +87,11 @@ const AvisosIndexRoute = AvisosIndexRouteImport.update({
 const CarteraIndexRoute = CarteraIndexRouteImport.update({
   id: '/cartera/',
   path: '/cartera/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarteraImportarRoute = CarteraImportarRouteImport.update({
+  id: '/cartera/importar',
+  path: '/cartera/importar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactosIndexRoute = ContactosIndexRouteImport.update({
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
   '/portales': typeof PortalesRoute
+  '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contactos/nuevo': typeof ContactosNuevoRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
   '/portales': typeof PortalesRoute
+  '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contactos/nuevo': typeof ContactosNuevoRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
@@ -457,6 +465,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/calendario': typeof CalendarioRoute
   '/portales': typeof PortalesRoute
+  '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
   '/contactos/nuevo': typeof ContactosNuevoRoute
   '/contratos/$contractId': typeof ContratosContractIdRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendario'
     | '/portales'
+    | '/cartera/importar'
     | '/contactos/$contactId'
     | '/contactos/nuevo'
     | '/contratos/$contractId'
@@ -569,6 +579,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendario'
     | '/portales'
+    | '/cartera/importar'
     | '/contactos/$contactId'
     | '/contactos/nuevo'
     | '/contratos/$contractId'
@@ -624,6 +635,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendario'
     | '/portales'
+    | '/cartera/importar'
     | '/contactos/$contactId'
     | '/contactos/nuevo'
     | '/contratos/$contractId'
@@ -680,6 +692,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarioRoute: typeof CalendarioRoute
   PortalesRoute: typeof PortalesRoute
+  CarteraImportarRoute: typeof CarteraImportarRoute
   ContactosContactIdRoute: typeof ContactosContactIdRoute
   ContactosNuevoRoute: typeof ContactosNuevoRoute
   ContratosContractIdRoute: typeof ContratosContractIdRoute
@@ -767,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/cartera'
       fullPath: '/cartera/'
       preLoaderRoute: typeof CarteraIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartera/importar': {
+      id: '/cartera/importar'
+      path: '/cartera/importar'
+      fullPath: '/cartera/importar'
+      preLoaderRoute: typeof CarteraImportarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contactos/': {
@@ -1112,6 +1132,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarioRoute: CalendarioRoute,
   PortalesRoute: PortalesRoute,
+  CarteraImportarRoute: CarteraImportarRoute,
   ContactosContactIdRoute: ContactosContactIdRoute,
   ContactosNuevoRoute: ContactosNuevoRoute,
   ContratosContractIdRoute: ContratosContractIdRoute,
