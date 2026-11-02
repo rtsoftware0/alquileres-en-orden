@@ -27,19 +27,6 @@ const submit = (name: RegExp) => fireEvent.click(screen.getByRole("button", { na
 describe("catalog forms", () => {
   it("chain: contact → property → unit, each returning its ID; unit is available and figures stay", () => {
     const saved: string[] = [];
-    const { unmount } = wrap(<ContactForm onSaved={(id) => saved.push(id)} onCancel={() => {}} />);
-    type(/^Código/, "CON-700"); type(/^Nombre/, "Dueña Nueva Ejemplo");
-    fireEvent.click(screen.getByRole("checkbox", { name: /Propietario/ }));
-    type(/Correo ficticio/, "duena@example.invalid");
-    submit(/Crear contacto temporal/);
-    expect(saved).toEqual(["cat-con-1"]);
-    unmount();
-
-    const { unmount: u2 } = render(<CatalogProvider><Probe /><PropertyForm onSaved={(id) => saved.push(id)} onCancel={() => {}} /></CatalogProvider>);
-    // New provider = empty catalog: owner must exist in this session, so build the chain in one provider instead.
-    u2();
-    saved.length = 0;
-
     function Chain() {
       const a = useCatalog();
       const owner = a.data.contacts.find((c) => c.code === "CON-700");
@@ -179,10 +166,6 @@ describe("catalog forms", () => {
   });
 
   it("an added unit may change property; nonexistent property rejected", () => {
-    wrap(null);
-    act(() => { api().addRoom({ code: "MOV-01", propertyId: "casa-olivo", monthlyRent: 300, features: [] }); });
-    cleanup();
-    // Re-render the edit form inside a provider seeded through the API.
     function Seeded() {
       const a = useCatalog();
       if (a.isEmpty) return <button onClick={() => a.addRoom({ code: "MOV-01", propertyId: "casa-olivo", monthlyRent: 300, features: [] })}>sembrar</button>;
