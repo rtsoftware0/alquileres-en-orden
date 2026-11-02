@@ -77,6 +77,9 @@ export function ExpensesPage({ search }: { search: ExpensesSearch }) {
             <span className="mb-1 block font-medium">Proveedor</span>
             <select value={search.proveedor ?? "todos"} onChange={(e) => update({ proveedor: e.target.value === "todos" ? undefined : e.target.value })} className={fieldClass}>
               <option value="todos">Todos</option>
+              {search.proveedor && !providers.some((p) => p.id === search.proveedor) && (
+                <option value={search.proveedor}>{data.contacts.some((c) => c.id === search.proveedor) ? `${getContact(data, search.proveedor)?.name} (sin gastos como proveedor)` : "Proveedor no encontrado"}</option>
+              )}
               {providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
