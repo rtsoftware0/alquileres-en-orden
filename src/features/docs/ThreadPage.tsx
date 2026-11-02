@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info, RotateCcw } from "lucide-react";
 import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogLabels } from "@/features/catalog/CatalogContext";
 import type { DocVisibility, MessageThread } from "@/features/portfolio/data/types";
 import { getContact } from "@/features/contacts/selectors";
 import { threadMessages, threadRecipients } from "./selectors";
@@ -37,6 +38,7 @@ export function ThreadPage({ thread }: { thread: MessageThread }) {
   const [draft, setDraft] = useState<DraftState>(emptyDraft);
   const messages = threadMessages(thread, view);
   const recipients = threadRecipients(data, thread);
+  const labels = useCatalogLabels();
 
   const setVisibility = (v: DocVisibility) =>
     // Changing visibility invalidates the review and clears recipients.
@@ -146,7 +148,7 @@ export function ThreadPage({ thread }: { thread: MessageThread }) {
                 {recipients.map((c) => (
                   <label key={c.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-3">
                     <input type="checkbox" checked={draft.recipientIds.includes(c.id)} onChange={() => toggleRecipient(c.id)} className="h-4 w-4 accent-primary" />
-                    <span>{c.name}</span>
+                    <span>{labels.contactName(c.id)}</span>
                   </label>
                 ))}
               </div>
@@ -177,7 +179,7 @@ export function ThreadPage({ thread }: { thread: MessageThread }) {
               {draft.visibility === "compartida" && (
                 <>
                   <dt className="text-muted-foreground">Destinatarios exactos</dt>
-                  <dd>{draft.recipientIds.map((id) => getContact(data, id)?.name ?? id).join(", ")}</dd>
+                  <dd>{draft.recipientIds.map((id) => labels.contactName(id)).join(", ")}</dd>
                 </>
               )}
               <dt className="text-muted-foreground">Texto</dt>

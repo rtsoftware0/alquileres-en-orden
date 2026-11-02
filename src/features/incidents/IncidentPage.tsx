@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FlaskConical, RotateCcw } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { demoPortfolio as base } from "@/features/portfolio/data/demo-data";
+import { useCatalogData, useCatalogLabels } from "@/features/catalog/CatalogContext";
 import type { Incident } from "@/features/portfolio/data/types";
 import { getContact, contactsWithRole } from "@/features/contacts/selectors";
 import { getExpense } from "@/features/money/expenses";
@@ -26,13 +27,14 @@ function SimulationPanel({ incident }: { incident: Incident }) {
   const [resultText, setResultText] = useState("");
   const [motive, setMotive] = useState("");
   const logRef = useRef<HTMLHeadingElement>(null);
+  const labels = useCatalogLabels();
 
   useEffect(() => { if (sim) logRef.current?.focus(); }, [sim?.log.length]);
 
-  const providers = contactsWithRole(data, ["proveedor"]);
+  const providers = contactsWithRole(base, ["proveedor"]);
   const run = (action: Parameters<typeof applySimAction>[2]) => {
     if (!sim) return;
-    const r = applySimAction(data, sim, action);
+    const r = applySimAction(base, sim, action);
     if (!r.ok) { setError(r.error); return; }
     setError("");
     setSim({ ...r.state, log: [...r.state.log, r.entry] });
@@ -59,7 +61,7 @@ function SimulationPanel({ incident }: { incident: Incident }) {
         Simulación: no se guarda ningún cambio ni se crea ningún gasto
       </p>
       <h2 ref={logRef} tabIndex={-1} className="mb-3 text-sm font-semibold outline-none">
-        Estado simulado: <IncidentStatusBadge status={sim.status} /> {isOverdue(data, { ...incident, status: sim.status }) && <OverdueIncidentTag />}
+        Estado simulado: <IncidentStatusBadge status={sim.status} /> {isOverdue(base, { ...incident, status: sim.status }) && <OverdueIncidentTag />}
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -69,7 +71,7 @@ function SimulationPanel({ incident }: { incident: Incident }) {
             <div className="flex gap-2">
               <select id="sim-provider" value={providerId} onChange={(e) => setProviderId(e.target.value)} className={fieldClass}>
                 <option value="">Elige un proveedor</option>
-                {providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {providers.map((p) => <option key={p.id} value={p.id}>{labels.contactName(p.id)}</option>)}
               </select>
               <Button variant="outline" onClick={() => run({ type: "asignar_proveedor", providerId })}>Asignar</Button>
             </div>
@@ -131,6 +133,7 @@ function SimulationPanel({ incident }: { incident: Incident }) {
 }
 
 export function IncidentPage({ incident }: { incident: Incident }) {
+  const data = useCatalogData();
   const property = data.properties.find((p) => p.id === incident.propertyId)!;
   const room = incident.roomId ? data.rooms.find((r) => r.id === incident.roomId) : undefined;
   const provider = incident.providerId ? getContact(data, incident.providerId) : undefined;

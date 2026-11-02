@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { MessageSquare } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { threadContextLabel, threadMessages } from "./selectors";
 import { PageHeader } from "@/features/layout/PageHeader";
 import { linkClass } from "@/features/layout/ui";
 import { cn } from "@/lib/utils";
 
 export function ThreadsPage() {
+  const data = useCatalogData();
   return (
     <>
       <PageHeader

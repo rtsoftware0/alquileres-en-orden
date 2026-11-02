@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import { docLinkLabel } from "../selectors";
 import { linkClass } from "@/features/layout/ui";
 
@@ -7,6 +7,7 @@ import { linkClass } from "@/features/layout/ui";
 // documents and threads. Renders nothing when there is no data.
 
 export function RelatedDocsLinks({ kind, id }: { kind: "contrato" | "incidencia" | "gasto"; id: string }) {
+  const data = useCatalogData();
   const docs = data.documents.filter((d) => d.link.kind === kind && d.link.id === id);
   const threads = kind === "gasto" ? [] : data.threads.filter((t) => t.context.kind === kind && t.context.id === id);
   if (!docs.length && !threads.length) return null;

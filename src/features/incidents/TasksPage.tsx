@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FlaskConical, RotateCcw, Search, SearchX } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { useCatalogData } from "@/features/catalog/CatalogContext";
 import type { TaskStatus } from "@/features/portfolio/data/types";
 import { filterTasks, isTaskOverdue, taskCounts } from "./selectors";
 import { TaskStatusBadge } from "./components/IncidentUi";
@@ -26,6 +26,7 @@ export function validateTasksSearch(input: Record<string, unknown>): TasksSearch
 }
 
 export function TasksPage({ search }: { search: TasksSearch }) {
+  const data = useCatalogData();
   const navigate = useNavigate({ from: "/tareas/" });
   const update = (patch: TasksSearch) => navigate({ search: (prev: TasksSearch) => ({ ...prev, ...patch }), replace: true });
   const q = search.q ?? "";
