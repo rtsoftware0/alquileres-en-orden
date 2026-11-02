@@ -18,8 +18,6 @@ interface Form { payerId: string; contractId: string; chargeId: string; amount: 
 const empty: Form = { payerId: "", contractId: "", chargeId: "", amount: "" };
 type Errors = Partial<Record<keyof Form, string>>;
 
-const payers = tenantAccountContacts(data).filter((c) => eligibleCharges(data, c.id).length > 0);
-
 function validate(f: Form): Errors {
   const e: Errors = {};
   if (!f.payerId) e.payerId = "Elige un inquilino.";
@@ -43,6 +41,8 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 
 export function SimulatorPage() {
   const data = useCatalogData();
+  // Derived in render for current labels; eligibility still follows contracts and charges only.
+  const payers = tenantAccountContacts(data).filter((c) => eligibleCharges(data, c.id).length > 0);
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [result, setResult] = useState<Extract<SimulationResult, { ok: true }> | null>(null);

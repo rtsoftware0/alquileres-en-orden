@@ -19,9 +19,6 @@ interface Form { providerId: string; expenseId: string; amount: string }
 const empty: Form = { providerId: "", expenseId: "", amount: "" };
 type Errors = Partial<Record<keyof Form, string>>;
 
-const providers = providerAccountContacts(data).filter((c) =>
-  data.expenses.some((e) => e.providerId === c.id && expenseBalance(data, e).outstandingCents > 0));
-
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string | undefined; hint?: string; children: React.ReactNode }) {
   return (
     <div className="text-sm">
@@ -35,6 +32,9 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 
 export function PaymentSimulatorPage() {
   const data = useCatalogData();
+  // Derived in render for current labels; eligibility still follows expenses only.
+  const providers = providerAccountContacts(data).filter((c) =>
+    data.expenses.some((e) => e.providerId === c.id && expenseBalance(data, e).outstandingCents > 0));
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [result, setResult] = useState<Extract<PaymentSimulation, { ok: true }> | null>(null);
