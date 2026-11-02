@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, Home, KeyRound, Users } from "lucide-react";
 import { PageHeader, Panel } from "@/features/layout/PageHeader";
 import { fieldClass } from "@/features/layout/ui";
@@ -359,6 +359,8 @@ function SettlementSharePanel() {
   // Any change of selection, active share or revocations invalidates the preview.
   const stamp = target ? [optKey, contactId, sharing.state.revokedGrants.join(","), active?.id ?? "", active?.version ?? ""].join("|") : "";
   const previewValid = previewStamp !== null && previewStamp === stamp;
+  // Discard a stale preview irrevocably so restoring revocations cannot revive it.
+  useEffect(() => { if (previewStamp !== null && previewStamp !== stamp) setPreviewStamp(null); }, [previewStamp, stamp]);
   let candidate: ReturnType<typeof sharedSettlementsFor>[number] | null = null;
   if (previewValid && target) {
     // Pure candidate state: never calls sharing.share nor mutates anything.

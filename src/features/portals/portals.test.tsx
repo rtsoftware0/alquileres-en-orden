@@ -405,6 +405,23 @@ describe("settlement sharing UI", () => {
     expect(previewRegion()).toBeNull();
   });
 
+  it("restoring a revoked access does not revive the old preview; a new preview is required", () => {
+    wrap(<><UiProbe /><PortalsPage /></>);
+    seed([ver(1, "aprobado", 90000)]);
+    openAccess();
+    pick("liq-1|1", "con-010");
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    expect(screen.getByRole("button", { name: "Confirmar compartición" })).toBeInTheDocument();
+    act(() => uiApi.revoke("pg-own-010"));
+    expect(previewRegion()).toBeNull();
+    act(() => uiApi.restore("pg-own-010"));
+    expect(previewRegion()).toBeNull();
+    expect(screen.queryByRole("button", { name: "Confirmar compartición" })).toBeNull();
+    expect(uiApi.state.shares).toEqual([]);
+    fireEvent.click(screen.getByRole("button", { name: "Ver vista previa de liquidación" }));
+    expect(screen.getByRole("button", { name: "Confirmar compartición" })).toBeInTheDocument();
+  });
+
   it("correct owner sees the record; another owner does not; detail is minimal", () => {
     wrap(<><UiProbe /><OwnerHarness /></>);
     seed([ver(1, "aprobado", 90000)]);
