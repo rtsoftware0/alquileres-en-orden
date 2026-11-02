@@ -26,7 +26,7 @@ export const isOverlayEmpty = (o: CatalogOverlay) =>
 /** Accent/case/punctuation-insensitive code comparison. */
 export const normalizeCode = (s: string) =>
   s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-const normalizeName = (s: string) =>
+export const normalizeName = (s: string) =>
   s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 const patch = <T extends object>(rec: T, p: object | undefined): T => (p ? { ...rec, ...p } : rec);
@@ -199,13 +199,16 @@ function protectionErrors(base: PortfolioDataset, kind: CatalogKind, id: string,
 
 // ---------- Additions (stable IDs from a monotonic counter) ----------
 
+/** ID prefixes shared by manual additions and CSV batches (same monotonic seq). */
+export const CATALOG_ID_PREFIX = { contact: "cat-con-", property: "cat-inm-", room: "cat-uni-" } as const;
+
 export type NewContact = Omit<CatalogContact, "id">;
 export type NewProperty = Omit<CatalogProperty, "id">;
 export type NewRoom = Omit<CatalogRoom, "id" | "status" | "areaM2"> & { areaM2?: number };
 
 export function addContact(base: PortfolioDataset, overlay: CatalogOverlay, input: NewContact): CatalogResult {
   const seq = overlay.seq + 1;
-  const rec: CatalogContact = { ...input, id: `cat-con-${seq}`, name: text(input.name), code: text(input.code) };
+  const rec: CatalogContact = { ...input, id: `${CATALOG_ID_PREFIX.contact}${seq}`, name: text(input.name), code: text(input.code) };
   const view = mergeCatalog(base, overlay);
   const { errors, warnings } = validateContact(view, rec, false);
   if (has(errors)) return { ok: false, errors, warnings };
@@ -214,7 +217,7 @@ export function addContact(base: PortfolioDataset, overlay: CatalogOverlay, inpu
 
 export function addProperty(base: PortfolioDataset, overlay: CatalogOverlay, input: NewProperty): CatalogResult {
   const seq = overlay.seq + 1;
-  const rec: CatalogProperty = { ...input, id: `cat-inm-${seq}`, name: text(input.name), code: text(input.code) };
+  const rec: CatalogProperty = { ...input, id: `${CATALOG_ID_PREFIX.property}${seq}`, name: text(input.name), code: text(input.code) };
   const view = mergeCatalog(base, overlay);
   const { errors, warnings } = validateProperty(view, rec);
   if (has(errors)) return { ok: false, errors, warnings };
@@ -224,7 +227,7 @@ export function addProperty(base: PortfolioDataset, overlay: CatalogOverlay, inp
 /** New units are always "disponible": occupancy stays derived, no contract or charge is created. */
 export function addRoom(base: PortfolioDataset, overlay: CatalogOverlay, input: NewRoom): CatalogResult {
   const seq = overlay.seq + 1;
-  const rec: CatalogRoom = { ...input, id: `cat-uni-${seq}`, code: text(input.code), status: "disponible", areaM2: input.areaM2 ?? 0 };
+  const rec: CatalogRoom = { ...input, id: `${CATALOG_ID_PREFIX.room}${seq}`, code: text(input.code), status: "disponible", areaM2: input.areaM2 ?? 0 };
   const view = mergeCatalog(base, overlay);
   const { errors, warnings } = validateRoom(view, rec);
   if (has(errors)) return { ok: false, errors, warnings };
