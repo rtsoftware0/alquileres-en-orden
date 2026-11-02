@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Building, RotateCcw, Search, SearchX, User } from "lucide-react";
-import { demoPortfolio as data } from "@/features/portfolio/data/demo-data";
+import { CatalogNotice, CatalogOriginBadge, useCatalogData } from "@/features/catalog/CatalogContext";
 import type { ContactRole } from "@/features/portfolio/data/types";
 import { CONTACT_ROLES, contractsOfContact, filterContacts, roleLabel } from "./selectors";
 import { PageHeader } from "@/features/layout/PageHeader";
@@ -41,6 +41,7 @@ export function RoleChips({ roles }: { roles: ContactRole[] }) {
 
 export function ContactsPage({ search }: { search: ContactsSearch }) {
   const navigate = useNavigate({ from: "/contactos/" });
+  const data = useCatalogData();
   const q = search.q ?? "";
   const role = search.rol ?? "todos";
   const list = filterContacts(data, { q, role });
@@ -51,6 +52,7 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
   return (
     <>
       <PageHeader title="Contactos" subtitle={`${data.contacts.length} contactos de ejemplo · personas y empresas`} />
+      <CatalogNotice />
 
       <div className="mb-4 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
         <label className="block text-sm">
@@ -90,7 +92,7 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
               <li key={c.id}>
                 <Link to="/contactos/$contactId" params={{ contactId: c.id }} className="block rounded-lg border border-border bg-card p-4 hover:border-primary/40">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="min-w-0 font-semibold">{c.name}</span>
+                    <span className="min-w-0 font-semibold">{c.name} <CatalogOriginBadge kind="contact" id={c.id} /></span>
                     <span className="shrink-0 text-xs text-muted-foreground">{c.code}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2"><TypeLabel type={c.type} /><RoleChips roles={c.roles} /></div>
@@ -113,7 +115,7 @@ export function ContactsPage({ search }: { search: ContactsSearch }) {
                 {list.map((c) => (
                   <tr key={c.id} className="hover:bg-muted/40">
                     <td className="px-4 py-3 text-muted-foreground">{c.code}</td>
-                    <td className="px-4 py-3"><Link to="/contactos/$contactId" params={{ contactId: c.id }} className={linkClass}>{c.name}</Link></td>
+                    <td className="px-4 py-3"><Link to="/contactos/$contactId" params={{ contactId: c.id }} className={linkClass}>{c.name}</Link>{" "}<CatalogOriginBadge kind="contact" id={c.id} /></td>
                     <td className="px-4 py-3"><TypeLabel type={c.type} /></td>
                     <td className="px-4 py-3"><RoleChips roles={c.roles} /></td>
                     <td className="tabular px-4 py-3 text-right">{contractsOfContact(data, c.id).length}</td>
