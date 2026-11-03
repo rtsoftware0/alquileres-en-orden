@@ -43,7 +43,7 @@ describe("plans page", () => {
     mount(<PlansPage />);
     const propertyId = probe.c!.data.properties[0]!.id;
     act(() => { expect(probe.c!.addRoom({ propertyId, code: "PLN-99", monthlyRent: 300, features: [], capacity: 1 }).ok).toBe(true); });
-    expect(screen.getByTestId("usage-units").textContent).toContain(String(probe.c!.data.rooms.length));
+    expect(screen.getByTestId("usage-units").textContent).toBe("Unidades gestionadas: 13");
   });
   it("quote needs consent then verified payment before rights; simulator does not create units", () => {
     mount(<PlansPage />);
