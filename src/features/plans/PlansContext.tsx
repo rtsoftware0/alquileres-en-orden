@@ -63,7 +63,12 @@ export function PlansProvider({ children }: { children: ReactNode }) {
 
   const api = useMemo<PlansApi>(() => ({
     ...ops, state, usage, phase: E.phase(state),
-    simulate: (a: E.SimAction) => E.simulate(ref.current, usage, a),
+    // Reads plans state and simulated storage from the same last accepted state (ref is only
+    // written inside actions, never during render); units/users/invitations come from Account/Catalog.
+    simulate: (a: E.SimAction) => {
+      const cur = ref.current;
+      return E.simulate(cur, { ...usage, storageMb: cur.storageMb }, a);
+    },
   }), [ops, state, usage]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
