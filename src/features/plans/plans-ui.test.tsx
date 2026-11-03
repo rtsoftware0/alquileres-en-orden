@@ -62,6 +62,50 @@ describe("plans page", () => {
     expect(screen.getByTestId("sim-result").textContent).toMatch(/Permitido/);
     expect(probe.c!.data.rooms.length).toBe(before);
   });
+  it("PLAN02: same API reference and event reads the last accepted storage", () => {
+    mount(<PlansPage />);
+    const api = probe.p!;
+    let over: ReturnType<typeof api.simulate> | null = null;
+    let atLimit: ReturnType<typeof api.simulate> | null = null;
+    act(() => {
+      expect(api.startTrial("pro").ok).toBe(true);
+      expect(api.setStorage(500).ok).toBe(true);
+      over = api.simulate({ kind: "subida", mb: 1 });
+      expect(api.setStorage(499).ok).toBe(true);
+      atLimit = api.simulate({ kind: "subida", mb: 1 });
+    });
+    expect(over!.allowed).toBe(false); expect(over!.after).toBe(501); expect(over!.limit).toBe(500);
+    expect(atLimit!.allowed).toBe(true); expect(atLimit!.after).toBe(500);
+    expect(probe.p!.usage.storageMb).toBe(499);
+    expect(probe.p!.phase).toBe("prueba");
+    expect(probe.p!.simulate({ kind: "subida", mb: 1 }).after).toBe(500);
+  });
+  it("PLAN01: Max→Basic at the exact period end rejects a simulated 13th unit without deleting", () => {
+    mount(<PlansPage />);
+    act(() => {
+      const q = probe.p!.quote("compra", "max");
+      expect(probe.p!.confirm(q.id!, true).ok).toBe(true);
+      expect(probe.p!.pay(q.id!, "verificado").ok).toBe(true);
+      expect(probe.p!.downgrade("basic").ok).toBe(true);
+    });
+    act(() => { const s = probe.p!.state; expect(probe.p!.advance(s.sub!.periodEnd - s.now).ok).toBe(true); });
+    expect(screen.getByTestId("plans-phase").textContent).toBe("Renovación pendiente · periodo de gracia");
+    const before = probe.c!.data.rooms.length;
+    fireEvent.click(screen.getByRole("button", { name: "Simular nueva unidad" }));
+    expect(screen.getByTestId("sim-result").textContent).toMatch(/ya hay exceso \(12 de 10/);
+    expect(probe.c!.data.rooms.length).toBe(before);
+  });
+  it("PLAN03: paying a quote after the clock moved shows 'Vuelve a cotizar'", () => {
+    mount(<PlansPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Cotizar Pro" }));
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar cotización" }));
+    fireEvent.click(screen.getByRole("button", { name: "Avanzar 1 hora" }));
+    fireEvent.click(screen.getByRole("button", { name: "Simular pago verificado" }));
+    expect(screen.getAllByRole("status").some((n) => /Vuelve a cotizar/.test(n.textContent ?? ""))).toBe(true);
+    expect(screen.getByTestId("plans-phase").textContent).toBe("Sin plan");
+    expect(probe.p!.state.payments).toHaveLength(0);
+  });
 });
 
 describe("help page", () => {

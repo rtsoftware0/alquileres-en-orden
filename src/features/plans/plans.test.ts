@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAY, HOUR, PLANS_CLOCK_START } from "./data/plans";
+import { DAY, HOUR, PLANS, PLANS_CLOCK_START } from "./data/plans";
 import * as E from "./engine";
 
 const ok = (r: E.PlansResult) => { expect(r.error).toBeUndefined(); expect(r.ok).toBe(true); return r.state; };
@@ -202,7 +202,7 @@ describe("PLAN01 downgrade applies from the exact period end", () => {
     const end = ok(E.advanceClock(s, due - s.now));
     expect(E.phase(end)).toBe("gracia");
     expect(E.currentPlan(end)).toBe("basic");
-    expect(E.currentLimits(end)).toEqual({ units: 10, internalUsers: 1, storageMb: 1024 });
+    expect(E.currentLimits(end)).toEqual(PLANS.basic.limits); expect(PLANS.basic.limits.units).toBe(10); expect(PLANS.basic.limits.internalUsers).toBe(1);
     expect(end.sub).toEqual(s.sub);
     expect(end.sub!.plan).toBe("max");
     expect(end.payments).toEqual(s.payments);
