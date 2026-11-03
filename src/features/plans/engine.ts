@@ -139,9 +139,16 @@ export function access(s: PlansState): AccessLabel {
 export function currentPlan(s: PlansState): PlanId | null {
   const p = phase(s);
   if (p === "prueba") return s.trial!.plan;
-  if (p === "activo" || p === "gracia") return effectiveSub(s)!.plan;
+  if (p === "activo") return effectiveSub(s)!.plan;
+  // From the exact end of the paid period a scheduled downgrade applies (limits only);
+  // the paid subscription stays as history and no renewal is invented.
+  if (p === "gracia") return s.scheduled?.kind === "bajada" ? s.scheduled.plan : effectiveSub(s)!.plan;
   return null;
 }
+
+/** Quotes whose dates depend on "now" must be used at the same simulated instant. */
+export const STALE_CLOCK_ERROR = "El reloj simulado avanzó desde la cotización; las fechas e importe ya no corresponden. Vuelve a cotizar.";
+const clockStale = (s: PlansState, q: Quote) => q.kind !== "compra_en_prueba" && q.createdAt !== s.now;
 
 export function currentLimits(s: PlansState): PlanLimits | null {
   const plan = currentPlan(s);
@@ -258,6 +265,7 @@ export function confirmQuote(s: PlansState, quoteId: string, consent: boolean): 
   if (!q) return reject(s, "Cotización inexistente.");
   if (q.status !== "abierta") return reject(s, "La cotización ya fue confirmada.");
   if (q.context !== contextKey(s)) return reject(s, "La cotización está obsoleta: cambió el plan, el periodo o la fase.");
+  if (clockStale(s, q)) return reject(s, STALE_CLOCK_ERROR);
   if (!consent) return reject(s, "Falta el consentimiento explícito.");
   return commit(s, { ...s, quotes: s.quotes.map((x) => (x.id === q.id ? { ...x, status: "confirmada" } : x)) }, "Cotización confirmada", q.id);
 }
@@ -268,6 +276,7 @@ export function simulatePayment(s: PlansState, quoteId: string, result: PaymentR
   if (q.status === "pagada") return reject(s, "El pago ya está verificado; no se vuelve a aplicar.");
   if (q.status !== "confirmada") return reject(s, "Confirma la cotización antes del pago simulado.");
   if (q.context !== contextKey(s)) return reject(s, "La cotización está obsoleta: cambió el plan, el periodo o la fase.");
+  if (clockStale(s, q)) return reject(s, STALE_CLOCK_ERROR);
   if (result !== "verificado" && result !== "pendiente" && result !== "fallido") return reject(s, "Resultado no válido.");
   const pay: Payment = { id: `pago-${s.seq + 1}`, quoteId, at: s.now, result };
   let next: PlansState = { ...s, payments: [...s.payments, pay] };
