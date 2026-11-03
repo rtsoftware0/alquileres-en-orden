@@ -42,7 +42,7 @@ describe("plans page", () => {
   it("catalog adds raise unit usage", () => {
     mount(<PlansPage />);
     const propertyId = probe.c!.data.properties[0]!.id;
-    act(() => { probe.c!.addRoom({ propertyId, code: "OLI-99", unitKind: "habitacion", capacity: 1, monthlyRent: 300 } as never); });
+    act(() => { expect(probe.c!.addRoom({ propertyId, code: "PLN-99", monthlyRent: 300, features: [], capacity: 1 }).ok).toBe(true); });
     expect(screen.getByTestId("usage-units").textContent).toContain(String(probe.c!.data.rooms.length));
   });
   it("quote needs consent then verified payment before rights; simulator does not create units", () => {
