@@ -47,7 +47,7 @@ Navegación lateral y menú móvil en `src/features/layout/AppShell.tsx`.
 
 ## 4. Pila y comandos
 
-TanStack Start v1 + React 19 + Vite 7, Tailwind v4, Vitest + Testing Library. Scripts reales de `package.json`:
+TanStack Start v1 + React 19 + Vite 8.1.5, Tailwind v4, Vitest + Testing Library. Scripts reales de `package.json`:
 
 | Comando | Uso |
 |---|---|
@@ -66,12 +66,12 @@ Sobre la revisión 77920c4: 37 pruebas de foco (incluidas 3 auditorías independ
 Orden de providers en `src/routes/__root.tsx`:
 `Account → Catalog → Plans → Planning → Bank → Settlement → PortalShare → AppShell`.
 
-- Todo el estado es React en memoria: navegar lo conserva, recargar lo pierde. Sin localStorage, URL de estado (salvo filtros de informes) ni red.
-- Cada módulo se reinicia de forma independiente; reiniciar uno no reinicia otros (Planes sobrevive a reset de Cuenta/Catálogo/Liquidaciones).
+- Todo el estado de negocio es React en memoria: navegar lo conserva, recargar lo pierde. No se escribe en localStorage, IndexedDB, URL ni backend. Sí se leen o escriben filtros y navegación en la URL de la dirección en varios módulos (Cartera, Contactos, Avisos, Informes, Dinero, Documentos, Contratos, Incidencias, Tareas y el asistente de importación), no solo en Informes; son filtros de pantalla, no datos de negocio.
+- Catálogo, Cuenta y Liquidaciones tienen reinicios acotados y propios (avisados en sus pantallas); reiniciar uno no reinicia los demás. Planes sobrevive a esos reinicios y no ofrece reinicio público. Recargar la página reinicia toda la demo.
 - Datos base financieros inmutables; el catálogo es una capa temporal por IDs. Códigos y vínculos operativos protegidos; solo se mueve `propertyId` de unidades añadidas sin relaciones.
 - Las rentas de unidades nuevas son orientativas, no crean contrato ni cargos. Un registro nuevo no concede acceso a portal.
 - Cuenta: una persona con varios roles ocupa 1 plaza; roles descriptivos que no restringen pantallas.
-- Planes: prueba Pro/Max de 168 h exactas, única por empresa, 500 MB; impago 7 días de gracia + 30 de consulta desde el vencimiento; cotizaciones ficticias que caducan si el reloj simulado avanza (compra/subida/renovación; la compra durante la prueba conserva el fin original). Los accesos son etiquetas y el simulador C7 no bloquea globalmente otros módulos.
+- Planes: prueba Pro/Max de 168 h exactas, única por empresa, 500 MB; impago: 7 días de gracia desde el vencimiento y, a continuación, 30 días de solo consulta desde el inicio de la restricción (vencimiento + 7), no 30 días desde el vencimiento; cotizaciones ficticias que caducan si el reloj simulado avanza (compra/subida/renovación; la compra durante la prueba conserva el fin original). Los accesos son etiquetas y el simulador C7 no bloquea globalmente otros módulos.
 
 ## 6. Invariantes del dataset
 
