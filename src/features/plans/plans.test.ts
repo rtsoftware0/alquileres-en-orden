@@ -190,3 +190,78 @@ describe("clock and simulator", () => {
     expect(E.simulate(s0(), usage(), { kind: "unidad" }).allowed).toBe(false);
   });
 });
+
+describe("PLAN01 downgrade applies from the exact period end", () => {
+  it("Max→Basic: Max before the cut, Basic limits at the cut, history kept, no renewal, windows intact", () => {
+    const max = buy(s0(), "compra", "max").s;
+    const s = ok(E.scheduleDowngrade(max, "basic"));
+    const due = s.sub!.periodEnd;
+    const before = ok(E.advanceClock(s, due - 1 - s.now));
+    expect(E.currentPlan(before)).toBe("max");
+    expect(E.currentLimits(before)!.units).toBe(150);
+    const end = ok(E.advanceClock(s, due - s.now));
+    expect(E.phase(end)).toBe("gracia");
+    expect(E.currentPlan(end)).toBe("basic");
+    expect(E.currentLimits(end)).toEqual({ units: 10, internalUsers: 1, storageMb: 1024 });
+    expect(end.sub).toEqual(s.sub);
+    expect(end.sub!.plan).toBe("max");
+    expect(end.payments).toEqual(s.payments);
+    expect(E.exceeded(end, usage())).toEqual(["Unidades: 12 de 10"]);
+    const sim = E.simulate(end, usage(), { kind: "unidad" });
+    expect(sim.allowed).toBe(false); expect(sim.after).toBe(13); expect(sim.message).toMatch(/Nada se borra/);
+    const d = E.dunningFor(end.sub!);
+    expect(d.restrictedFrom).toBe(due + 7 * DAY); expect(d.readOnlyUntil).toBe(due + 37 * DAY);
+    expect(E.phase(ok(E.advanceClock(end, 7 * DAY)))).toBe("solo_consulta_impago");
+    expect(E.currentPlan(ok(E.advanceClock(end, 7 * DAY)))).toBeNull();
+    const { s: renewed } = buy(end, "renovacion", "basic");
+    expect(E.phase(renewed)).toBe("activo"); expect(E.currentPlan(renewed)).toBe("basic");
+    expect(renewed.scheduled).toBeNull();
+  });
+  it("cancellation keeps priority over the period end", () => {
+    const s = ok(E.scheduleCancel(buy(s0(), "compra", "max").s));
+    const end = ok(E.advanceClock(s, s.sub!.periodEnd - s.now));
+    expect(E.phase(end)).toBe("cancelado"); expect(E.currentPlan(end)).toBeNull();
+  });
+});
+
+describe("PLAN03 quotes tied to the simulated instant", () => {
+  const stale = (r: E.PlansResult, prev: E.PlansState) => {
+    expect(r.ok).toBe(false); expect(r.error).toMatch(/Vuelve a cotizar/); expect(r.state).toBe(prev);
+  };
+  const setups: Array<[E.QuoteKind, "basic" | "pro" | "max", () => E.PlansState]> = [
+    ["compra", "pro", s0],
+    ["subida", "max", paidPro],
+    ["renovacion", "pro", () => { const p = paidPro(); return ok(E.advanceClock(p, p.sub!.periodEnd - p.now)); }],
+  ];
+  for (const [kind, plan, mk] of setups) {
+    it(`${kind}: stale at payment and at confirmation; a fresh quote is payable`, () => {
+      const base = mk();
+      const q = E.createQuote(base, kind, plan); const st = ok(q);
+      const c = ok(E.confirmQuote(st, q.id!, true));
+      const later = ok(E.advanceClock(c, DAY));
+      const pay = E.simulatePayment(later, q.id!, "verificado");
+      stale(pay, later);
+      expect(later.payments).toEqual(c.payments);
+      expect(later.quotes.find((x) => x.id === q.id)!.status).toBe("confirmada");
+      const notConf = ok(E.advanceClock(st, HOUR));
+      stale(E.confirmQuote(notConf, q.id!, true), notConf);
+      if (kind === "subida") {
+        const fresh = E.createQuote(later, kind, plan); const fq = fresh.state.quotes.find((x) => x.id === fresh.id)!;
+        expect(fq.amountCents).toBe(st.quotes.find((x) => x.id === q.id)!.amountCents);
+        expect(fq.startsAt).toBe(later.now);
+      }
+      const { s: done } = buy(later, kind, plan);
+      expect(E.phase(done)).toBe("activo"); expect(E.currentPlan(done)).toBe(plan);
+      if (kind !== "subida") expect(done.sub!.periodStart).toBe(later.now);
+    });
+  }
+  it("trial purchase is exempt and keeps the original trial end after 1h", () => {
+    const t = ok(E.startTrial(s0(), "pro"));
+    const q = E.createQuote(t, "compra_en_prueba", "max");
+    const c = ok(E.confirmQuote(ok(E.advanceClock(q.state, HOUR)), q.id!, true));
+    const paid = ok(E.simulatePayment(ok(E.advanceClock(c, HOUR)), q.id!, "verificado"));
+    expect(paid.trialPurchase).toEqual({ plan: "max", quoteId: q.id });
+    const end = ok(E.advanceClock(paid, t.trial!.endsAt - paid.now));
+    expect(end.sub!.periodStart).toBe(t.trial!.endsAt);
+  });
+});
