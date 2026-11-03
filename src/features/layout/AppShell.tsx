@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck, Globe, BarChart3, Settings } from "lucide-react";
+import { Bell, Building2, CalendarDays, CheckSquare, Files, FileText, Home, Info, Menu, MessageSquare, Users, Wallet, Wrench, ClipboardList, CalendarCheck, Globe, BarChart3, Settings, CreditCard, LifeBuoy } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/config/site";
 import { useAccount } from "@/features/account/AccountContext";
@@ -22,6 +22,8 @@ const nav = [
   { to: "/avisos", label: "Avisos", icon: Bell, exact: false },
   { to: "/portales", label: "Portales", icon: Globe, exact: false },
   { to: "/configuracion", label: "Configuración", icon: Settings, exact: false },
+  { to: "/planes", label: "Planes", icon: CreditCard, exact: false },
+  { to: "/ayuda", label: "Ayuda", icon: LifeBuoy, exact: false },
 ] as const;
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

@@ -20,6 +20,7 @@ import { SettlementProvider } from "@/features/settlements/SettlementContext";
 import { PortalShareProvider } from "@/features/portals/PortalShareContext";
 import { CatalogProvider } from "@/features/catalog/CatalogContext";
 import { AccountProvider } from "@/features/account/AccountContext";
+import { PlansProvider } from "@/features/plans/PlansContext";
 
 function NotFoundComponent() {
   return <NotFoundMessage />;
@@ -112,9 +113,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <AccountProvider><CatalogProvider><PlanningProvider><BankProvider><SettlementProvider><PortalShareProvider><AppShell>
+      <AccountProvider><CatalogProvider><PlansProvider><PlanningProvider><BankProvider><SettlementProvider><PortalShareProvider><AppShell>
         <Outlet />
-      </AppShell></PortalShareProvider></SettlementProvider></BankProvider></PlanningProvider></CatalogProvider></AccountProvider>
+      </AppShell></PortalShareProvider></SettlementProvider></BankProvider></PlanningProvider></PlansProvider></CatalogProvider></AccountProvider>
     </QueryClientProvider>
   );
 }

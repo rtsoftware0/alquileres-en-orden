@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccesoRouteImport } from './routes/acceso'
+import { Route as AyudaRouteImport } from './routes/ayuda'
 import { Route as BienvenidaRouteImport } from './routes/bienvenida'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as InformesRouteImport } from './routes/informes'
+import { Route as PlanesRouteImport } from './routes/planes'
 import { Route as PortalesRouteImport } from './routes/portales'
 import { Route as AvisosIndexRouteImport } from './routes/avisos.index'
 import { Route as CarteraIndexRouteImport } from './routes/cartera.index'
@@ -78,6 +80,11 @@ const AccesoRoute = AccesoRouteImport.update({
   path: '/acceso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AyudaRoute = AyudaRouteImport.update({
+  id: '/ayuda',
+  path: '/ayuda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BienvenidaRoute = BienvenidaRouteImport.update({
   id: '/bienvenida',
   path: '/bienvenida',
@@ -96,6 +103,11 @@ const ConfiguracionRoute = ConfiguracionRouteImport.update({
 const InformesRoute = InformesRouteImport.update({
   id: '/informes',
   path: '/informes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanesRoute = PlanesRouteImport.update({
+  id: '/planes',
+  path: '/planes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalesRoute = PortalesRouteImport.update({
@@ -375,10 +387,12 @@ const DineroBancoMovimientosMovementIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/acceso': typeof AccesoRoute
+  '/ayuda': typeof AyudaRoute
   '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
   '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
+  '/planes': typeof PlanesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -435,10 +449,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/acceso': typeof AccesoRoute
+  '/ayuda': typeof AyudaRoute
   '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
   '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
+  '/planes': typeof PlanesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -496,10 +512,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/acceso': typeof AccesoRoute
+  '/ayuda': typeof AyudaRoute
   '/bienvenida': typeof BienvenidaRoute
   '/calendario': typeof CalendarioRoute
   '/configuracion': typeof ConfiguracionRoute
   '/informes': typeof InformesRoute
+  '/planes': typeof PlanesRoute
   '/portales': typeof PortalesRoute
   '/cartera/importar': typeof CarteraImportarRoute
   '/contactos/$contactId': typeof ContactosContactIdRoute
@@ -558,10 +576,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/acceso'
+    | '/ayuda'
     | '/bienvenida'
     | '/calendario'
     | '/configuracion'
     | '/informes'
+    | '/planes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -618,10 +638,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/acceso'
+    | '/ayuda'
     | '/bienvenida'
     | '/calendario'
     | '/configuracion'
     | '/informes'
+    | '/planes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -678,10 +700,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/acceso'
+    | '/ayuda'
     | '/bienvenida'
     | '/calendario'
     | '/configuracion'
     | '/informes'
+    | '/planes'
     | '/portales'
     | '/cartera/importar'
     | '/contactos/$contactId'
@@ -739,10 +763,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccesoRoute: typeof AccesoRoute
+  AyudaRoute: typeof AyudaRoute
   BienvenidaRoute: typeof BienvenidaRoute
   CalendarioRoute: typeof CalendarioRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   InformesRoute: typeof InformesRoute
+  PlanesRoute: typeof PlanesRoute
   PortalesRoute: typeof PortalesRoute
   CarteraImportarRoute: typeof CarteraImportarRoute
   ContactosContactIdRoute: typeof ContactosContactIdRoute
@@ -813,6 +839,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccesoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ayuda': {
+      id: '/ayuda'
+      path: '/ayuda'
+      fullPath: '/ayuda'
+      preLoaderRoute: typeof AyudaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bienvenida': {
       id: '/bienvenida'
       path: '/bienvenida'
@@ -839,6 +872,13 @@ declare module '@tanstack/react-router' {
       path: '/informes'
       fullPath: '/informes'
       preLoaderRoute: typeof InformesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planes': {
+      id: '/planes'
+      path: '/planes'
+      fullPath: '/planes'
+      preLoaderRoute: typeof PlanesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portales': {
@@ -1211,10 +1251,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccesoRoute: AccesoRoute,
+  AyudaRoute: AyudaRoute,
   BienvenidaRoute: BienvenidaRoute,
   CalendarioRoute: CalendarioRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   InformesRoute: InformesRoute,
+  PlanesRoute: PlanesRoute,
   PortalesRoute: PortalesRoute,
   CarteraImportarRoute: CarteraImportarRoute,
   ContactosContactIdRoute: ContactosContactIdRoute,
