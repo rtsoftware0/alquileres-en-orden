@@ -1,32 +1,39 @@
-# Alquileres en Orden
+# REAL ESTATE SOFTWARE — Alquileres en Orden
 
-Crea el proyecto inicial llamado REAL ESTATE SOFTWARE. El alcance autorizado es solo el inicio de P09: una pantalla de bienvenida en español, minimalista, atractiva y adaptable a móvil, y estructura de código mantenible para un futuro SaaS integral de gestión de alquileres.
+Base visual de un SaaS integral de gestión de alquileres. Se continúa sobre este código; no comenzar de cero.
 
-Restricción esencial del usuario: SUPABASE PROPIO INDEPENDIENTE, NUNCA LOVABLE CLOUD. No habilites/provisiones Lovable Cloud, base de datos cloud de Lovable, autenticación, almacenamiento ni otro backend. Todavía no se ha designado un proyecto Supabase externo: no inventes URL/claves, no conectes ninguna cuenta ni uses credenciales existentes por tu cuenta. Si no puede conectarse Supabase propio en este paso, deja la aplicación inicial sin backend conectado y explica exactamente qué selección hará falta. Si una herramienta exige activar Cloud, detente antes de hacerlo.
+**Estado al 7 de noviembre de 2026:** aplicación de demostración amplia, con Supabase propio conectado y repositorio privado sincronizado con Lovable. La V1.1 comercial aún no está terminada.
 
-Solo crea la bienvenida y organización inicial, sin dashboard operativo, datos de clientes, módulos financieros, planes de pago, portales, login simulado ni acciones que finjan guardar datos. Texto de producto breve: nombre REAL ESTATE SOFTWARE, mensaje "Tu gestión de alquileres, en un solo lugar" y una explicación concisa sobre organizar inmuebles, contratos y seguimiento de alquileres; no afirmar funciones ya construidas. No incluir detalles técnicos como Supabase/GitHub en la experiencia de usuario. Sin botones que prometan funciones inexistentes. Propuesta visual discreta: fondo claro, buena tipografía y acento verde azulado, legible en móvil y teclado.
+## Destinos comprobados
 
-No publiques el sitio, no compres, no invites personas, no cambies permisos, no conectes producción/GitHub. Usa solo créditos incluidos, sin recargas ni servicios de pago. Mantén el nombre del proyecto REAL ESTATE SOFTWARE.
+- [Proyecto Lovable](https://lovable.dev/projects/da1c801c-5b5c-4815-9631-ae5b4867f9d3): `da1c801c-5b5c-4815-9631-ae5b4867f9d3`, workspace rtsoftware.
+- [Repositorio privado](https://github.com/rtsoftware0/alquileres-en-orden): rama `main`.
+- Supabase propio de desarrollo: `real-estate-dev`, referencia `tskooksubwunfjirvyjz`, París.
+- Sin publicación comercial. No activar Lovable Cloud.
 
-Al terminar verifica la compilación y la vista inicial, informa tecnología y archivos creados, estado real del backend y ruta para conectar Supabase independiente. No declares autenticación/aislamiento/recuperación ni Supabase conectado si no se han probado. Detente tras esta entrega inicial.
+La base se verificó en `8ae66f38a74c4e76447af526e2b98856559612c7`, presente en GitHub y Lovable. Esta entrega posterior corrige documentación y exclusiones de configuración; no añade funcionalidades de backend.
 
-This project was built with [Lovable](https://lovable.dev).
+## Qué contiene
 
-## Build with Lovable
+Inicio, cartera/unidades, contactos, contratos, calendario/prealquiler, cobros/fianzas/gastos, banco CSV, liquidaciones/cierre, incidencias/tareas, documentos/mensajes, portales, informes, configuración y planes/ayuda.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/da1c801c-5b5c-4815-9631-ae5b4867f9d3).
+Los datos de negocio son ficticios y las operaciones de demostración se conservan temporalmente en memoria. Las vistas de acceso, roles, portales y pagos no proporcionan autenticación, autorización ni cobros reales. Supabase conectado no convierte estos módulos en operaciones persistentes.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Continuar con Claude Code
 
-## Development
+1. Leer [estado y pendientes](docs/project/ESTADO.md), `AGENTS.md`, `CLAUDE.md` y `Tools Conventions.md`.
+2. Consultar [V1.1](docs/project/especificacion-primera-version-2026-10-19.md), [blueprint](docs/project/blueprint-construccion-v1-2026-10-19.md) y [decisiones G0](docs/project/tabla-cierre-g0-2026-10-21.md). Los textos originales fechados deben interpretarse con las actualizaciones posteriores de ESTADO.
+3. Verificar revisión, herramientas y arranque en una copia limpia; presentar el plan concreto antes de construir.
+4. Trabajar en una rama separada y revisar los cambios antes de integrarlos. No editar simultáneamente la misma rama desde Lovable y Claude ni reescribir historia sincronizada.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Claude Code no hereda las cuentas, conectores, permisos ni historial de esta conversación. Su acceso y el inicio de sesión de Git en el ordenador deben comprobarse por separado.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+## Desarrollo y verificaciones
+
+TanStack Start, React 19, TypeScript, Tailwind 4 y Vite. Mantener esta base. Existe `bun.lock` con Supabase 2.119.0; respetar también `bunfig.toml`. No se ha acreditado todavía una instalación limpia de esta revisión en este Mac.
+
+Los scripts existentes permiten `npm run dev`, `npm run test`, `npm run build` y `npm run lint` una vez instaladas las dependencias compatibles. No existe script `typecheck`; la comprobación de tipos se realiza con el TypeScript local. `npm run format` modifica archivos, no es una comprobación de solo lectura.
+
+Las verificaciones históricas corresponden a una revisión anterior y excluyen tres suites. Ver [ESTADO](docs/project/ESTADO.md). No se presentan como pruebas actuales de Supabase ni de la V1 comercial.
+
+No guardar secretos en el repositorio ni compartir claves administrativas con el navegador. Las variables locales quedan excluidas; cualquier ejemplo debe contener solo nombres y valores ficticios.

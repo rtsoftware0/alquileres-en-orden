@@ -1,3 +1,5 @@
+> Actualización de continuidad 07/11/2026: esta guía conserva la entrega visual histórica. Supabase propio y GitHub ya están conectados; consulta [ESTADO](../../../docs/project/ESTADO.md) para las conexiones, revisión actual y verificaciones pendientes. Las pruebas históricas no acreditan el backend actual.
+
 # REAL ESTATE SOFTWARE — Guía de entrega para continuar en Codex
 
 ## 1. Identificación
