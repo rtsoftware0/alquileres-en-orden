@@ -1,6 +1,6 @@
 # Estado de traspaso — 7 de noviembre de 2026
 
-Documento de continuidad de la preparación solicitada por el usuario antes de elaborar el plan completo de Claude Code. No autoriza construir automáticamente todos los módulos.
+Documento de continuidad y plan para Claude Code, actualizado el 07/11/2026. El plan está preparado; sus fases de ejecución no están autorizadas conjuntamente.
 
 ## Fuente y alcance
 
@@ -14,12 +14,12 @@ Las copias fechadas de especificación/blueprint/G0 conservan su texto históric
 - Basic 19 €/mes, 10 unidades/1 interno/1 GB; Pro 49 €, 50/3/5 GB; Max 99 €, 150/5/15 GB. Enterprise desde 199 € orientativos, oferta individual. Antes de impuestos; no son precios validados por el mercado.
 - Prueba Pro o Max: una ventana de 168 horas por empresa, sin tarjeta, sin reinicio al cambiar de plan; 500 MB en prueba. Las políticas de conversión, impago y baja se rigen por T1–T6.
 - Presupuesto histórico de 300 €/mes aplazado por el usuario el 21/10: no bloquear preparación por su reparto. Nuevas compras/recargas siguen necesitando autorización específica.
-- Diseño elegido: Verde mediterráneo, contenido v3, tipografía original y referencias v4 claro/oscuro. No consta aplicado al código; las imágenes de referencia permanecen en la carpeta documental local y no se incluyen en esta entrega.
+- Diseño definitivo pendiente. Fuente humana del 07/11/2026: «ten en cuenta que el diseño de como se vera la pagina web aun no esta decidido, ahora prepara el plan». Sustituye la consideración anterior de Verde mediterráneo como elección vigente. Esa propuesta y las demás imágenes son referencias de exploración, no una selección final aprobada. Se conserva el objetivo minimalista; paleta, tipografía e identidad quedan por elegir.
 - Supabase propio y GitHub autorizados; Lovable Cloud sigue excluido. No hay permiso para usar datos reales de las 150 habitaciones del socio.
 
 ## Estado comprobado
 
-- GitHub privado `rtsoftware0/alquileres-en-orden`, `main`, base `8ae66f38a74c4e76447af526e2b98856559612c7`; mismo commit observado en Lovable. Árbol completo de GitHub: 341 archivos, sin truncamiento.
+- GitHub privado `rtsoftware0/alquileres-en-orden`, `main`, base del plan `368ac240b17fe9a2b262b7168652afdd70aab4ce`; mismo commit observado en Lovable. Preparación anterior: 348 archivos y once cambios documentales/de continuidad verificados en ambos servicios. El guardado del plan añade documentación posterior, sin cambiar código de aplicación.
 - Lovable: mismo proyecto/workspace de desarrollo, sin publicar.
 - Supabase: `real-estate-dev` / `tskooksubwunfjirvyjz`, organización `disepeeflqxjsxvkowvf`, región `eu-west-3`, ACTIVE_HEALTHY.
 - Cliente/config apuntan a ese proyecto. No se han guardado valores de claves en este documento.
@@ -36,7 +36,7 @@ Reutilizar pantallas, componentes, formularios, motores de cálculo, datos ficti
 
 Pendiente: modelo de datos y migraciones, aislamiento de empresas y permisos efectivos, autenticación, persistencia/transacciones, archivos privados, comunicaciones, portales reales, automatismos, suscripción del SaaS y derechos en servidor, exportación integral/restauración, revisión y piloto autorizados.
 
-No hace falta crear otro Supabase dev ni una aplicación nueva para planificar estos trabajos. El siguiente plan debe ordenar lo pendiente conforme a V1.1/blueprint; no confundir una pantalla terminada con un requisito operativo superado.
+No hace falta crear otro Supabase dev ni una aplicación nueva. El [plan completo para Claude Code](plan-completar-v1-con-claude-code-2026-11-07.md) ordena F00–F12 con cobertura de V1.1/blueprint y una fase propia para elegir diseño. Primer alcance recomendado: F00, reproducir y diagnosticar localmente; [guion preparado](arranque-claude-code-2026-11-07.md). No se ha ejecutado ni autoriza automáticamente backend, rediseño o publicación. No confundir una pantalla terminada con un requisito operativo superado.
 
 ## Pruebas y asuntos abiertos
 
@@ -57,7 +57,7 @@ Los recorridos A01–A29, BP01–BP08 y los manuales del HANDOFF son criterios d
 
 ## Decisiones abiertas
 
-O1 recorrido prioritario; O4/O5 responsables y financiación de revisión; O6 alojamiento, correo y proveedor de cuota/facturación; O7 piloto y plazo. O2/O3 presupuestarios aplazados. Stripe sigue propuesto, no seleccionado. Concretar informes INF por plan y retención posterior a consulta/exportación antes de implementar esos derechos.
+Diseño final de la aplicación y alcance de una posible web comercial. O1 recorrido prioritario; O4/O5 responsables y financiación de revisión; O6 alojamiento, correo y proveedor de cuota/facturación; O7 piloto y plazo. O2/O3 presupuestarios aplazados. Stripe sigue propuesto, no seleccionado. Concretar informes INF por plan y retención posterior a consulta/exportación antes de implementar esos derechos.
 
 El deseo histórico de entrega el12/11 no es una promesa. No declarar V1 comercial terminada ni porcentaje sin trazabilidad de requisitos.
 
