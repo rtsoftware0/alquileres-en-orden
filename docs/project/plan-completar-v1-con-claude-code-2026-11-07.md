@@ -1,6 +1,6 @@
 # Plan para completar V1.1 con Claude Code
 
-REAL ESTATE SOFTWARE · Versión 1.0 · 7 de noviembre de 2026
+REAL ESTATE SOFTWARE · Versión 1.1 · 7 de noviembre de 2026
 
 **Estado: plan propuesto, pendiente de aprobar sus alcances de ejecución.** Preparar este documento no inicia desarrollo, cambia Supabase, publica el servicio ni contrata herramientas. La instrucción más reciente del usuario confirma que **el diseño definitivo de la web sigue sin decidirse**. Las propuestas anteriores, incluida Verde mediterráneo, son referencias y no una selección aprobada vigente.
 
@@ -8,7 +8,9 @@ REAL ESTATE SOFTWARE · Versión 1.0 · 7 de noviembre de 2026
 
 Convertir la aplicación existente en un SaaS integral de gestión de alquileres que se pueda usar y vender, manteniendo V1.1 como alcance. Aprovechar pantallas, componentes y lógica útil; completar persistencia, seguridad, operaciones económicas, colaboración, suscripciones y recuperación. Claude Code hará el trabajo de código y comprobación; el usuario decidirá producto, diseño y aceptación sin tener que programar.
 
-No es necesario terminarlo todo en Lovable antes de pasar a Claude Code. Ya existe una base que merece conservarse. La finalización se medirá por requisitos y recorridos demostrados, no por número de pantallas, créditos gastados o mensajes del agente.
+Decisión humana posterior del 07/11: continuar el proyecto en Claude y Claude Code, mejorar la aplicación y trasladar el flujo habitual a Claude y herramientas independientes. Lovable deja de ser el entorno de construcción o validación previsto. No hace falta terminar V1 en Lovable antes del traslado. La finalización se medirá por requisitos y recorridos demostrados, no por número de pantallas, créditos gastados o mensajes del agente.
+
+El objetivo incluye independizar instalación, compilación, pruebas y publicación de Lovable. Se conservará el código útil y se podrá reorganizar su arquitectura por cambios justificados y verificables. Cambiar de herramienta de desarrollo no exige cambiar de framework, crear otro repositorio o migrar el Supabase propio. Claude no sustituye al alojamiento de la aplicación ni a su base de datos.
 
 ## 2. Punto de partida comprobado
 
@@ -16,6 +18,7 @@ No es necesario terminarlo todo en Lovable antes de pasar a Claude Code. Ya exis
 |---|---|---|
 | Código | Repositorio privado [rtsoftware0/alquileres-en-orden](https://github.com/rtsoftware0/alquileres-en-orden), rama main; revisión de referencia `368ac240b17fe9a2b262b7168652afdd70aab4ce`, igual en Lovable | Continuar aquí; no crear otra aplicación o repositorio |
 | Preparación documental | 348 archivos; once archivos de continuidad/configuración guardados y releídos en ambos servicios en la preparación anterior | Claude dispone de AGENTS, CLAUDE, MEMORY, convenciones, V1.1, blueprint y G0 |
+| Actualización de traspaso | La versión inicial de este plan quedó en `80c61c74444943aaf128ae9a60be306a71afdec0`, 350 archivos. Esta actualización documental parte de esa revisión | Leer la revisión vigente; no considerar el traspaso técnico ejecutado por guardar este plan |
 | Tecnología | TanStack Start, React 19, TypeScript estricto, Tailwind 4, TanStack Query y Vite; configuración específica de Lovable | Conservarla inicialmente; no proponer una reescritura a otro framework sin evidencia |
 | Funciones visuales | Cartera, contactos, contratos, dinero, gastos, banco, liquidaciones, incidencias, tareas, documentos, mensajes, prealquiler, portales, informes, planes y cuenta | Hay una base de interacción y cálculo; no acredita operación real |
 | Datos de negocio | Gran parte del estado vive en memoria del navegador y se pierde al recargar; existen ejemplos y fuentes financieras de demostración | Sustituir gradualmente por datos persistentes, sin mezclar demo y producción |
@@ -36,6 +39,7 @@ La revisión citada es la base del análisis; el guardado documental de este pla
 - V1.1 integral, suscripción a terceros y uso propio; una empresa puede trabajar con un único administrador. Español y EUR en esta versión.
 - Diseño minimalista, comprensible y adaptable a móvil. **Paleta, tipografía, identidad y aspecto final no elegidos.** No se exige aplicar Verde mediterráneo ni dar por aprobado un tema oscuro final.
 - Supabase propio y GitHub existentes; Lovable Cloud excluido. Datos ficticios en desarrollo. Las 150 habitaciones del socio no autorizan acceso a datos personales ni un piloto.
+- Claude y Claude Code pasan a ser el entorno principal de continuidad, mejora y desarrollo por instrucción del 07/11. Lovable queda como origen histórico; no se exige usarlo para completar V1. Esta decisión no desconecta servicios, cancela suscripciones ni aprueba una reescritura técnica indiscriminada.
 - E1–E9, C1–C7 y T1–T6 aprobados el 21/10 como base inicial. Fuente: «Apruebo E, C y T como base inicial». El detalle completo está en la [tabla G0](tabla-cierre-g0-2026-10-21.md). No volver a presentarlo como pendiente por el texto histórico del 19/10.
 - Basic: 19 €/mes, 10 unidades activas, un interno, 1 GB. Pro: 49 €, 50 unidades, tres internos, 5 GB. Max: 99 €, 150 unidades, cinco internos, 15 GB. Enterprise desde 199 € orientativos, oferta y capacidad individuales. Precios antes de impuestos, no validados por mercado.
 - Prueba Pro/Max: una ventana de 168 horas por empresa, sin tarjeta, sin reinicio al cambiar de nivel; 500 MB durante prueba. Consulta/exportación 30 días tras vencer sin contratar. Impago: siete días de gracia y después 30 días de consulta/exportación desde la restricción. Sin borrado automático ni Basic gratuito implícito.
@@ -62,17 +66,31 @@ O2/O3 presupuestarios siguen aplazados. No requieren un nuevo inventario general
 
 Recomendación: usar Claude Code en una carpeta local del repositorio real, con acceso propio comprobado. Claude Desktop permite abrir una carpeta desde su pestaña Code; verificar que la cuenta elegida ofrece esa función. No suponer que las suscripciones de ChatGPT o Lovable conceden acceso a Claude. La autenticación Git local y la de los conectores son independientes. [Guía oficial de inicio](https://code.claude.com/docs/en/desktop-quickstart).
 
-Claude leerá `CLAUDE.md`, `AGENTS.md`, `MEMORY.md`, `Tools Conventions.md`, `docs/project/ESTADO.md` y este plan. El wrapper CLAUDE importa AGENTS; comprobar lo que carga realmente, sin crear dos instrucciones maestras contradictorias. [Memoria de Claude Code](https://code.claude.com/docs/en/memory).
+Claude leerá `CLAUDE.md`, `AGENTS.md`, `MEMORY.md`, `Tools Conventions.md`, `docs/project/ESTADO.md`, `docs/project/traspaso-a-claude-2026-11-07.md` y este plan. El wrapper CLAUDE importa AGENTS; comprobar lo que carga realmente, sin crear dos instrucciones maestras contradictorias. Los documentos versionados son la continuidad, no la supuesta transferencia automática del chat o la memoria de otra plataforma. [Memoria de Claude Code](https://code.claude.com/docs/en/memory).
 
 | Herramienta | Papel propuesto |
 |---|---|
-| Claude Code | Analizar, proponer cambios acotados, implementarlos tras autorización, ejecutar pruebas y documentar resultados |
+| Claude Code | Entorno principal para analizar, diseñar, reorganizar, desarrollar, probar y documentar el proyecto |
+| Claude, conversación de producto | Planificación y decisiones con el usuario; los acuerdos se guardan en el repositorio para evitar dos memorias contradictorias |
 | GitHub | Código y documentación versionados, ramas de trabajo y revisión de diferencias; fuente para reproducir cada entrega |
 | Supabase propio | Identidad, base de datos y archivos privados; migraciones y permisos explícitos |
-| Lovable | Vista previa y apoyo visual opcional; no dos agentes modificando los mismos archivos a la vez |
+| Navegador local y pruebas de interfaz | Vista previa y comprobación fuera de Lovable; Playwright recomendado para recorridos automáticos, tras revisar herramientas ya presentes |
+| Automatización del repositorio | Pruebas y compilación por revisión; configuración y disponibilidad de GitHub Actions por verificar antes de activarlo |
+| Alojamiento, correo y cuota SaaS | Proveedores independientes por seleccionar y aprobar cuando corresponda; no son funciones de Claude |
+| Lovable | Origen y referencia histórica. Sin encargos nuevos por defecto; no forma parte del flujo necesario |
 | Usuario y socio | Decisiones de producto/diseño, contraste de recorridos y autorización de etapas, costes y salida |
 
-Trabajar con un único flujo de escritura sobre cada cambio. Recomiendo ramas cortas para desarrollo y sincronizar la rama activa de Lovable solo después de revisar. Una rama Git no crea otra base de datos. Los cambios sincronizados no aplican por sí mismos migraciones ni publican una versión. [Sincronización Git de Lovable](https://docs.lovable.dev/integrations/git-sync-overview).
+Trabajar con un único flujo de escritura sobre cada cambio: Claude Code → rama de trabajo → comprobaciones y revisión → GitHub. La vista previa será local o del alojamiento de prueba independiente. Mientras Git sync siga conectado, los commits de la rama vinculada pueden seguir apareciendo en Lovable; eso no lo convierte en una dependencia del desarrollo ni en una verificación obligatoria. No generar cambios desde Lovable en paralelo. Desconectar Git sync o cancelar su plan se decidirá expresamente después de comprobar independencia; no borrar proyecto ni reescribir historial. Una rama Git no crea otra base de datos. [Sincronización Git de Lovable](https://docs.lovable.dev/integrations/git-sync-overview).
+
+### Traspaso técnico antes de ampliar V1
+
+- **T0, continuidad preparada:** código/documentación en el repositorio existente, instrucciones orientadas a Claude y decisiones vigentes. Se guarda con este plan; no acredita una sesión de Claude conectada.
+- **T1, F00 inicial:** abrir el repositorio en Claude Code, verificar acceso real a archivos/Git/Supabase dev, instalar y diagnosticar. Las conexiones de esta sesión no se trasladan automáticamente; comprobar permisos concretos y evitar secretos en documentación. [Conexiones de Claude Code](https://code.claude.com/docs/en/mcp), [MCP oficial de Supabase](https://supabase.com/docs/guides/ai-tools/mcp).
+- **T2, alcance separado tras el diagnóstico:** independizar herramientas de desarrollo/compilación y mejorar la estructura necesaria. En la revisión `80c61c7`, `package.json` y `vite.config.ts` usan `@lovable.dev/vite-tanstack-config@2.26.5`; el lock obtiene ese artefacto de un registro de Lovable. Existe además `src/lib/lovable-error-reporting.ts`, llamado desde `src/routes/__root.tsx`, con hooks del editor. No se ha probado aún una instalación limpia de ese artefacto: no declarar bloqueo sin medirlo.
+- En T2, sustituir el wrapper por configuración oficial equivalente si resulta necesario para eliminar la dependencia, y retirar/inactivar hooks específicos del editor. Mantener TanStack Start/React, renderizado del servidor, protección CSRF de `src/start.ts`, rutas y reglas de negocio. No duplicar plugins mientras el wrapper siga activo ni quitarlo sin reconstruir sus funciones. Revisar también `bunfig.toml`, variables y salida de compilación.
+- **T3, independencia demostrada:** instalar, arrancar, comprobar tipos/tests, compilar y previsualizar sin sesión de Lovable; guardar una revisión de código desde Claude y releerla en GitHub. Probar después alojamiento independiente autorizado. Retirar dependencias evitables solo tras revisar regresión. El cierre administrativo de Lovable, si se quiere, es otra acción específica.
+
+El traspaso se cierra con una aplicación reproducible, accesos comprobados en Claude y un procedimiento que pueda continuarse sin este chat ni el editor Lovable. No basta con entregar un ZIP o decir que Claude leyó un documento. Las capacidades de alojamiento y portabilidad se comprobarán para este proyecto concreto. [Portabilidad oficial de Lovable](https://docs.lovable.dev/tips-tricks/deployment-hosting-ownership), [pruebas de navegador con Playwright](https://playwright.dev/docs/intro).
 
 Cada encargo tendrá CONTEXTO, OBJETIVO, COMPORTAMIENTO ESPERADO, ALCANCE exacto, NO TOCAR y RESTRICCIONES. Para funciones complejas: análisis sin cambios, revisión y ejecución del alcance aprobado. No pedir a un agente «terminar toda V1» en una sola operación. Un fallo de comprobación se registra y bloquea solo la parte dependiente; se pueden continuar tareas independientes ya aprobadas. Dos intentos fallidos del mismo arreglo obligan a detener ese arreglo y explicar lo conocido.
 
@@ -90,7 +108,7 @@ Cada encargo tendrá CONTEXTO, OBJETIVO, COMPORTAMIENTO ESPERADO, ALCANCE exacto
 ### Arquitectura recomendada para evitar rehacer módulos
 
 1. Diseñar el mapa de entidades completo antes de implementar tablas por tandas: empresas, miembros, carteras, inmuebles/unidades, contactos y vínculos, candidatos/reservas, contratos/versiones/ocupaciones, obligaciones, caja, asignaciones, fianzas, gastos/repartos/pagos, banco/conciliaciones, liquidaciones/versiones/cierres, incidencias/tareas, archivos/versiones/comparticiones, mensajes/avisos, derechos de plan y auditoría.
-2. Mantener los componentes en `src/features/` y las rutas en `src/routes/`. Introducir una capa de servicios/acceso a datos con límites por funcionalidad; su estructura exacta se acordará leyendo el código en F01. Evitar llamadas aisladas a Supabase desde cada botón.
+2. Partir de `src/features/` y `src/routes/`, evaluar su acoplamiento y reorganizar lo necesario por etapas demostrables. Introducir una capa de servicios/acceso a datos con límites por funcionalidad; su estructura exacta se acordará leyendo el código en F01. No congelar por principio decisiones del prototipo ni reescribirlo todo sin comparación. Evitar llamadas aisladas a Supabase desde cada botón.
 3. Toda operación identifica empresa, usuario, rol, cartera y relación autorizada. Probar permisos con usuarios reales de prueba y peticiones directas, no únicamente con una conexión administrativa. RLS en tablas expuestas y controles equivalentes para funciones, vistas y archivos. [RLS oficial](https://supabase.com/docs/guides/database/postgres/row-level-security), [seguridad de Storage](https://supabase.com/docs/guides/storage/security/access-control).
 4. Adaptar Auth al renderizado de TanStack Start; el cliente con almacenamiento local creado por la conexión no completa el modelo de sesión del servidor. No confiar en datos de perfil editables para autorizar, ni enviar claves privilegiadas al navegador. [Auth con servidor](https://supabase.com/docs/guides/auth/server-side).
 5. Importes exactos y operaciones atómicas: deuda, cobro, asignación y conciliación separados; reversión e historia; clave de repetición y restricciones de base de datos para impedir duplicados. Fechas de estancia separadas de instantes, zona horaria explícita y reloj de servidor para la prueba.
@@ -112,11 +130,11 @@ Las fases siguientes reorganizan P01–P64 según lo ya construido. No sustituye
 - Recorrer las principales pantallas localmente, con datos ficticios, incluida recarga y móvil. Capturar qué funciona y qué solo simula.
 - Clasificar READ-A01, READ-B01–03, CSV03/04 y ACC-T01: fallo de producto, preparación de prueba o resultado desconocido. Corregirlos en encargos acotados posteriores; no reabrir PLAN01–03 ni FORM-B01 cerrados sin una regresión nueva.
 
-**Entrega:** informe de base reproducible, inventario de comandos y fallos, cobertura por módulo y propuesta concreta F01. **Salida:** sabemos arrancar y comprobar la revisión exacta, o tenemos un bloqueo reproducible claramente delimitado. Esta fase no promete que todo el código pase ya.
+**Entrega:** informe de base reproducible, dependencias de Lovable, inventario de comandos y fallos, cobertura por módulo y propuesta T2 para independizar el proyecto. Después del traspaso técnico se concreta F01. **Salida:** sabemos arrancar y comprobar la revisión exacta, o tenemos un bloqueo reproducible claramente delimitado. Esta fase no promete que todo el código pase ya ni incluye reemplazar dependencias sin revisar el alcance.
 
 ### F01 — Modelo de datos y demostración técnica mínima
 
-**Prerrequisito:** F00; elegir responsable de revisión y concretar alojamiento de prueba antes de desplegar. **Blueprint:** P05–P16, con G1 aún pendiente hasta demostrar la cadena completa.
+**Prerrequisito:** F00 y traspaso T2/T3 en lo necesario para desarrollar de forma independiente; elegir responsable de revisión y concretar alojamiento de prueba antes de desplegar. **Blueprint:** P05–P16, con G1 aún pendiente hasta demostrar la cadena completa.
 
 - Preparar primero el modelo de relaciones, dinero, estados, permisos, importación y auditoría; revisión antes de migraciones de negocio.
 - Definir interfaces de acceso a datos y plan de conversión desde los proveedores de estado actuales. Separar fixtures de demostración y datos persistentes.
@@ -318,7 +336,7 @@ BP01–08 añaden empresa unipersonal, revocación, frontera temporal de prueba,
 | G5 Piloto | Participación autorizada y ciclo contrastado | Pendiente |
 | G6 Venta y operación | Revisiones, publicación, cobros, soporte y recuperación aprobados | Pendiente |
 
-Por cada alcance: diferencias revisables, lista de archivos, revisión anterior/nueva, migraciones aplicadas si procede, pruebas realmente ejecutadas con resultados, demostración manual y pendientes. Releer cambios guardados y actualizar memoria/estado. En Lovable, el mensaje de finalización no sustituye los archivos y su revisión. No almacenar secretos, documentos de clientes o copias de la base en el repositorio.
+Por cada alcance: diferencias revisables, lista de archivos, revisión anterior/nueva, migraciones aplicadas si procede, pruebas realmente ejecutadas con resultados, demostración manual y pendientes. Releer cambios guardados y actualizar memoria/estado. Verificar en GitHub y en el entorno independiente; no exigir una réplica en Lovable para dar por guardado un cambio futuro. El mensaje de finalización de cualquier agente no sustituye los archivos y su revisión. No almacenar secretos, documentos de clientes o copias de la base en el repositorio.
 
 Para producción: manual de alta y baja, facturación de nuestra cuota, copia/restauración, publicación/retorno, soporte e incidentes; responsable y alertas de fallos de correo, generación, eventos, copias y límites. Volver al código anterior y restaurar datos son operaciones diferentes; ensayarlas por separado, con cambios de esquema compatibles.
 
@@ -328,7 +346,7 @@ No se fija una fecha completa antes de reproducir la base y medir F01/F06. El ca
 
 Mantener fuera: conexiones bancarias automáticas, cobro de rentas con tarjetas/SEPA, transferencias a propietarios, custodia de fondos, firma certificada, sistema fiscal propio, scoring, marketplace público de alquileres, channel manager turístico, apps nativas, dominio por cliente, WhatsApp/SMS/push, API pública, contabilidad a medida, funciones de IA para clientes, modo sin conexión y multimoneda. Enterprise no los incorpora implícitamente.
 
-**Primer alcance recomendado para aprobar: F00.** Autenticar Git local si es necesario, abrir el repositorio actual en Claude Code, instalar de forma reproducible, ejecutar comprobaciones y entregar diagnóstico concreto. No rediseñar, migrar datos ni corregir masivamente en ese mismo alcance. Después se presenta F01 con archivos, resultados esperados y operaciones exactas. El diseño se decide mediante F02, sin obligar a rehacer la base técnica.
+**Primer alcance recomendado en Claude: T1/F00.** Autenticar Git local si es necesario, abrir el repositorio actual en Claude Code, instalar de forma reproducible, ejecutar comprobaciones y entregar diagnóstico concreto de calidad/independencia. Presentar después T2, con los cambios exactos de configuración/estructura a realizar; completar el traspaso antes de ampliar los módulos F01–F12. No rediseñar ni corregir masivamente en el diagnóstico. El diseño final se decide mediante F02; Claude puede mejorarlo y ejecutarlo cuando se elija.
 
 Guion de arranque preparado en [arranque de Claude Code](arranque-claude-code-2026-11-07.md). Es una instrucción reutilizable para el alcance F00 cuando se autorice, no una prueba de que se ha ejecutado.
 

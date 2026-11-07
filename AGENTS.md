@@ -9,6 +9,14 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
+## Current direction — Claude-led continuation (2026-11-07)
+
+- The user now wants to improve, complete and maintain this project in Claude/Claude Code with independent tools. GitHub remains the code/documentation source; keep the existing own Supabase project. Lovable is the historical prototype origin, not the required development, validation or deployment environment.
+- Read `docs/project/traspaso-a-claude-2026-11-07.md` and the updated completion plan. Start with the approved scope only. Diagnose the real Lovable build/editor dependencies, then propose a bounded independence change before implementing it.
+- Improve architecture where evidence warrants it; do not rewrite the whole framework by default. The demo-specific rules below describe the existing prototype, not a permanent ban on persistence in subsequently approved backend scopes. Preserve intentional business invariants and isolate any retained demo mode.
+- Final visual design is undecided. Historical concepts, including Verde mediterráneo, are references only. Keep the minimalist usability goal and obtain the user's concrete design selection before applying it broadly.
+- Verify future saved work through GitHub and an independent runtime; Lovable re-reading is not a completion requirement. The connection notice above remains factually relevant while Git sync is enabled. Do not disconnect it, cancel subscriptions or delete resources without the corresponding explicit instruction.
+
 ## Architecture rules
 - Portals (`src/features/portals/`) use isolated ID-only grant metadata, pure context-scoped selectors (explicit recipient AND authorized relation for documents; shared messages only) and page-local React state; views remount on context change/revocation. Grants are revalidated against the dataset (ownerId/tenantIds/providerId) in documents, threads and details; revocations reach every visibility derivation; external incident projections expose minimal fields only. Why: demo previews never leak another contact's data or mutate prior modules; not real security.
 - Settlements (`src/features/settlements/`) use read-only sources and a root memory-only integer-cent engine; portfolio/educational scopes stay separate in totals, fingerprints and locks. Logical beneficiary payments derive cumulative pending separately from payment-date cash; pending edits hide review/approval/payment, and closures retain successive immutable snapshots with identified events. Why: corrections and reopening preserve history without mutating other modules or inventing agreements.

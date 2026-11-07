@@ -1,6 +1,6 @@
 # Tools Conventions
 
-REAL ESTATE SOFTWARE | Versión 1.1 | 2 de noviembre de 2026
+REAL ESTATE SOFTWARE | Versión 1.2 | 7 de noviembre de 2026
 
 ## Alcance y autoridad
 
@@ -13,7 +13,7 @@ Este archivo sustituye para este proyecto la dependencia del archivo compartido 
 - Omitir el inventario general previo de identidades, cuentas, roles, facturación y recuperación. No convertirlo en requisito para continuar ni volver a solicitarlo bajo otro nombre.
 - Comprobar solo la disponibilidad, el destino y los permisos necesarios para la acción concreta que se vaya a realizar. No dar por verificado un dato desconocido ni asumir que una conexión se trasladó desde otra cuenta.
 - No usar como destino el antiguo espacio personal Feezy's Lovable. La aparición de otro espacio no autoriza por sí sola crear activos en él.
-- Usar ChatGPT Pro/Work, Lovable, Supabase propio y GitHub conforme al alcance acordado. No activar Lovable Cloud como sustituto de Supabase propio sin decisión expresa.
+- Continuar el proyecto principalmente en Claude y Claude Code con GitHub y Supabase propio, por decisión del 07/11/2026. Lovable queda como origen histórico; no iniciar nuevas generaciones por defecto. No activar Lovable Cloud como sustituto de Supabase propio sin decisión expresa.
 - Preferir las herramientas conectadas disponibles que permitan completar la acción; declarar las limitaciones reales cuando falte una capacidad.
 
 ## Autorización y ejecución
@@ -31,6 +31,18 @@ Este archivo sustituye para este proyecto la dependencia del archivo compartido 
 - Separar decisiones confirmadas, propuestas, acciones realizadas y elementos pendientes. Una prueba diseñada no es una prueba ejecutada o superada.
 - Verificar el contenido guardado y el resultado de las acciones externas. Registrar progreso y decisiones confirmadas en MEMORY.md, sin datos sensibles innecesarios.
 - Comunicar en español y explicar las acciones en lenguaje comprensible, sin exigir al usuario que escriba código.
+
+## Claude Code — flujo principal del proyecto
+
+Decisión humana del 07/11/2026: mejorar, completar y continuar el proyecto con Claude y Claude Code y herramientas independientes. Sustituye el uso habitual de Lovable; su sección inferior se conserva para consultas históricas o un uso expresamente solicitado.
+
+- GitHub es la referencia del código y la documentación. Claude Code trabaja sobre el repositorio real; no asumir que chats, memoria, plugins, permisos o autenticaciones de otra plataforma se trasladan.
+- Preparar la independencia de instalación, compilación, pruebas, vista previa y alojamiento respecto de Lovable. Identificar sus dependencias reales y proponer sustituciones acotadas con regresión; no cambiar de framework por rutina ni congelar la arquitectura del prototipo.
+- Claude puede ejecutar tests, tipos y compilación mediante sus herramientas, y debe mostrar resultados reales. La restricción de pedir a Lovable que certifique pruebas se aplica al agente Lovable, no impide verificarlas en Claude.
+- Guardar y releer cambios en el repositorio y entorno independiente; no exigir que aparezcan en Lovable para dar por terminada una tarea futura.
+- No iniciar generaciones en Lovable por defecto. Mientras Git sync siga conectado, evitar ediciones simultáneas. Desconexión, cancelación de suscripción, borrados o publicación son operaciones separadas con autorización específica.
+- Mantener Supabase propio, V1.1 y E/C/T aprobados; diseño final pendiente. La aprobación de un alcance cubre su implementación, verificación y documentación, sin repetir aprobación ni iniciar automáticamente el siguiente.
+- Las decisiones de producto tratadas en Claude se registran en los documentos versionados. No crear dos instrucciones maestras contradictorias ni almacenar secretos en archivos de continuidad.
 
 ## Lovable (vía plugin)
 

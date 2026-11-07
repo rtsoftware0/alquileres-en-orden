@@ -10,6 +10,8 @@ Las copias fechadas de especificación/blueprint/G0 conservan su texto históric
 
 ## Decisiones confirmadas
 
+- Continuidad principal en Claude y Claude Code, por aclaración humana del 07/11: «quiero mejorarlo con claude ... cambiar toda la estructura hacia claude y otras tools ... seguir este proyecto con claude». Lovable queda como origen histórico, fuera del flujo habitual. GitHub y Supabase propio se conservan. La arquitectura puede mejorarse por etapas verificadas; no supone una reescritura total autorizada ni una desconexión ejecutada.
+
 - E1–E9, C1–C7 y T1–T6 aprobados el 21/10/2026: fuente humana «Apruebo E, C y T como base inicial». La tabla G0 conserva los detalles completos.
 - Basic 19 €/mes, 10 unidades/1 interno/1 GB; Pro 49 €, 50/3/5 GB; Max 99 €, 150/5/15 GB. Enterprise desde 199 € orientativos, oferta individual. Antes de impuestos; no son precios validados por el mercado.
 - Prueba Pro o Max: una ventana de 168 horas por empresa, sin tarjeta, sin reinicio al cambiar de plan; 500 MB en prueba. Las políticas de conversión, impago y baja se rigen por T1–T6.
@@ -36,7 +38,7 @@ Reutilizar pantallas, componentes, formularios, motores de cálculo, datos ficti
 
 Pendiente: modelo de datos y migraciones, aislamiento de empresas y permisos efectivos, autenticación, persistencia/transacciones, archivos privados, comunicaciones, portales reales, automatismos, suscripción del SaaS y derechos en servidor, exportación integral/restauración, revisión y piloto autorizados.
 
-No hace falta crear otro Supabase dev ni una aplicación nueva. El [plan completo para Claude Code](plan-completar-v1-con-claude-code-2026-11-07.md) ordena F00–F12 con cobertura de V1.1/blueprint y una fase propia para elegir diseño. Primer alcance recomendado: F00, reproducir y diagnosticar localmente; [guion preparado](arranque-claude-code-2026-11-07.md). No se ha ejecutado ni autoriza automáticamente backend, rediseño o publicación. No confundir una pantalla terminada con un requisito operativo superado.
+No hace falta crear otro Supabase dev ni una aplicación nueva. El [plan completo para Claude Code](plan-completar-v1-con-claude-code-2026-11-07.md) ordena F00–F12 con cobertura de V1.1/blueprint y una fase propia para elegir diseño. Plan actualizado a v1.1 y [traspaso principal a Claude](traspaso-a-claude-2026-11-07.md). Primer alcance recomendado: T1/F00, reproducir y diagnosticar localmente dependencias de Lovable y calidad; [guion preparado](arranque-claude-code-2026-11-07.md). No se ha ejecutado ni autoriza automáticamente backend, rediseño o publicación. No confundir una pantalla terminada con un requisito operativo superado.
 
 ## Pruebas y asuntos abiertos
 
@@ -62,6 +64,8 @@ Diseño final de la aplicación y alcance de una posible web comercial. O1 recor
 El deseo histórico de entrega el12/11 no es una promesa. No declarar V1 comercial terminada ni porcentaje sin trazabilidad de requisitos.
 
 ## Método de continuidad
+
+Verificación futura mediante GitHub y entorno independiente; no exigir relectura en Lovable. Auditado en80c61c7: wrapper `@lovable.dev/vite-tanstack-config@2.26.5`, artefacto en registro de Lovable y hooks `src/lib/lovable-error-reporting.ts`/ruta raíz. Instalación independiente todavía no probada. T2 propondrá su sustitución preservando TanStack/SSR/CSRF, y T3 comprobará independencia. No desconexión ni nuevas herramientas configuradas por esta actualización documental.
 
 Una tarea terminada debe indicar revisión, archivos, comprobaciones ejecutadas y pendientes. La documentación debe acompañar al código. No almacenar datos personales, copias de clientes ni secretos en GitHub.
 
